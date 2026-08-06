@@ -53,12 +53,26 @@ function setupSheetInteractions() {
     if (dialog.dataset.sheetInteractions==='ready') return;
     dialog.dataset.sheetInteractions='ready';
 
-    dialog.addEventListener('click',(event)=>{
-      if (event.target!==dialog || !dialog.open) return;
+    const isOutsideSheet=(clientX,clientY)=>{
       const rect=dialog.getBoundingClientRect();
-      const outside=event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;
-      if (outside) dismissSheet(dialog);
+      return clientX<rect.left||clientX>rect.right||clientY<rect.top||clientY>rect.bottom;
+    };
+    const dismissFromBackdrop=(target,clientX,clientY)=>{
+      if (target!==dialog||!dialog.open||!Number.isFinite(clientX)||!Number.isFinite(clientY)) return;
+      if (isOutsideSheet(clientX,clientY)) dismissSheet(dialog);
+    };
+
+    dialog.addEventListener('click',(event)=>{
+      dismissFromBackdrop(event.target,event.clientX,event.clientY);
     });
+    dialog.addEventListener('pointerdown',(event)=>{
+      if (event.pointerType==='touch') return;
+      dismissFromBackdrop(event.target,event.clientX,event.clientY);
+    });
+    dialog.addEventListener('touchend',(event)=>{
+      const touch=event.changedTouches?.[0];
+      if (touch) dismissFromBackdrop(event.target,touch.clientX,touch.clientY);
+    },{passive:true});
 
     dialog.addEventListener('close',()=>{
       resetSheetPosition(dialog);
@@ -68,17 +82,39 @@ function setupSheetInteractions() {
     const handle=dialog.querySelector('.dialog-handle');
     if (!handle) return;
 
-    let pointerId=null,startY=0,lastY=0,startTime=0;
+    let dragType=null,dragId=null,startY=0,lastY=0,startTime=0;
 
-    const finishDrag=(event,cancelled=false)=>{
-      if (pointerId===null) return;
-      const endY=Number.isFinite(event?.clientY)?event.clientY:lastY;
+    const beginDrag=(type,id,clientY)=>{
+      if (!dialog.open||dragType!==null||!Number.isFinite(clientY)) return false;
+      dragType=type;
+      dragId=id;
+      startY=lastY=clientY;
+      startTime=performance.now();
+      dialog.classList.remove('is-resetting','is-dismissing');
+      dialog.classList.add('is-dragging');
+      return true;
+    };
+
+    const moveDrag=(clientY)=>{
+      if (dragType===null||!Number.isFinite(clientY)) return;
+      lastY=clientY;
+      const distance=Math.max(0,clientY-startY);
+      const range=Math.max(150,Math.min(260,dialog.getBoundingClientRect().height*.34));
+      const progress=Math.min(1,distance/range);
+      dialog.style.setProperty('--sheet-drag-progress',String(progress));
+      dialog.style.transform=`translate3d(0,${distance}px,0)`;
+    };
+
+    const finishDrag=(clientY,cancelled=false)=>{
+      if (dragType===null) return;
+      const endY=Number.isFinite(clientY)?clientY:lastY;
       const distance=Math.max(0,endY-startY);
       const duration=Math.max(1,performance.now()-startTime);
       const velocity=distance/duration;
-      pointerId=null;
+      dragType=null;
+      dragId=null;
 
-      if (!cancelled&&(distance>=96||(distance>=42&&velocity>=0.65))) {
+      if (!cancelled&&(distance>=72||(distance>=34&&velocity>=0.5))) {
         dismissSheet(dialog);
         return;
       }
@@ -86,34 +122,60 @@ function setupSheetInteractions() {
       dialog.classList.remove('is-dragging');
       dialog.classList.add('is-resetting');
       dialog.style.setProperty('--sheet-drag-progress','0');
-      dialog.style.transform='translateY(0)';
+      dialog.style.transform='translate3d(0,0,0)';
       window.setTimeout(()=>resetSheetPosition(dialog),190);
     };
 
+    /* Maus und Stift: Pointer Events */
     handle.addEventListener('pointerdown',(event)=>{
-      if (!dialog.open || (event.pointerType==='mouse'&&event.button!==0)) return;
-      pointerId=event.pointerId;
-      startY=lastY=event.clientY;
-      startTime=performance.now();
-      dialog.classList.remove('is-resetting','is-dismissing');
-      dialog.classList.add('is-dragging');
+      if (event.pointerType==='touch'||(event.pointerType==='mouse'&&event.button!==0)) return;
+      if (!beginDrag('pointer',event.pointerId,event.clientY)) return;
       handle.setPointerCapture?.(event.pointerId);
       event.preventDefault();
     });
-
     handle.addEventListener('pointermove',(event)=>{
-      if (pointerId!==event.pointerId) return;
-      lastY=event.clientY;
-      const distance=Math.max(0,event.clientY-startY);
-      const progress=Math.min(1,distance/180);
-      dialog.style.setProperty('--sheet-drag-progress',String(progress));
-      dialog.style.transform=`translateY(${distance}px)`;
+      if (dragType!=='pointer'||dragId!==event.pointerId) return;
+      moveDrag(event.clientY);
       event.preventDefault();
     });
+    handle.addEventListener('pointerup',(event)=>{
+      if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(event.clientY);
+    });
+    handle.addEventListener('pointercancel',(event)=>{
+      if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(event.clientY,true);
+    });
+    handle.addEventListener('lostpointercapture',(event)=>{
+      if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(lastY,true);
+    });
 
-    handle.addEventListener('pointerup',(event)=>finishDrag(event));
-    handle.addEventListener('pointercancel',(event)=>finishDrag(event,true));
-    handle.addEventListener('lostpointercapture',(event)=>finishDrag(event,true));
+    /* iPhone, iPad und Android: explizite Touch Events */
+    handle.addEventListener('touchstart',(event)=>{
+      if (event.touches.length!==1) return;
+      const touch=event.touches[0];
+      if (!beginDrag('touch',touch.identifier,touch.clientY)) return;
+      event.preventDefault();
+    },{passive:false});
+
+    handle.addEventListener('touchmove',(event)=>{
+      if (dragType!=='touch') return;
+      const touch=Array.from(event.touches).find((item)=>item.identifier===dragId);
+      if (!touch) return;
+      moveDrag(touch.clientY);
+      event.preventDefault();
+    },{passive:false});
+
+    handle.addEventListener('touchend',(event)=>{
+      if (dragType!=='touch') return;
+      const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
+      finishDrag(touch?.clientY??lastY);
+      event.preventDefault();
+    },{passive:false});
+
+    handle.addEventListener('touchcancel',(event)=>{
+      if (dragType!=='touch') return;
+      const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
+      finishDrag(touch?.clientY??lastY,true);
+    },{passive:false});
   });
 }
 function confirmAction({title,text,accept='Bestätigen',danger=true,eyebrow='Bestätigen'}) {

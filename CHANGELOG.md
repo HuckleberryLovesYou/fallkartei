@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.1.2 – 2026-08-07
+
+### Mobilbedienung
+
+- Das Herunterziehen von Profil, Folgendetails und weiteren Bottom-Sheets funktioniert nun über native Touch-Events auf iPhone, iPad und Android.
+- Die unsichtbare Trefferfläche des oberen Griffs wurde deutlich vergrößert, ohne den sichtbaren Balken größer wirken zu lassen.
+- Die notwendige Zugstrecke wurde für Touchscreens natürlicher abgestimmt.
+- Das Tippen auf den abgedunkelten Außenbereich besitzt nun zusätzlich einen Touch-Fallback.
+
 ## 1.1.1 – 2026-08-07
 
 ### Bedienung

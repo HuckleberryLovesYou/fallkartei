@@ -201,3 +201,29 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 @media (prefers-reduced-motion:reduce){
   .sheet-dialog.is-resetting,.sheet-dialog.is-dismissing{transition:none!important}
 }
+
+
+/* v1.1.2 – größere und robustere Touch-Fläche für Bottom-Sheets */
+.sheet-dialog>.dialog-handle{
+  height:42px;
+  min-height:42px;
+  touch-action:none;
+  overscroll-behavior:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.sheet-dialog>.dialog-handle::after{
+  top:17px;
+}
+.sheet-dialog.is-dragging{
+  cursor:grabbing;
+}
+@media (pointer:coarse){
+  .sheet-dialog>.dialog-handle{
+    height:46px;
+    min-height:46px;
+  }
+  .sheet-dialog>.dialog-handle::after{
+    top:19px;
+  }
+}
