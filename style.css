@@ -227,3 +227,13 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
     top:19px;
   }
 }
+
+
+/* v1.1.3 – kein automatischer Fokusring am Schließen-Button */
+.sheet-dialog:focus{
+  outline:none;
+}
+.sheet-dialog header>.icon-button:focus:not(:focus-visible){
+  outline:none;
+  box-shadow:none;
+}

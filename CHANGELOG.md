@@ -2,6 +2,14 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.1.3 – 2026-08-07
+
+### Feinschliff
+
+- Beim Öffnen eines Profils, einer Folge oder eines anderen Fensters erhält nun das Fenster selbst den Fokus.
+- Der weiße Fokusring erscheint deshalb nicht mehr automatisch um das Schließen-Symbol.
+- Bei echter Tastaturbedienung bleibt der sichtbare Fokusring weiterhin erhalten.
+
 ## 1.1.2 – 2026-08-07
 
 ### Mobilbedienung

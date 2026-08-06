@@ -31,8 +31,14 @@ function openDialog(id) {
   const dialog=$(id);
   if (!dialog) return;
   resetSheetPosition(dialog);
+  dialog.tabIndex=-1;
   if (!dialog.open) dialog.showModal();
   document.documentElement.classList.add('dialog-open');
+  requestAnimationFrame(()=>{
+    if (!dialog.open) return;
+    try { dialog.focus({preventScroll:true}); }
+    catch { dialog.focus(); }
+  });
 }
 function closeDialog(id) {
   const dialog=$(id);
