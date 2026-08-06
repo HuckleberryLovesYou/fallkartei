@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.0.4 – 2026-08-07
+
+### Behoben
+
+- Die Fortschrittsleiste der Schnellbewertung verwendet jetzt die tatsächliche Anzahl der Folgen in der aktuellen Runde.
+- Eine zusätzliche Anzeige „Folge X von Y“ erklärt eindeutig, wofür die Fortschrittsleiste steht.
+- Nach der letzten Folge endet die Schnellbewertung mit einem klaren Abschlussbildschirm.
+- „Meine Bewertungen“ im Hörprofil öffnet nun zuverlässig direkt die persönliche Bewertungsübersicht.
+
 ## 1.0.3 – 2026-08-07
 
 ### Verbessert
