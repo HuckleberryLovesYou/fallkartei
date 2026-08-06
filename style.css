@@ -104,3 +104,10 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 .smart-loading p{max-width:360px;margin:9px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
 @keyframes fallkartei-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.button-spinner,.smart-loading-spinner{animation-duration:1.5s}}
+
+/* Profil: Inhalte und Hauptaktionen klar voneinander trennen */
+#profileContent .insight-block .chips{margin-top:10px}
+#profileContent .profile-actions{margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.09)}
+#profileContent .profile-actions .button-row{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#profileContent .profile-actions .button{width:100%;min-width:0}
+@media(max-width:360px){#profileContent .profile-actions .button-row{grid-template-columns:1fr}}
