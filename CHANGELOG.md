@@ -2,6 +2,13 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.1.4 – 2026-08-07
+
+### Feinschliff
+
+- Das blaue `+` in den Bewertungs-Pills wurde optisch minimal nach oben ausgerichtet.
+- Dadurch sitzt das Plus in der kompakten Folgenliste und ähnlichen Statusanzeigen sauberer mittig.
+
 ## 1.1.3 – 2026-08-07
 
 ### Feinschliff
