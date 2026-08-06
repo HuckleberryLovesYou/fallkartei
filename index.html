@@ -2,400 +2,116 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b0d12">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08090c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fallkartei">
+  <meta name="description" content="Die Fallkartei ist ein persönlicher, offlinefähiger Hörspielbegleiter für Die drei ??? mit Bewertungen, Empfehlungen, Suche und Playlists.">
   <meta name="color-scheme" content="dark">
-  <meta name="robots" content="noindex, follow">
-  <meta name="description" content="Der bisherige DDF-Tracker ist umgezogen. Öffne jetzt Die Fallkartei und installiere die neue App.">
-
-  <link rel="canonical" href="https://letsmagic.github.io/fallkartei/">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-
-  <title>Die Fallkartei – App umgezogen</title>
-
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #07090d;
-      --surface: #101319;
-      --surface-2: #171b23;
-      --line: #2b313c;
-      --text: #f5f6f8;
-      --muted: #a7afbd;
-      --blue: #2d82ff;
-      --red: #e34845;
-      --yellow: #f2bd32;
-      --radius: 24px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html {
-      background: var(--bg);
-      min-height: 100%;
-    }
-
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
-      margin: 0;
-      padding:
-        max(24px, env(safe-area-inset-top))
-        max(18px, env(safe-area-inset-right))
-        max(28px, env(safe-area-inset-bottom))
-        max(18px, env(safe-area-inset-left));
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(45, 130, 255, .14), transparent 35%),
-        radial-gradient(circle at 90% 90%, rgba(242, 189, 50, .07), transparent 26%),
-        var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    main {
-      width: min(680px, 100%);
-    }
-
-    .card {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 30px;
-      background:
-        linear-gradient(145deg, rgba(23, 27, 35, .98), rgba(12, 15, 20, .98));
-      box-shadow: 0 32px 90px rgba(0, 0, 0, .48);
-    }
-
-    .hero {
-      padding: 34px 28px 29px;
-      text-align: center;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .icon-wrap {
-      width: 108px;
-      height: 108px;
-      margin: 0 auto 22px;
-      border-radius: 25px;
-      overflow: hidden;
-      box-shadow: 0 18px 42px rgba(0, 0, 0, .38);
-    }
-
-    .icon-wrap img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      color: #c5ccda;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--blue);
-      box-shadow:
-        14px 0 0 var(--red),
-        28px 0 0 var(--yellow);
-      margin-right: 28px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(34px, 8vw, 54px);
-      line-height: 1;
-      letter-spacing: -.045em;
-    }
-
-    .lead {
-      max-width: 520px;
-      margin: 18px auto 0;
-      color: #c4cad4;
-      font-size: 17px;
-      line-height: 1.6;
-    }
-
-    .primary {
-      width: 100%;
-      min-height: 58px;
-      margin-top: 25px;
-      padding: 15px 20px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      border: 0;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #fff, #e3e6eb);
-      color: #090b0e;
-      font: inherit;
-      font-weight: 850;
-      text-decoration: none;
-      box-shadow: 0 12px 32px rgba(255, 255, 255, .12);
-    }
-
-    .primary:active {
-      transform: scale(.985);
-    }
-
-    .secondary-link {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 8px;
-      color: #b9c8e0;
-      font-size: 14px;
-      font-weight: 750;
-      text-decoration: none;
-    }
-
-    .content {
-      padding: 25px 28px 30px;
-    }
-
-    h2 {
-      margin: 0 0 14px;
-      font-size: 21px;
-      letter-spacing: -.025em;
-    }
-
-    .steps {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .steps li {
-      display: grid;
-      grid-template-columns: 34px minmax(0, 1fr);
-      gap: 13px;
-      align-items: start;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: rgba(8, 10, 14, .42);
-    }
-
-    .step-number {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 11px;
-      background: var(--surface-2);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 850;
-    }
-
-    .steps strong,
-    .steps span {
-      display: block;
-    }
-
-    .steps strong {
-      margin: 1px 0 4px;
-      font-size: 15px;
-    }
-
-    .steps span {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .notice {
-      margin-top: 20px;
-      padding: 16px;
-      border: 1px solid #3c4656;
-      border-radius: 16px;
-      background: rgba(45, 130, 255, .075);
-    }
-
-    .notice strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    .notice p {
-      margin: 0;
-      color: #bdc6d5;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .platform-note {
-      margin: 20px 0 0;
-      color: #858e9c;
-      font-size: 12px;
-      line-height: 1.45;
-      text-align: center;
-    }
-
-    footer {
-      margin-top: 16px;
-      color: #68717f;
-      font-size: 11px;
-      line-height: 1.45;
-      text-align: center;
-    }
-
-    @media (max-width: 480px) {
-      body { padding-left: 12px; padding-right: 12px; }
-      .hero { padding: 29px 20px 25px; }
-      .content { padding: 22px 20px 25px; }
-      .card { border-radius: 25px; }
-      .icon-wrap { width: 92px; height: 92px; border-radius: 22px; }
-      .lead { font-size: 15px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        transition: none !important;
-        animation: none !important;
-      }
-    }
-  </style>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Die Fallkartei">
+  <meta property="og:title" content="Die Fallkartei">
+  <meta property="og:description" content="Persönlicher Hörspielbegleiter für Die drei ??? – lokal, offlinefähig und ohne Benutzerkonto.">
+  <meta property="og:url" content="https://letsmagic.github.io/die-fallkartei/">
+  <meta property="og:image" content="https://letsmagic.github.io/die-fallkartei/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Die Fallkartei">
+  <meta name="twitter:description" content="Persönlicher Hörspielbegleiter für Die drei ??? – lokal, offlinefähig und ohne Benutzerkonto.">
+  <meta name="twitter:image" content="https://letsmagic.github.io/die-fallkartei/social-preview.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="stylesheet" href="style.css">
+  <title>Die Fallkartei – persönlicher Hörspielbegleiter</title>
 </head>
 <body>
-  <main>
-    <article class="card">
-      <section class="hero">
-        <div class="icon-wrap">
-          <img src="./icon-192.png" alt="Logo von Die Fallkartei">
-        </div>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-go="home" aria-label="Startseite"><img src="icon-192.png" alt=""><span><strong>Die Fallkartei</strong><small>Persönlicher Hörspielbegleiter</small></span></button>
+      <button id="profileButton" class="profile-button" aria-label="Hörprofil öffnen"><span id="profileProgress">0 %</span><small>Profil</small></button>
+    </header>
 
-        <div class="eyebrow">App umgezogen</div>
-        <h1>Aus DDF-Tracker wird<br>Die Fallkartei.</h1>
+    <div id="updateBanner" class="update-banner hidden"><span><strong>Eine neue Version ist verfügbar.</strong><small>Deine Daten bleiben erhalten.</small></span><button id="applyUpdate">Jetzt aktualisieren</button></div>
 
-        <p class="lead">
-          Die bisherige App wird nicht mehr unter dieser Adresse weiterentwickelt.
-          Die neue, vollständig überarbeitete Version findest du jetzt unter
-          <strong>Die Fallkartei</strong>.
-        </p>
+    <main>
+      <section class="page active" data-page="home">
+        <section class="hero">
+          <span class="eyebrow">Eine Folge. Sofort passend.</span>
+          <h1>Was hörst du als Nächstes?</h1>
+          <p>Persönlich, verfügbar und standardmäßig noch ungehört.</p>
+          <button id="findRecommendation" class="button primary hero-button">Passende Folge finden</button>
+          <button id="quickRateHome" class="text-button">Profil schnell verbessern</button>
+        </section>
 
-        <a class="primary" href="https://letsmagic.github.io/fallkartei/">
-          Die Fallkartei öffnen
-          <span aria-hidden="true">→</span>
-        </a>
+        <section id="recommendationResult" class="recommendation-wrap hidden"><article id="recommendationCard" class="recommendation-card"></article><div class="button-row"><button id="anotherRecommendation" class="button secondary full">Andere passende Folge</button><button id="recommendationFeedback" class="button ghost">Mehr / weniger davon</button></div></section>
 
-        <a class="secondary-link" href="https://github.com/LetsMAgic/fallkartei">
-          Neues GitHub-Repository ansehen
-        </a>
+        <details class="section-card preference-panel"><summary><span><strong>Empfehlung verfeinern</strong><small>Laufzeit und Stimmung</small></span><b>＋</b></summary><div class="preference-grid"><label><span>Laufzeit</span><select id="recommendationTime"><option value="any">Egal</option><option value="short">Bis 50 Minuten</option><option value="medium">51–75 Minuten</option><option value="long">Über 75 Minuten</option></select></label><label><span>Stimmung</span><select id="recommendationMood"><option value="any">Egal</option><option value="grusel">Grusel</option><option value="klassiker">Klassiker</option><option value="familie">Familie</option><option value="hugenay">Hugenay</option><option value="meer">Meer & Insel</option><option value="kunst">Kunst</option></select></label></div></details>
+
+        <section id="backupReminder" class="backup-reminder hidden"><div><span class="eyebrow">Lokale Daten sichern</span><strong>Zeit für ein Backup</strong><p id="backupReminderText"></p></div><div class="button-row"><button id="backupNow" class="button primary">Jetzt sichern</button><button id="dismissBackupReminder" class="text-button">Später</button></div></section>
+
+        <section class="section-card"><div class="section-heading"><div><span class="eyebrow">Als Nächstes</span><h2>Hörwarteschlange</h2></div><button class="text-button" data-go="playlists">Verwalten</button></div><div id="homeQueue" class="mini-list"></div></section>
+        <section class="section-card"><div class="section-heading"><div><span class="eyebrow">Schnellzugriff</span><h2>Angeheftet</h2></div><button class="text-button" data-go="episodes">Alle Folgen</button></div><div id="homePinned" class="mini-list"></div></section>
+        <section class="section-card"><div class="section-heading"><div><span class="eyebrow">Zuletzt gehört</span><h2>Hörverlauf</h2></div></div><div id="homeHistory" class="mini-list"></div></section>
       </section>
 
-      <section class="content">
-        <h2>Neue App auf dem Home-Bildschirm installieren</h2>
-
-        <ol class="steps" id="installSteps">
-          <li>
-            <span class="step-number">1</span>
-            <div>
-              <strong>Neue App öffnen</strong>
-              <span>Tippe oben auf „Die Fallkartei öffnen“.</span>
-            </div>
-          </li>
-          <li>
-            <span class="step-number">2</span>
-            <div>
-              <strong>Browsermenü öffnen</strong>
-              <span>Öffne das Teilen- oder Browsermenü.</span>
-            </div>
-          </li>
-          <li>
-            <span class="step-number">3</span>
-            <div>
-              <strong>Zum Home-Bildschirm hinzufügen</strong>
-              <span>Wähle „Zum Home-Bildschirm“ beziehungsweise „App installieren“.</span>
-            </div>
-          </li>
-          <li>
-            <span class="step-number">4</span>
-            <div>
-              <strong>Alte App entfernen</strong>
-              <span>Danach kannst du das bisherige DDF-Tracker-Symbol vom Home-Bildschirm löschen.</span>
-            </div>
-          </li>
-        </ol>
-
-        <aside class="notice">
-          <strong>Was passiert mit deinen Daten?</strong>
-          <p>
-            Deine lokal gespeicherten Bewertungen, Listen und Notizen sollten in der neuen App
-            weiterhin verfügbar sein. Falls du ein JSON-Backup besitzt, bewahre es sicherheitshalber auf.
-          </p>
-        </aside>
-
-        <p class="platform-note" id="platformNote">
-          Die genaue Bezeichnung der Installationsoption kann je nach Browser leicht abweichen.
-        </p>
+      <section class="page" data-page="episodes">
+        <div class="page-title"><span class="eyebrow">254+ Fälle durchsuchen</span><h1>Folgen</h1><p>Suche auch nach Figuren, Kapiteln, Handlung, Autor oder Erinnerung.</p></div>
+        <label class="search-box"><span>⌕</span><input id="episodeSearch" type="search" placeholder="z. B. Hugenay, Peters Opa, Insel …" autocomplete="off"><button id="clearSearch" class="hidden" aria-label="Suche leeren">×</button></label>
+        <div class="filter-scroll" id="statusFilters"><button data-filter="all" class="active">Alle</button><button data-filter="unheard">Offen</button><button data-filter="heard">Gehört</button><button data-filter="super">★ Super</button><button data-filter="plus">Plus</button><button data-filter="neutral">Neutral</button><button data-filter="minus">Minus</button><button data-filter="notes">Mit Notiz</button><button data-filter="reheard">Mehrfach gehört</button></div>
+        <div class="filter-selects"><label><span>Autor</span><select id="authorFilter"><option value="all">Alle</option></select></label><label><span>Ära</span><select id="eraFilter"><option value="all">Alle</option></select></label><label><span>Jahr</span><select id="yearFilter"><option value="all">Alle</option></select></label><label><span>Sortierung</span><select id="episodeSort"><option value="nr">Nummer aufsteigend</option><option value="nr-desc">Nummer absteigend</option><option value="title">Titel</option><option value="author">Autor</option><option value="duration-asc">Kurz zuerst</option><option value="duration-desc">Lang zuerst</option><option value="rocky-best">Rocky-Beach: beste</option><option value="recommendation">Persönliche Passung</option><option value="own">Eigene Bewertung</option></select></label></div>
+        <div id="activeFilters" class="active-filters hidden"></div>
+        <div class="catalog-toolbar"><strong id="episodeCount">0 Folgen</strong><div class="segmented compact" id="episodeViewToggle"><button data-episode-view="compact">Kompakt</button><button data-episode-view="detailed">Details</button><button data-episode-view="cover">Cover</button></div></div>
+        <div id="episodeList" class="episode-list"></div><button id="loadMoreEpisodes" class="button secondary full hidden">Mehr laden</button>
       </section>
-    </article>
 
-    <footer>
-      Inoffizielles, nicht kommerzielles Fanprojekt. Marken und geschützte Inhalte gehören den jeweiligen Rechteinhabern.
-    </footer>
-  </main>
+      <section class="page" data-page="ranking">
+        <div class="page-title"><span class="eyebrow">Vergleichen</span><h1>Rankings</h1><p>Community-Rangliste, deine Bewertungen und persönliche Empfehlungen.</p></div>
+        <div class="segmented" id="rankingMode"><button data-ranking="rocky" class="active">Rocky-Beach</button><button data-ranking="mine">Meine Bewertungen</button><button data-ranking="match">Empfehlungen</button></div>
+        <div id="rankingInfo" class="info-card"></div><div id="rankingList" class="ranking-list"></div>
+      </section>
 
-  <script>
-    (() => {
-      const ua = navigator.userAgent || "";
-      const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-      const isAndroid = /Android/.test(ua);
+      <section class="page" data-page="playlists">
+        <div class="page-title"><span class="eyebrow">Hörpläne</span><h1>Listen</h1><p>Eigene Playlists, kuratierte Reihenfolgen und deine Warteschlange.</p></div>
+        <section class="section-card"><div class="section-heading"><div><span class="eyebrow">Als Nächstes</span><h2>Hörwarteschlange</h2></div><button id="clearQueue" class="text-button danger">Leeren</button></div><div id="queueList" class="playlist-items"></div></section>
+        <section class="playlist-hero"><div><span class="eyebrow">Deine Sammlung</span><h2>Was möchtest du hören?</h2><p>Erstelle freie Listen oder lasse eine Fahrt, einen Abend oder ein Wochenende automatisch füllen.</p></div><button id="newPlaylistButton" class="button primary">＋ Neue Playlist</button></section>
+        <section class="section-card smart-planner"><div class="section-heading"><div><span class="eyebrow">Smart Playlist</span><h2>Hörzeit automatisch planen</h2><p>Du siehst zuerst einen Vorschlag und entscheidest danach, ob du ihn speichern möchtest.</p></div></div><div class="planner-grid"><label><span>Name</span><input id="smartName" value="Meine Hörsession" maxlength="60"></label><label><span>Stunden</span><input id="smartHours" type="number" min="0" max="30" value="2"></label><label><span>Minuten</span><input id="smartMinutes" type="number" min="0" max="59" value="0"></label><label><span>Stimmung</span><select id="smartMood"><option value="any">Egal</option><option value="grusel">Grusel</option><option value="klassiker">Klassiker</option><option value="familie">Familie</option><option value="hugenay">Hugenay</option><option value="meer">Meer & Insel</option><option value="kunst">Kunst</option></select></label><label><span>Hörstatus</span><select id="smartStatus"><option value="unheard">Nur ungehört</option><option value="mixed">Gemischt</option><option value="heard">Nur gehört</option></select></label><label><span>Autor</span><select id="smartAuthor"><option value="all">Alle</option></select></label></div><label class="check-row"><input id="smartContinuity" type="checkbox" checked><span><strong>Zusammenhänge beachten</strong><small>Mehrteiler und Chronologien bleiben in sinnvoller Reihenfolge zusammen.</small></span></label><button id="createSmartPlaylist" class="button primary full">Vorschläge anzeigen</button></section>
+        <div class="segmented" id="playlistTabs"><button data-playlist-tab="essentials" class="active">★ Essentials</button><button data-playlist-tab="themes">Themen</button><button data-playlist-tab="mine">Meine</button></div><div id="playlistGrid" class="playlist-grid"></div>
+      </section>
 
-      const steps = document.getElementById("installSteps");
-      const note = document.getElementById("platformNote");
+      <section class="page" data-page="settings">
+        <div class="page-title"><span class="eyebrow">Verwaltung</span><h1>Einstellungen</h1><p>Streaming, Daten, Darstellung, Hilfe und Diagnose.</p></div>
+        <section class="settings-group"><span class="eyebrow">Allgemein</span><article class="settings-card"><div><h2>Bevorzugter Streamingdienst</h2><p>Der Hauptbutton öffnet diesen Dienst. Weitere verfügbare Anbieter bleiben in der Folgendetailansicht erreichbar.</p></div><label class="settings-select"><span class="sr-only">Bevorzugter Streamingdienst</span><select id="streamingServiceSelect"><option value="spotify">Spotify</option><option value="appleMusic">Apple Music</option><option value="bookbeat">BookBeat</option><option value="amazonMusic">Amazon Music</option><option value="youtubeMusic">YouTube Music</option><option value="deezer">Deezer</option><option value="amazon">Amazon</option></select></label></article><article class="settings-card"><div><h2>Katalogdarstellung</h2><p>Kompakt zeigt besonders viele Folgen, Details zeigt Schnellaktionen und Cover nutzt die visuelle Wiedererkennung.</p><small class="settings-note">Cover werden nur online von offiziellen Bildquellen geladen. Offline erscheinen ruhige Platzhalter.</small></div><div class="segmented compact" id="episodeViewSetting"><button data-episode-view="compact">Kompakt</button><button data-episode-view="detailed">Details</button><button data-episode-view="cover">Cover</button></div></article></section>
+        <section class="settings-group"><span class="eyebrow">Daten</span><article class="settings-list"><button id="exportBackup"><span><strong>JSON exportieren</strong><small>Alle persönlichen Daten sichern</small></span><b>↓</b></button><button id="importBackup"><span><strong>JSON importieren</strong><small>Prüfen, zusammenführen oder ersetzen</small></span><b>›</b></button><input id="backupFile" type="file" accept="application/json,.json" hidden></article></section>
+        <section class="settings-group"><span class="eyebrow">Empfehlungen</span><article class="settings-list"><button id="restoreRecommendations"><span><strong>Ausgeblendete Empfehlungen zurücksetzen</strong><small>„Heute nicht“ und dauerhaft ausgeblendete Folgen wieder zulassen</small></span><b>↻</b></button></article></section>
+        <section class="settings-group"><span class="eyebrow">Inhalte</span><article class="settings-list"><button id="refreshMetadata"><span><strong>Folgenwissen aktualisieren</strong><small>Laufzeiten, Beschreibungen und Streaming-Links prüfen</small></span><b>↻</b></button><button id="resetCatalog"><span><strong>Eingebauten Katalog neu laden</strong><small>Lokalen Metadaten-Cache verwerfen</small></span><b>↻</b></button></article></section>
+        <section class="settings-group"><span class="eyebrow">Hilfe</span><article class="settings-list"><button id="startTutorial"><span><strong>Kurze Einführung starten</strong><small>Drei Schritte statt eines langen Rundgangs</small></span><b>›</b></button><button id="openHelp"><span><strong>Kurzanleitung öffnen</strong><small>Bewertungen, Empfehlungen, Warteschlange und Backups</small></span><b>›</b></button></article></section>
+        <section class="settings-group"><span class="eyebrow">Diagnose</span><article id="diagnosticsCard" class="diagnostics-card"></article><div class="button-row"><button id="copyDiagnostics" class="button secondary">Diagnose kopieren</button><button id="validateCatalog" class="button secondary">Katalog prüfen</button></div></section>
+        <section class="settings-group"><span class="eyebrow">Zurücksetzen</span><article class="settings-list danger-list"><button id="resetPersonalData"><span><strong>Persönliche Daten zurücksetzen</strong><small>Hörstatus, Bewertungen, Listen und Verlauf löschen</small></span><b>›</b></button></article></section>
+        <section class="about-card"><img src="icon-192.png" alt="App-Icon"><div><strong>Die Fallkartei</strong><span>Version 1.0 · Offline-fähig</span><small>Inoffizielles, nicht-kommerzielles Fanprojekt. Persönliche Daten bleiben lokal. Marken, Titelbilder und Illustrationen gehören den jeweiligen Rechteinhabern.</small></div></section>
+      </section>
+    </main>
 
-      if (isIOS) {
-        steps.innerHTML = `
-          <li><span class="step-number">1</span><div><strong>Die Fallkartei in Safari öffnen</strong><span>Tippe oben auf „Die Fallkartei öffnen“. Falls nötig, öffne die Seite ausdrücklich in Safari.</span></div></li>
-          <li><span class="step-number">2</span><div><strong>Teilen antippen</strong><span>Tippe in Safari auf das Teilen-Symbol – das Quadrat mit dem Pfeil nach oben.</span></div></li>
-          <li><span class="step-number">3</span><div><strong>„Zum Home-Bildschirm“ wählen</strong><span>Scrolle im Teilen-Menü nach unten und bestätige anschließend mit „Hinzufügen“.</span></div></li>
-          <li><span class="step-number">4</span><div><strong>Altes Symbol löschen</strong><span>Halte das alte DDF-Tracker-Symbol gedrückt und wähle „App entfernen“.</span></div></li>
-        `;
-        note.textContent = "Auf iPhone und iPad muss die Installation über Safari erfolgen.";
-      } else if (isAndroid) {
-        steps.innerHTML = `
-          <li><span class="step-number">1</span><div><strong>Die Fallkartei öffnen</strong><span>Tippe oben auf „Die Fallkartei öffnen“.</span></div></li>
-          <li><span class="step-number">2</span><div><strong>Browsermenü öffnen</strong><span>Tippe in Chrome auf die drei Punkte oben rechts.</span></div></li>
-          <li><span class="step-number">3</span><div><strong>App installieren</strong><span>Wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“.</span></div></li>
-          <li><span class="step-number">4</span><div><strong>Altes Symbol entfernen</strong><span>Entferne danach die alte DDF-Tracker-Verknüpfung.</span></div></li>
-        `;
-        note.textContent = "Die genaue Bezeichnung kann je nach Android-Browser leicht abweichen.";
-      }
+    <nav class="bottom-nav" aria-label="Hauptnavigation"><button data-go="home" class="active"><span class="nav-icon">⌂</span><small>Start</small></button><button data-go="episodes"><span class="nav-icon">⌕</span><small>Folgen</small></button><button data-go="ranking"><span class="nav-icon">≋</span><small>Ranking</small></button><button data-go="playlists"><span class="nav-icon">☷</span><small>Listen</small></button><button data-go="settings"><span class="nav-icon nav-icon-svg" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15.25a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z"/><path d="M19.15 13.16c.04-.38.06-.77.06-1.16s-.02-.78-.07-1.16l2.03-1.58-1.92-3.32-2.4.97a8.5 8.5 0 0 0-2-1.16L14.5 3.2h-3.84l-.36 2.55a8.54 8.54 0 0 0-2 1.16l-2.39-.97-1.92 3.32 2.03 1.58A9.6 9.6 0 0 0 5.95 12c0 .4.03.78.07 1.16l-2.03 1.58 1.92 3.32 2.4-.97c.61.48 1.28.87 2 1.16l.35 2.55h3.84l.36-2.55a8.5 8.5 0 0 0 2-1.16l2.39.97 1.92-3.32-2.02-1.58Z"/></svg></span><small>Mehr</small></button></nav>
+  </div>
 
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", async () => {
-          try {
-            await navigator.serviceWorker.register("/ddf-tracker/sw.js", {
-              scope: "/ddf-tracker/",
-              updateViaCache: "none"
-            });
-          } catch (error) {
-            console.warn("Migration service worker could not be registered.", error);
-          }
-        });
-      }
-    })();
-  </script>
+  <div id="loadingScreen" class="loading-screen"><img src="icon-192.png" alt=""><strong>Die Fallkartei</strong><span id="loadingText">Lade Daten …</span></div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <dialog id="profileDialog" class="sheet-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Dein Hörprofil</span><h2>So hörst du Die drei ???</h2></div><button class="icon-button" data-close-dialog="profileDialog">×</button></header><div id="profileContent" class="dialog-body"></div></dialog>
+  <dialog id="episodeDialog" class="sheet-dialog episode-dialog"><div class="dialog-handle"></div><header><div id="episodeDialogTitle"></div><button class="icon-button" data-close-dialog="episodeDialog">×</button></header><div id="episodeDialogBody" class="dialog-body"></div><div id="episodeStickyActions" class="sticky-dialog-actions"></div></dialog>
+  <dialog id="quickRateDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Profil verbessern</span><h2>Bekannte Folgen bewerten</h2></div><button class="icon-button" data-close-dialog="quickRateDialog">×</button></header><div id="quickRateContent" class="dialog-body"></div></dialog>
+  <dialog id="feedbackDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Empfehlung steuern</span><h2>Was möchtest du ändern?</h2></div><button class="icon-button" data-close-dialog="feedbackDialog">×</button></header><div id="feedbackContent" class="dialog-body"></div></dialog>
+  <dialog id="playlistDialog" class="sheet-dialog"><div class="dialog-handle"></div><header><div id="playlistDialogTitle"></div><button class="icon-button" data-close-dialog="playlistDialog">×</button></header><div id="playlistDialogBody" class="dialog-body"></div></dialog>
+  <dialog id="smartPlaylistDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div id="smartPlaylistDialogTitle"><span class="eyebrow">Smart Playlist</span><h2>Dein Vorschlag</h2></div><button class="icon-button" data-close-dialog="smartPlaylistDialog">×</button></header><div id="smartPlaylistPreview" class="dialog-body"></div></dialog>
+  <dialog id="playlistEditorDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Eigene Liste</span><h2 id="playlistEditorTitle">Playlist erstellen</h2></div><button class="icon-button" data-close-dialog="playlistEditorDialog">×</button></header><form id="playlistEditorForm" class="dialog-body form-stack"><input id="playlistEditorId" type="hidden"><input id="playlistEditorSeedNr" type="hidden"><label><span>Name</span><input id="playlistName" maxlength="60" required></label><label><span>Beschreibung</span><textarea id="playlistDescription" maxlength="240" rows="4"></textarea></label><button class="button primary full" type="submit">Speichern</button></form></dialog>
+  <dialog id="importDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Backup prüfen</span><h2>Importvorschau</h2></div><button class="icon-button" data-close-dialog="importDialog">×</button></header><div id="importPreview" class="dialog-body"></div></dialog>
+  <dialog id="tutorialDialog" class="sheet-dialog compact-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Kurze Einführung</span><h2 id="tutorialTitle"></h2></div><button class="icon-button" data-close-dialog="tutorialDialog">×</button></header><div id="tutorialContent" class="dialog-body"></div></dialog>
+  <dialog id="helpDialog" class="sheet-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Kurzanleitung</span><h2>So funktioniert Die Fallkartei</h2></div><button class="icon-button" data-close-dialog="helpDialog">×</button></header><div class="dialog-body help-content"><h3>Bewertungen</h3><p>Eine Bewertung markiert die Folge automatisch als gehört. Beim Zurücksetzen auf ungehört wird die Bewertung nach Bestätigung entfernt.</p><h3>Empfehlungen</h3><p>Die Fallkartei kombiniert deinen Geschmack mit Community-Wertung, Verfügbarkeit und Abwechslung. Der Match-Score ist eine Orientierung, keine Wahrscheinlichkeit.</p><h3>Als Nächstes</h3><p>Die Warteschlange ist dein aktueller Hörplan. Playlists bleiben davon unabhängig.</p><h3>Cover</h3><p>In der Folgenansicht kannst du zwischen Kompakt, Details und Cover wechseln. Cover werden online von den in den Metadaten hinterlegten offiziellen Bildquellen geladen.</p><h3>Streaming</h3><p>Dein bevorzugter Anbieter erscheint als Hauptbutton. Weitere vorhandene Dienste findest du platzsparend unter „Weitere Anbieter“.</p><h3>Statistik teilen</h3><p>Öffne dein Hörprofil und tippe auf „Statistik als Bild teilen“, um eine Grafik für Freunde zu erzeugen. Notizen und private Verlaufsdaten werden nicht gezeigt.</p><h3>Backups</h3><p>Deine Daten liegen lokal im Browser. Exportiere regelmäßig eine JSON-Datei, besonders vor einem Gerätewechsel.</p></div></dialog>
+  <dialog id="confirmDialog" class="confirm-dialog"><div><span id="confirmEyebrow" class="eyebrow">Bestätigen</span><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="button-row"><button id="confirmCancel" class="button secondary">Abbrechen</button><button id="confirmAccept" class="button danger">Bestätigen</button></div></div></dialog>
+
+  <script src="episodes-seed.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
