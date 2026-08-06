@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.0.1 – 2026-08-07
+
+### Verbessert
+
+- Sichtbarer Ladezustand beim Erstellen und Neuberechnen einer Smart Playlist.
+- Deutlich schnellere Berechnung durch einmalig vorberechnete Empfehlungswerte.
+- „Andere Vorschläge“ erzeugt jetzt eine tatsächlich andere Folgenkombination statt nur dieselben Folgen neu anzuordnen.
+- Wenn die Filter keine sinnvolle Alternative zulassen, bleibt der bisherige Vorschlag erhalten und die App erklärt dies.
+
 ## 1.0.0 – 2026-08-06
 
 Erster konsolidierter Release unter dem Namen **Die Fallkartei**.

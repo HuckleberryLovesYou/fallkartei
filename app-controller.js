@@ -18,7 +18,7 @@ import { applyImport, backupPreview, emptyPersonalData, exportBackup, parseBacku
 const $ = (id) => document.getElementById(id);
 const $$ = (selector,root=document) => [...root.querySelectorAll(selector)];
 const symbols = { minus:'−',neutral:'0',plus:'+',super:'★' };
-let toastTimer, confirmResolver, noteTimer, pendingWorker, reloadingForUpdate = false;
+let toastTimer, confirmResolver, noteTimer, pendingWorker, reloadingForUpdate = false, smartPlaylistBusy = false;
 
 function toast(message,type='default') { const node=$('toast'); node.textContent=message; node.dataset.type=type; node.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>node.classList.add('hidden'),2700); }
 function openDialog(id) { const dialog=$(id); if (dialog && !dialog.open) dialog.showModal(); document.documentElement.classList.add('dialog-open'); }
@@ -27,6 +27,18 @@ function confirmAction({title,text,accept='Bestätigen',danger=true,eyebrow='Bes
   $('confirmEyebrow').textContent=eyebrow; $('confirmTitle').textContent=title; $('confirmText').textContent=text; $('confirmAccept').textContent=accept;
   $('confirmAccept').classList.toggle('danger',danger); $('confirmAccept').classList.toggle('primary',!danger); openDialog('confirmDialog');
   return new Promise((resolve)=>{confirmResolver=resolve;});
+}
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve,milliseconds));
+const waitForPaint = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+function setSmartPlannerButtonLoading(loading) {
+  const button=$('createSmartPlaylist'); if (!button) return;
+  button.disabled=loading; button.classList.toggle('is-loading',loading); button.setAttribute('aria-busy',String(loading));
+  button.innerHTML=loading?'<span class="button-spinner" aria-hidden="true"></span><span>Vorschläge werden gesucht …</span>':'Vorschläge anzeigen';
+}
+function renderSmartPlaylistLoading(regenerate=false) {
+  $('smartPlaylistDialogTitle').innerHTML=`<span class="eyebrow">Smart Playlist</span><h2>${regenerate?'Neue Kombination':'Passende Folgen'} wird gesucht</h2>`;
+  $('smartPlaylistPreview').setAttribute('aria-busy','true');
+  $('smartPlaylistPreview').innerHTML=`<div class="smart-loading" role="status" aria-live="polite"><span class="smart-loading-spinner" aria-hidden="true"></span><strong>${regenerate?'Andere Folgen werden zusammengestellt':'Dein Vorschlag wird zusammengestellt'}</strong><p>Die Fallkartei prüft Laufzeit, Filter, Zusammenhänge und persönliche Passung.</p></div>`;
 }
 function streamingOptions(episode) {
   const links=episode?.streamingLinks||{};
@@ -161,9 +173,25 @@ function renderSmartPlaylistPreview() {
   $('smartPlaylistDialogTitle').innerHTML=`<span class="eyebrow">Smart Playlist · Vorschau</span><h2>${esc(draft.name)}</h2>`;
   $('smartPlaylistPreview').innerHTML=`<section class="smart-preview-hero"><div class="smart-preview-stats"><div><strong>${draft.episodes.length}</strong><span>Folgen</span></div><div><strong>${formatDuration(draft.duration)}</strong><span>Vorschlag</span></div><div><strong>${formatDuration(draft.targetMinutes)}</strong><span>Zielzeit</span></div></div><p>${esc(differenceText)}. Es wird noch nichts gespeichert.</p></section><section class="smart-preview-list" aria-label="Vorgeschlagene Folgen">${draft.episodes.map((episode,index)=>`<article class="smart-preview-item"><span class="smart-preview-position">${index+1}</span><div><strong>${esc(episodeTitle(episode))}</strong><small>${metaLine(episode)}</small></div><button class="icon-button subtle" data-action="smart-remove" data-nr="${episode.nr}" aria-label="${esc(episode.titel)} aus dem Vorschlag entfernen">×</button></article>`).join('')||'<div class="info-card">Der Vorschlag enthält keine Folgen mehr.</div>'}</section><div class="smart-preview-actions"><button class="button secondary full" data-action="smart-regenerate">Andere Vorschläge</button><div class="button-row"><button class="button secondary" data-action="smart-queue" ${draft.episodes.length?'':'disabled'}>Als Nächstes übernehmen</button><button class="button primary" data-action="smart-save" ${draft.episodes.length?'':'disabled'}>Playlist speichern</button></div></div>`;
 }
-function createSmartPlaylistPreview(options=smartPlaylistOptionsFromForm()) {
-  const result=generateSmartPlaylist(options); if (!result) { toast('Für diese Auswahl wurden keine passenden Vorschläge gefunden.','warning'); return; }
-  appState.smartPlaylistOptions=options; appState.smartPlaylistDraft=result; renderSmartPlaylistPreview(); openDialog('smartPlaylistDialog');
+async function createSmartPlaylistPreview(options=smartPlaylistOptionsFromForm(),{regenerate=false}={}) {
+  if (smartPlaylistBusy) return; smartPlaylistBusy=true;
+  const previousDraft=appState.smartPlaylistDraft; const previousEpisodeNrs=regenerate ? [...(previousDraft?.episodeNrs||[])] : [];
+  setSmartPlannerButtonLoading(!regenerate); renderSmartPlaylistLoading(regenerate); openDialog('smartPlaylistDialog');
+  const started=performance.now();
+  try {
+    await waitForPaint();
+    const result=generateSmartPlaylist(options,{previousEpisodeNrs});
+    const remaining=180-(performance.now()-started); if (remaining>0) await wait(remaining);
+    if (!result) {
+      if (previousDraft) { appState.smartPlaylistDraft=previousDraft; renderSmartPlaylistPreview(); toast('Für diese Auswahl wurde keine deutlich andere Kombination gefunden.','warning'); }
+      else { closeDialog('smartPlaylistDialog'); toast('Für diese Auswahl wurden keine passenden Vorschläge gefunden.','warning'); }
+      return;
+    }
+    appState.smartPlaylistOptions=options; appState.smartPlaylistDraft=result; renderSmartPlaylistPreview();
+    if (regenerate) toast(`${result.newEpisodes||1} neue Folge${result.newEpisodes===1?'':'n'} im Vorschlag.`);
+  } finally {
+    $('smartPlaylistPreview')?.removeAttribute('aria-busy'); setSmartPlannerButtonLoading(false); smartPlaylistBusy=false;
+  }
 }
 function profileSummary(insights,count) {
   if (count<2) return 'Bewerte ein paar bekannte Folgen. Danach kann Die Fallkartei deinen Hörgeschmack deutlich besser erklären und berücksichtigen.';
@@ -326,7 +354,7 @@ function bindDelegatedEvents() {
       case'queue-playlist':{const playlist=getPlaylist(action.dataset.playlistId);if(playlist){addManyToQueue(playlist.episodes.map((episode)=>episode.nr));renderPlaylists();renderHome();toast(`${playlist.episodes.length} Folgen vorgemerkt.`);}break;}
       case'share-playlist':await sharePlaylist(action.dataset.playlistId);break;case'playlist-up':movePlaylistEpisode(action.dataset.playlistId,nr,-1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-down':movePlaylistEpisode(action.dataset.playlistId,nr,1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-remove':removeEpisodeFromPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-add':addEpisodeToPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;
       case'edit-playlist':{const id=action.dataset.playlistId;closeDialog('playlistDialog');openPlaylistEditor(id);break;}case'delete-playlist':{const id=action.dataset.playlistId;if(await confirmAction({title:'Playlist löschen?',text:'Die enthaltenen Folgen und Bewertungen bleiben erhalten.',accept:'Playlist löschen'})){deletePlaylist(id);closeDialog('playlistDialog');renderPlaylists();toast('Playlist gelöscht.');}break;}
-      case'smart-regenerate':{if(appState.smartPlaylistOptions)createSmartPlaylistPreview(appState.smartPlaylistOptions);break;}
+      case'smart-regenerate':{if(appState.smartPlaylistOptions)await createSmartPlaylistPreview(appState.smartPlaylistOptions,{regenerate:true});break;}
       case'smart-remove':{const draft=appState.smartPlaylistDraft;if(draft){draft.episodes=draft.episodes.filter((episode)=>episode.nr!==nr);draft.episodeNrs=draft.episodes.map((episode)=>episode.nr);draft.duration=draft.episodes.reduce((sum,episode)=>sum+(episode.durationMin||0),0);renderSmartPlaylistPreview();}break;}
       case'smart-queue':{const draft=appState.smartPlaylistDraft;if(draft?.episodes.length){addManyToQueue(draft.episodes.map((episode)=>episode.nr));closeDialog('smartPlaylistDialog');renderPlaylists();renderHome();toast(`${draft.episodes.length} Vorschläge wurden als Nächstes vorgemerkt.`);}break;}
       case'smart-save':{const draft=appState.smartPlaylistDraft;if(draft?.episodes.length){const playlist=createPlaylist({name:draft.name,description:draft.description,episodeNrs:draft.episodes.map((episode)=>episode.nr),generated:true});appState.playlistTab='mine';appState.user.settings.playlistTab='mine';saveUser();closeDialog('smartPlaylistDialog');renderPlaylists();renderPlaylistDetail(playlist.id);toast(`Playlist mit ${draft.episodes.length} Folgen gespeichert.`);}break;}
@@ -344,7 +372,7 @@ function bindStaticEvents() {
   $('rankingMode').addEventListener('click',(event)=>{const button=event.target.closest('[data-ranking]');if(!button)return;appState.ranking=button.dataset.ranking;renderRanking();});
   $('playlistTabs').addEventListener('click',(event)=>{const button=event.target.closest('[data-playlist-tab]');if(!button)return;appState.playlistTab=button.dataset.playlistTab;appState.user.settings.playlistTab=appState.playlistTab;saveUser();renderPlaylists();});
   $('newPlaylistButton').addEventListener('click',()=>openPlaylistEditor()); $('playlistEditorForm').addEventListener('submit',(event)=>{event.preventDefault();const id=$('playlistEditorId').value,seedNr=Number($('playlistEditorSeedNr').value),name=$('playlistName').value,description=$('playlistDescription').value;if(id)updatePlaylist(id,{name,description});else createPlaylist({name,description,episodeNrs:Number.isFinite(seedNr)&&seedNr?[seedNr]:[]});closeDialog('playlistEditorDialog');renderPlaylists();toast(id?'Playlist aktualisiert.':'Playlist erstellt.');});
-  $('createSmartPlaylist').addEventListener('click',()=>createSmartPlaylistPreview());
+  $('createSmartPlaylist').addEventListener('click',async()=>{await createSmartPlaylistPreview();});
   $('clearQueue').addEventListener('click',async()=>{if(!appState.user.settings.queue.length)return;if(await confirmAction({title:'Warteschlange leeren?',text:'Bewertungen und Playlists bleiben erhalten.',accept:'Leeren'})){appState.user.settings.queue=[];saveUser();renderPlaylists();renderHome();}});
   $('episodeDialogBody').addEventListener('input',(event)=>{if(event.target.id!=='episodeNote')return;$('noteSaveState').textContent='Speichert …';clearTimeout(noteTimer);noteTimer=setTimeout(()=>{setNote(appState.detailNr,event.target.value);$('noteSaveState').textContent='Gespeichert';},450);});
   $('episodeDialogBody').addEventListener('change',(event)=>{const box=event.target.closest('[data-playlist-check]');if(!box)return;if(box.checked)addEpisodeToPlaylist(box.dataset.playlistCheck,Number(box.dataset.nr));else removeEpisodeFromPlaylist(box.dataset.playlistCheck,Number(box.dataset.nr));renderPlaylists();toast(box.checked?'Zur Playlist hinzugefügt.':'Aus Playlist entfernt.');});

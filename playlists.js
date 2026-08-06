@@ -56,26 +56,52 @@ function candidateBlocks({status,mood,author,continuity}) {
   for (const episode of pool) if (!used.has(episode.nr)) blocks.push({episodes:[episode],duration:episode.durationMin || 55,label:episode.titel});
   return blocks;
 }
-export function generateSmartPlaylist({name,targetMinutes,mood='any',status='unheard',author='all',continuity=true}) {
-  const target = Math.max(20,Number(targetMinutes) || 120); const profile = buildTasteProfile(); const blocks = candidateBlocks({status,mood,author,continuity}); if (!blocks.length) return null;
-  let best = null;
-  for (let attempt=0;attempt<450;attempt++) {
-    const shuffled = blocks.map((block) => ({block,key:Math.random() + recommendationScore(block.episodes[0],profile,{useDiversity:false}).total * .07})).sort((a,b) => b.key-a.key).map((entry) => entry.block);
+function playlistSignature(episodes) {
+  return episodes.map((episode) => Number(episode.nr)).sort((a,b) => a-b).join(',');
+}
+function scoredCandidateBlocks(blocks,profile) {
+  return blocks.map((block) => {
+    const quality = block.episodes.reduce((sum,episode) => sum + recommendationScore(episode,profile,{useDiversity:false}).total,0) / Math.max(1,block.episodes.length);
+    return { ...block,quality };
+  });
+}
+export function generateSmartPlaylist({name,targetMinutes,mood='any',status='unheard',author='all',continuity=true},{previousEpisodeNrs=[]}={}) {
+  const target = Math.max(20,Number(targetMinutes) || 120); const profile = buildTasteProfile();
+  const blocks = scoredCandidateBlocks(candidateBlocks({status,mood,author,continuity}),profile); if (!blocks.length) return null;
+  const previous = new Set(previousEpisodeNrs.map(Number).filter(Number.isFinite));
+  const previousSignature = [...previous].sort((a,b) => a-b).join(',');
+  const desiredNewEpisodes = previous.size ? Math.max(1,Math.ceil(previous.size * .4)) : 0;
+  const seen = new Set(); let best = null; let fallback = null;
+  const attempts = blocks.length > 180 ? 280 : 360;
+  for (let attempt=0;attempt<attempts;attempt++) {
+    const shuffled = blocks.map((block) => ({
+      block,
+      key:Math.random() * 1.35 + block.quality * .085 + (previous.size && block.episodes.some((episode) => previous.has(episode.nr)) ? -.22 : .12),
+    })).sort((a,b) => b.key-a.key).map((entry) => entry.block);
     const chosen = []; let duration = 0;
-    for (const block of shuffled) { const next = duration + block.duration; if (next <= target + 18 && (next <= target || Math.random() < .22)) { chosen.push(block); duration = next; } }
+    for (const block of shuffled) {
+      const next = duration + block.duration;
+      if (next <= target + 18 && (next <= target || Math.random() < .2)) { chosen.push(block); duration = next; }
+    }
     if (!chosen.length) continue;
-    const episodes = chosen.flatMap((block) => block.episodes); const quality = episodes.reduce((sum,episode) => sum + recommendationScore(episode,profile,{useDiversity:false}).total,0) / episodes.length;
-    const score = -Math.abs(duration-target) + quality * 7 + Math.min(episodes.length,8) * .5;
-    if (!best || score > best.score) best = {episodes,duration,score};
+    const episodes = chosen.flatMap((block) => block.episodes); const signature = playlistSignature(episodes);
+    if (seen.has(signature) || (previous.size && signature === previousSignature)) continue; seen.add(signature);
+    const quality = episodes.reduce((sum,episode) => sum + recommendationScore(episode,profile,{useDiversity:false}).total,0) / episodes.length;
+    const newEpisodes = previous.size ? episodes.filter((episode) => !previous.has(episode.nr)).length : 0;
+    const overlap = previous.size ? episodes.filter((episode) => previous.has(episode.nr)).length / Math.max(1,Math.min(previous.size,episodes.length)) : 0;
+    const score = -Math.abs(duration-target) + quality * 7 + Math.min(episodes.length,8) * .5 + (previous.size ? (1-overlap) * 16 + newEpisodes * 1.4 : 0);
+    const candidate = {episodes,duration,score,newEpisodes};
+    if (!fallback || score > fallback.score) fallback = candidate;
+    if ((!previous.size || newEpisodes >= desiredNewEpisodes) && (!best || score > best.score)) best = candidate;
   }
-  if (!best) return null;
+  const selected = best || fallback; if (!selected) return null;
   return {
     name:String(name || 'Meine Hörsession').trim().slice(0,60) || 'Meine Hörsession',
     description:`Automatisch geplant für ungefähr ${target} Minuten.`,
     targetMinutes:target,
     options:{mood,status,author,continuity},
-    episodeNrs:best.episodes.map((episode) => episode.nr),
-    ...best,
+    episodeNrs:selected.episodes.map((episode) => episode.nr),
+    ...selected,
   };
 }
 export function playlistSuggestions(id,limit=6) {

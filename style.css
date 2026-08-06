@@ -93,3 +93,14 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 @media(max-width:680px){.episode-list.cover-view{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.settings-select{width:100%}.settings-select select{min-width:0}.provider-grid{grid-template-columns:1fr}}
 @media(min-width:681px){.cover-card-copy>strong{font-size:15px}}
 @media(max-width:360px){.episode-list.cover-view{gap:10px}.cover-art{border-radius:13px}.cover-placeholder b{font-size:32px}.cover-card-copy>strong{font-size:13px}.catalog-toolbar{align-items:flex-start;gap:10px}.catalog-toolbar .segmented{max-width:72vw}}
+
+/* Smart-Playlist loading state – 1.0.1 */
+.button.is-loading{cursor:wait;opacity:.92}
+.button-spinner,.smart-loading-spinner{display:inline-block;border-radius:50%;border:2px solid rgba(15,17,22,.24);border-top-color:currentColor;animation:fallkartei-spin .75s linear infinite}
+.button-spinner{width:17px;height:17px;flex:0 0 17px}
+.smart-loading{min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:38px 22px}
+.smart-loading-spinner{width:42px;height:42px;border-width:3px;border-color:rgba(255,255,255,.16);border-top-color:#f4f5f7;margin-bottom:20px}
+.smart-loading strong{font-size:19px;letter-spacing:-.02em}
+.smart-loading p{max-width:360px;margin:9px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+@keyframes fallkartei-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.button-spinner,.smart-loading-spinner{animation-duration:1.5s}}
