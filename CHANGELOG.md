@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.1.1 – 2026-08-07
+
+### Bedienung
+
+- Profil, Folgendetails und weitere Bottom-Sheets lassen sich am oberen Griff nach unten ziehen und schließen.
+- Ein Tipp in den abgedunkelten Bereich außerhalb eines Sheets schließt das Fenster ebenfalls.
+- Kurze oder versehentliche Ziehbewegungen springen weich in die Ausgangsposition zurück.
+- Das sichtbare `×` bleibt als eindeutige und barrierefreie Schließmöglichkeit erhalten.
+
 ## 1.1.0 – 2026-08-07
 
 ### Neu

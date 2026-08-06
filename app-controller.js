@@ -21,8 +21,101 @@ const symbols = { minus:'−',neutral:'0',plus:'+',super:'★' };
 let toastTimer, confirmResolver, noteTimer, pendingWorker, reloadingForUpdate = false, smartPlaylistBusy = false, profileEditorReturn = 'profile';
 
 function toast(message,type='default') { const node=$('toast'); node.textContent=message; node.dataset.type=type; node.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>node.classList.add('hidden'),2700); }
-function openDialog(id) { const dialog=$(id); if (dialog && !dialog.open) dialog.showModal(); document.documentElement.classList.add('dialog-open'); }
-function closeDialog(id) { const dialog=$(id); if (dialog?.open) dialog.close(); if (!$$('dialog[open]').length) document.documentElement.classList.remove('dialog-open'); }
+function resetSheetPosition(dialog) {
+  if (!dialog) return;
+  dialog.classList.remove('is-dragging','is-resetting','is-dismissing');
+  dialog.style.removeProperty('transform');
+  dialog.style.removeProperty('--sheet-drag-progress');
+}
+function openDialog(id) {
+  const dialog=$(id);
+  if (!dialog) return;
+  resetSheetPosition(dialog);
+  if (!dialog.open) dialog.showModal();
+  document.documentElement.classList.add('dialog-open');
+}
+function closeDialog(id) {
+  const dialog=$(id);
+  if (dialog?.open) dialog.close();
+  resetSheetPosition(dialog);
+  if (!$$('dialog[open]').length) document.documentElement.classList.remove('dialog-open');
+}
+function dismissSheet(dialog) {
+  if (!dialog?.open || dialog.classList.contains('is-dismissing')) return;
+  dialog.classList.remove('is-dragging','is-resetting');
+  dialog.classList.add('is-dismissing');
+  dialog.style.setProperty('--sheet-drag-progress','1');
+  dialog.style.transform='translateY(calc(100% + 28px))';
+  window.setTimeout(()=>closeDialog(dialog.id),180);
+}
+function setupSheetInteractions() {
+  $$('.sheet-dialog').forEach((dialog)=>{
+    if (dialog.dataset.sheetInteractions==='ready') return;
+    dialog.dataset.sheetInteractions='ready';
+
+    dialog.addEventListener('click',(event)=>{
+      if (event.target!==dialog || !dialog.open) return;
+      const rect=dialog.getBoundingClientRect();
+      const outside=event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;
+      if (outside) dismissSheet(dialog);
+    });
+
+    dialog.addEventListener('close',()=>{
+      resetSheetPosition(dialog);
+      if (!$$('dialog[open]').length) document.documentElement.classList.remove('dialog-open');
+    });
+
+    const handle=dialog.querySelector('.dialog-handle');
+    if (!handle) return;
+
+    let pointerId=null,startY=0,lastY=0,startTime=0;
+
+    const finishDrag=(event,cancelled=false)=>{
+      if (pointerId===null) return;
+      const endY=Number.isFinite(event?.clientY)?event.clientY:lastY;
+      const distance=Math.max(0,endY-startY);
+      const duration=Math.max(1,performance.now()-startTime);
+      const velocity=distance/duration;
+      pointerId=null;
+
+      if (!cancelled&&(distance>=96||(distance>=42&&velocity>=0.65))) {
+        dismissSheet(dialog);
+        return;
+      }
+
+      dialog.classList.remove('is-dragging');
+      dialog.classList.add('is-resetting');
+      dialog.style.setProperty('--sheet-drag-progress','0');
+      dialog.style.transform='translateY(0)';
+      window.setTimeout(()=>resetSheetPosition(dialog),190);
+    };
+
+    handle.addEventListener('pointerdown',(event)=>{
+      if (!dialog.open || (event.pointerType==='mouse'&&event.button!==0)) return;
+      pointerId=event.pointerId;
+      startY=lastY=event.clientY;
+      startTime=performance.now();
+      dialog.classList.remove('is-resetting','is-dismissing');
+      dialog.classList.add('is-dragging');
+      handle.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    handle.addEventListener('pointermove',(event)=>{
+      if (pointerId!==event.pointerId) return;
+      lastY=event.clientY;
+      const distance=Math.max(0,event.clientY-startY);
+      const progress=Math.min(1,distance/180);
+      dialog.style.setProperty('--sheet-drag-progress',String(progress));
+      dialog.style.transform=`translateY(${distance}px)`;
+      event.preventDefault();
+    });
+
+    handle.addEventListener('pointerup',(event)=>finishDrag(event));
+    handle.addEventListener('pointercancel',(event)=>finishDrag(event,true));
+    handle.addEventListener('lostpointercapture',(event)=>finishDrag(event,true));
+  });
+}
 function confirmAction({title,text,accept='Bestätigen',danger=true,eyebrow='Bestätigen'}) {
   $('confirmEyebrow').textContent=eyebrow; $('confirmTitle').textContent=title; $('confirmText').textContent=text; $('confirmAccept').textContent=accept;
   $('confirmAccept').classList.toggle('danger',danger); $('confirmAccept').classList.toggle('primary',!danger); openDialog('confirmDialog');
@@ -443,7 +536,7 @@ function registerServiceWorker() {
 }
 function renderAll(){renderHome();renderEpisodes();renderRanking();renderPlaylists();renderSettings();}
 export async function startApp() {
-  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();bindStaticEvents();renderAll();
+  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();bindStaticEvents();setupSheetInteractions();renderAll();
   const hash=location.hash.slice(1);navigate(['episodes','ranking','playlists','settings'].includes(hash)?hash:'home',{restore:false});$('loadingScreen').classList.add('hidden');setTimeout(()=>$('loadingScreen')?.remove(),500);
   if(!appState.user.settings.tutorialCompleted)setTimeout(()=>renderTutorial(0),350);refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
 }
