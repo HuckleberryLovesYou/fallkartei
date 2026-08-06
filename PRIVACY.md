@@ -1,6 +1,6 @@
 # Datenschutz
 
-Stand: 6. August 2026
+Stand: 7. August 2026
 
 ## Grundprinzip
 
@@ -16,6 +16,7 @@ Die App speichert im Browser unter anderem:
 - Hörverlauf
 - Empfehlungsfeedback
 - Darstellungs- und Streamingeinstellungen
+- optionaler Anzeigename und selbst gewählte Lieblingsfolgen
 - Zeitpunkte lokaler Backups und Metadatenaktualisierungen
 
 Die Speicherung erfolgt über IndexedDB und den Cache des Service Workers. Diese Daten bleiben grundsätzlich auf dem verwendeten Browserprofil und Gerät.
@@ -47,7 +48,7 @@ Das persönliche Empfehlungsprofil wird ausschließlich lokal im Browser berechn
 
 JSON-Backups werden lokal erzeugt und nur dann geteilt oder gespeichert, wenn die entsprechende Funktion bewusst ausgelöst wird. Die Dateien können Bewertungen, Notizen, Playlists und Hörverlauf enthalten und sollten entsprechend privat behandelt werden.
 
-Die teilbare Statistikgrafik enthält keine persönlichen Notizen und keine konkreten Hörzeitpunkte.
+Die teilbare Statistikgrafik enthält keine persönlichen Notizen und keine konkreten Hörzeitpunkte. Ein freiwillig hinterlegter Anzeigename, daraus erzeugte Initialen und die persönlichen Top 3 erscheinen nur, wenn der Nutzer die Grafik bewusst erzeugt. Ohne Anzeigenamen bleibt die Darstellung neutral.
 
 ## Daten löschen
 

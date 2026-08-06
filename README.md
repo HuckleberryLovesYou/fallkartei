@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.0.4" src="https://img.shields.io/badge/Version-1.0.4-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.1.0" src="https://img.shields.io/badge/Version-1.1.0-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -54,7 +54,9 @@ Aus den eigenen Bewertungen entsteht ausschließlich lokal auf dem Gerät ein Ge
 - eigene und kuratierte Playlists
 - Smart-Playlist-Vorschau vor dem Speichern
 - Planung nach Hörzeit, Stimmung, Hörstatus und Autor
-- teilbares Hörprofil als PNG-Grafik
+- freiwilliger Anzeigename mit automatisch erzeugten Initialen
+- drei selbst wählbare Lieblingsfolgen mit automatischer Ergänzung
+- teilbares, personalisierbares Hörprofil als PNG-Grafik
 - Playlist-Fortschritt und verbleibende Hörzeit
 
 ### Streaming und Offline-Nutzung
@@ -138,7 +140,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.0.4** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.1.0** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 

@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.0.4';
+export const APP_VERSION = '1.1.0';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -35,6 +35,8 @@ export const asArray = (value) => Array.isArray(value) ? value : value == null ?
 export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 export const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 export const normalizeText = (value) => String(value ?? '').toLocaleLowerCase('de-DE').replace(/ß/g,'ss').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+export const cleanProfileName = (value) => String(value ?? '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,24);
+export const profileInitials = (value) => { const name=cleanProfileName(value); if(!name)return''; const words=name.split(/\s+/).filter(Boolean).slice(0,2); return words.map((word)=>Array.from(word)[0]?.toLocaleUpperCase('de-DE')||'').join(''); };
 export const unique = (values) => {
   const seen = new Set(); const out = [];
   for (const item of asArray(values).flat(Infinity)) {
@@ -137,6 +139,7 @@ export function defaultUser() {
       recommendationHistory: [], snoozedRecommendations: {}, hiddenRecommendations: [], featureFeedback: {}, queue: [],
       filters: { filter:'all', author:'all', era:'all', year:'all', sort:'nr' },
       lastBackupAt: null, lastBackupActivityCount: 0, backupReminderDismissedAt: null, lastVersionSeen: APP_VERSION,
+      profileName: '', profileFavoriteNrs: [], profileSetupSeen: false,
     }, updatedAt: null,
   };
 }
@@ -160,6 +163,8 @@ export function normalizeUser(raw = {}) {
     const number = Number(value); if (key && Number.isFinite(number) && number !== 0) feedback[key] = clamp(number,-5,5);
   }
   const queue = asArray(rawSettings.queue).map(Number).filter(Number.isFinite);
+  const profileName=cleanProfileName(rawSettings.profileName);
+  const profileFavoriteNrs=[...new Set(asArray(rawSettings.profileFavoriteNrs).map(Number).filter(Number.isFinite))].slice(0,3);
   const user = {
     version: APP_VERSION, episodes,
     playlists: asArray(source.playlists).map(normalizePlaylist),
@@ -172,6 +177,7 @@ export function normalizeUser(raw = {}) {
       recommendationHistory: asArray(rawSettings.recommendationHistory).map(Number).filter(Number.isFinite).slice(-30),
       snoozedRecommendations: snoozed, hiddenRecommendations: [...new Set(hidden)], featureFeedback: feedback,
       queue: [...new Set(queue)], filters: { ...base.settings.filters, ...(rawSettings.filters || {}) },
+      profileName, profileFavoriteNrs, profileSetupSeen: Boolean(rawSettings.profileSetupSeen || profileName || profileFavoriteNrs.length),
     }, updatedAt: source.updatedAt || null,
   };
   for (const [nr,status] of Object.entries(user.episodes)) {

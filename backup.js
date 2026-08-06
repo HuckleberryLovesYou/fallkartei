@@ -28,7 +28,8 @@ function mergeUsers(current,incoming) {
   const featureFeedback = { ...merged.settings.featureFeedback };
   for (const [key,value] of Object.entries(incoming.settings.featureFeedback || {})) featureFeedback[key] = Number(value) || featureFeedback[key] || 0;
   const history = new Map(); for (const item of [...merged.history,...incoming.history]) history.set(`${item.nr}|${item.at}`,{...item,id:item.id || uid('listen')}); merged.history = [...history.values()].sort((a,b) => new Date(b.at)-new Date(a.at));
-  merged.settings = { ...merged.settings,...incoming.settings,queue,hiddenRecommendations,snoozedRecommendations,featureFeedback,filters:{...merged.settings.filters,...incoming.settings.filters} }; merged.updatedAt = nowIso(); return normalizeUser(merged);
+  const profileName=incoming.settings.profileName||merged.settings.profileName||''; const profileFavoriteNrs=incoming.settings.profileFavoriteNrs?.length?incoming.settings.profileFavoriteNrs:merged.settings.profileFavoriteNrs; const profileSetupSeen=Boolean(merged.settings.profileSetupSeen||incoming.settings.profileSetupSeen||profileName||profileFavoriteNrs?.length);
+  merged.settings = { ...merged.settings,...incoming.settings,queue,hiddenRecommendations,snoozedRecommendations,featureFeedback,filters:{...merged.settings.filters,...incoming.settings.filters},profileName,profileFavoriteNrs,profileSetupSeen }; merged.updatedAt = nowIso(); return normalizeUser(merged);
 }
 export async function applyImport(candidate,mode='merge') { appState.user = mode === 'replace' ? normalizeUser(candidate.user) : mergeUsers(appState.user,candidate.user); appState.user.settings.lastBackupAt = nowIso(); appState.user.settings.lastBackupActivityCount = activityCount(); await saveUser(true); return appState.user; }
 export function emptyPersonalData() { return defaultUser(); }

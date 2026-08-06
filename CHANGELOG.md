@@ -2,6 +2,23 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.1.0 – 2026-08-07
+
+### Neu
+
+- freiwilliger Anzeigename für das persönliche Hörprofil
+- automatisch erzeugte Initialen ohne Upload eines Profilbilds
+- drei selbst wählbare Lieblingsfolgen in frei bestimmbarer Reihenfolge
+- automatische Ergänzung freier Favoritenplätze aus den bestbewerteten Folgen
+- personalisierter Profilbildexport mit Name, Initialen und eigener Top 3
+- optionale Namenseinrichtung als erster Tutorialschritt
+- einmaliger, überspringbarer Einrichtungshinweis beim ersten Öffnen des Profils
+
+### Datenschutz
+
+- Name und Favoriten bleiben lokal, werden in JSON-Backups übernommen und erscheinen nur auf bewusst erzeugten Statistikbildern.
+- Die gesamte Personalisierung kann ohne Einschränkung übersprungen oder später wieder entfernt werden.
+
 ## 1.0.4 – 2026-08-07
 
 ### Behoben
