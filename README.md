@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://letsmagic.github.io/die-fallkartei/"><strong>App öffnen</strong></a>
+  <a href="https://letsmagic.github.io/fallkartei/"><strong>App öffnen</strong></a>
   ·
   <a href="./PRIVACY.md">Datenschutz</a>
   ·
@@ -77,7 +77,7 @@ Die App ist als Progressive Web App installierbar. Oberfläche, Grundkatalog und
 
 Die veröffentlichte App läuft direkt über GitHub Pages:
 
-**https://letsmagic.github.io/die-fallkartei/**
+**https://letsmagic.github.io/fallkartei/**
 
 ### iPhone und iPad
 

@@ -231,7 +231,7 @@ async function profileImageBlob() {
   taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,'rgba(20,24,32,.9)','#2d3440');ctx.fillStyle='#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
   const favoriteText=data.favorites.length?`Favoriten: ${data.favorites.map((episode)=>`${episode.nr}. ${episode.titel}`).join(' · ')}`:'Bewerte weitere Folgen, um deine Favoriten zu zeigen.';
   ctx.fillStyle='#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
-  ctx.fillStyle='#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/die-fallkartei',1004,1294);ctx.textAlign='left';
+  ctx.fillStyle='#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
   return await new Promise((resolve,reject)=>canvas.toBlob((blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),'image/png',.95));
 }
 async function shareProfileImage() {
