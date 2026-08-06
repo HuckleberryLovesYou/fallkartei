@@ -111,3 +111,10 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 #profileContent .profile-actions .button-row{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #profileContent .profile-actions .button{width:100%;min-width:0}
 @media(max-width:360px){#profileContent .profile-actions .button-row{grid-template-columns:1fr}}
+
+
+/* v1.0.3 – zusätzlicher Abstand im unteren Profilbereich */
+#profileContent .insight-block + .insight-block{margin-top:22px}
+#profileContent .insight-block:last-of-type{margin-bottom:14px}
+#profileContent .insight-block .chips{margin-top:12px;row-gap:8px}
+#profileContent .profile-actions{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.11)}
