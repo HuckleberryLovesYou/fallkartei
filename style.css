@@ -1832,3 +1832,24 @@ body:has(dialog[open]) .page.active{
 .toast{
   bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom));
 }
+
+
+/* v1.4.6 – iOS-PWA: App-Shell wirklich bis an den Bildschirmrand
+   100dvh kann in einer installierten iOS-PWA kleiner als die sichtbare
+   Edge-to-Edge-Fläche ausfallen. Ein fixed inset:0 nutzt mit viewport-fit=cover
+   dagegen direkt den tatsächlichen Viewport. */
+.app-shell{
+  position:fixed;
+  inset:0;
+  width:auto;
+  height:auto;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* Die Navigation bleibt das letzte Flex-Kind der App-Shell.
+   Nur sie berücksichtigt die untere Safe-Area für den Home-Indikator. */
+.bottom-nav{
+  margin:0;
+  align-self:stretch;
+}

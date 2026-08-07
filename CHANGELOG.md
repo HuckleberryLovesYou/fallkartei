@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.6 – 2026-08-07
+
+### iOS-PWA-Layout
+
+- die feste App-Oberfläche wird jetzt direkt an allen vier Viewport-Kanten verankert
+- dadurch entfällt ein zusätzlicher leerer Bereich unter der unteren Navigation auf bestimmten iPhones
+- die Tabbar bleibt weiterhin Teil des App-Layouts und berücksichtigt den Home-Indikator über die iOS-Safe-Area
+- die unabhängigen Scrollpositionen der Haupttabs bleiben unverändert erhalten
+
 ## 1.4.5 – 2026-08-07
 
 ### Smart Playlist
