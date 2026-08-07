@@ -2,6 +2,14 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.5 – 2026-08-07
+
+### Profilgrafik
+
+- die Darstellung einer seltenen kosmetischen Profilauszeichnung wurde auf teilbaren Bildern deutlich aufgewertet
+- Hierarchie, Lesbarkeit und visuelle Gewichtung wurden verbessert
+- überraschungsbezogene Einzelheiten bleiben bewusst undokumentiert
+
 ## 1.3.4 – 2026-08-07
 
 ### Feinschliff

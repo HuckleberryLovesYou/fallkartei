@@ -755,17 +755,53 @@ async function profileImageBlob() {
   ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=goldBackground?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
   if(archive){roundedRect(ctx,720,258,284,102,28,'rgba(74,53,18,.92)','#e1bb60');ctx.fillStyle='#f2d486';ctx.font='800 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('VOLLSTÄNDIGES ARCHIV',746,294);ctx.fillStyle='#fff3ca';ctx.font='850 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('ARCHIVGOLD',746,334);}
   if(data.fourthQuestionMarkUnlocked){
-    roundedRect(ctx,720,368,284,50,17,'rgba(21,27,37,.96)','#8fa9d2');
+    const fqX=650,fqY=362,fqW=354,fqH=104;
+    const fqGlow=ctx.createLinearGradient(fqX,fqY,fqX+fqW,fqY+fqH);
+    fqGlow.addColorStop(0,'rgba(21,31,48,.98)');
+    fqGlow.addColorStop(.52,'rgba(29,45,69,.98)');
+    fqGlow.addColorStop(1,'rgba(15,20,31,.98)');
+    roundedRect(ctx,fqX,fqY,fqW,fqH,25,fqGlow,'#a8c9f5');
+
+    ctx.save();
+    ctx.globalAlpha=.16;
+    ctx.strokeStyle='#b7d4ff';
+    ctx.lineWidth=1;
+    for(let x=fqX+18;x<fqX+fqW-10;x+=28){
+      ctx.beginPath();
+      ctx.moveTo(x,fqY+12);
+      ctx.lineTo(x+44,fqY+fqH-12);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    roundedRect(ctx,fqX+14,fqY+14,94,76,18,'rgba(8,15,26,.82)','#6f8fb9');
     ctx.textAlign='center';
-    ctx.fillStyle='#dceaff';
-    ctx.font='900 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillText('????',862,391);
-    ctx.fillStyle='#9fb6d9';
-    ctx.font='800 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.letterSpacing='1.6px';
-    ctx.fillText('DAS VIERTE FRAGEZEICHEN',862,409);
+    ctx.fillStyle='#f4f8ff';
+    ctx.font='950 31px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='2px';
+    ctx.fillText('????',fqX+61,fqY+60);
     ctx.letterSpacing='0px';
+
     ctx.textAlign='left';
+    ctx.fillStyle='#93add1';
+    ctx.font='900 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='1.7px';
+    ctx.fillText('VERBORGENE AUSZEICHNUNG',fqX+126,fqY+30);
+    ctx.letterSpacing='0px';
+
+    ctx.fillStyle='#f5f8fc';
+    ctx.font='900 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('DAS VIERTE',fqX+126,fqY+58);
+
+    ctx.fillStyle='#d9e8ff';
+    ctx.font='900 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('FRAGEZEICHEN',fqX+126,fqY+81);
+
+    ctx.fillStyle='#91a4bf';
+    ctx.font='700 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='.8px';
+    ctx.fillText('ALLE VERBORGENEN SPUREN GEFUNDEN',fqX+126,fqY+96);
+    ctx.letterSpacing='0px';
   }
   const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,goldBackground?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=goldBackground?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
   ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
