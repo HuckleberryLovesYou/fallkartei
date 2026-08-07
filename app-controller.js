@@ -1,8 +1,8 @@
 import {
   APP_VERSION, STREAMING_SERVICES, appState, RATING_LABELS, RATING_ORDER, activityCount, addListen, addManyToQueue, availableEpisode, beginArchiveDebugSession,
-  cleanProfileName, downloadBlob, esc, formatDate, formatDuration, formatRelativeDate, getEpisode, loadUser, moveQueueItem, nowIso, persistFilters,
+  cleanProfileName, downloadBlob, esc, formatDate, formatDuration, formatRelativeDate, getArchiveCode, getEpisode, loadUser, moveQueueItem, nowIso, persistFilters,
   endArchiveDebugSession, normalizeText, profileInitials, profileRatingCount, removeFromQueue, removeListen, resetRuntimeState, saveUser, setArchiveShareStyle, setHeard, setNote, setRating, setStoredFilters,
-  togglePinned, toggleQueue, unlockArchiveDossier,
+  togglePinned, toggleQueue, unlockArchiveDossier, unlockFourthQuestionMark,
 } from './core.js';
 import { catalogValidation, clearCatalogCache, loadCatalog, moodMatches, refreshMetadata, searchScore, timeMatches } from './catalog.js';
 import {
@@ -266,15 +266,16 @@ function confettiHtml(count=44) {
     return `<i style="--x:${left}%;--delay:${delay}s;--duration:${duration}s;--drift:${drift}px;--rotate:${rotate}deg;--confetti:${colors[index%colors.length]}"></i>`;
   }).join('');
 }
-function archiveCode(data) {
-  const source=`${data.unlockedAt||''}|${data.total}|${cleanProfileName(appState.user.settings.profileName)||'ANONYM'}`;
-  let hash=2166136261;
-  for(const char of source) {
-    hash^=char.charCodeAt(0);
-    hash=Math.imul(hash,16777619);
-  }
-  const code=Math.abs(hash>>>0).toString(36).toUpperCase().padStart(7,'0').slice(-7);
-  return `RB-${String(data.total).padStart(3,'0')}-${code}`;
+function archiveCodeSearchMatch(query=appState.search) {
+  const code=getArchiveCode();
+  return Boolean(code)&&String(query||'').trim().toUpperCase()===code;
+}
+function fourthQuestionMarkName() {
+  return cleanProfileName(appState.user.settings.profileName)||'Detektiv';
+}
+function fourthQuestionMarkSearchCard() {
+  const name=fourthQuestionMarkName();
+  return `<article class="episode-card fourth-question-search-result"><button data-action="open-fourth-question-mark"><span class="fourth-question-search-symbol" aria-hidden="true"><i>?</i><i>?</i><i>?</i><i>?</i></span><span class="fourth-question-search-copy"><small>Verborgene Sonderfolge</small><strong>Herzlichen Glückwunsch, ${esc(name)}</strong><em>Eine letzte Spur wurde gefunden.</em></span><b>›</b></button></article>`;
 }
 function archiveStats() {
   const progress=archiveDisplayProgress();
@@ -329,7 +330,7 @@ function renderArchiveDossier() {
   const unlock=unlockArchiveDossier();
   const data=archiveStats();
   const firstDiscovery=unlock.first;
-  const code=archiveCode(data);
+  const code=unlock.code||getArchiveCode();
   const firstListen=data.firstListenAt?formatDate(data.firstListenAt):'Nicht dokumentiert';
   const oldestTrace=data.oldestRevisit
     ?`${data.oldestRevisit.episode.nr}. ${data.oldestRevisit.episode.titel}`
@@ -338,7 +339,7 @@ function renderArchiveDossier() {
     <div class="archive-dossier-stamp">${data.debug?'TEST':'STRENG VERTRAULICH'}</div>
     ${firstDiscovery?`<div class="archive-secret-unlock"><span class="archive-secret-key">✦</span><div><small>ZUSATZFREIGABE ERTEILT</small><strong>Archivgold-Hintergrund</strong><p>Du hast Akte 100 gefunden. Der goldene Hintergrund für teilbare Profilbilder wurde freigeschaltet und kann ab jetzt jederzeit ein- oder ausgeschaltet werden.</p></div></div>`:''}
     <div class="archive-dossier-heading"><span>AKTE 100 · VERSCHLUSSSTUFE GOLD</span><strong>Hüter des vollständigen Archivs</strong><small>${data.debug?'Temporäre Debug-Vorschau':`Erstmals vollständig am ${formatDate(data.unlockedAt)}`}</small></div>
-    <div class="archive-clearance-card"><span>PERSONALISIERTER ARCHIVCODE</span><strong>${esc(code)}</strong><small>Erzeugt aus Abschlussdatum, Katalogumfang und lokalem Profil. Keine Übertragung an einen Server.</small></div>
+    <button class="archive-clearance-card" data-action="copy-archive-code" data-code="${esc(code)}"><span>PERSONALISIERTER ARCHIVCODE</span><strong>${esc(code)}</strong><small>Lokaler Schlüssel. Für spätere Ermittlungen aufbewahren.</small></button>
     <div class="archive-dossier-grid archive-dossier-grid-six">
       <div><span>Status</span><strong>${data.percent===100?'Vollständig':`${data.heard}/${data.total}`}</strong></div>
       <div><span>Hörzeit</span><strong>${data.hours} Std.</strong></div>
@@ -354,6 +355,27 @@ function renderArchiveDossier() {
   </section>`;
   if(firstDiscovery&&$('profileDialog')?.open) renderProfile();
   openDialog('archiveDossierDialog');
+}
+function renderFourthQuestionMarkCase() {
+  const unlock=unlockFourthQuestionMark();
+  if(!unlock.unlocked) return;
+  const name=fourthQuestionMarkName();
+  const debug=appState.debugArchivePreview;
+  $('fourthQuestionMarkDialogTitle').textContent=`Herzlichen Glückwunsch, ${name}`;
+  $('fourthQuestionMarkContent').innerHTML=`<section class="fourth-question-case ${debug?'is-debug':''} ${unlock.first?'first-unlock':''}">
+    <div class="fourth-question-sequence" aria-hidden="true"><span>?</span><span>?</span><span>?</span><span>?</span></div>
+    <span class="eyebrow">${debug?'Temporäre Vorschau':'Letzte Spur entschlüsselt'}</span>
+    <h3>Herzlichen Glückwunsch, ${esc(name)}</h3>
+    <p>Du hast alle verborgenen Rätsel der Fallkartei gefunden. Du hast nicht nur jede verfügbare Folge gehört, sondern auch bewiesen, dass du selbst ein außergewöhnlicher Detektiv bist.</p>
+    <div class="fourth-question-unlock"><span class="fourth-question-unlock-mark">????</span><div><small>${debug?'NICHT GESPEICHERT':'DAUERHAFT FREIGESCHALTET'}</small><strong>Das vierte Fragezeichen</strong><em>Alle verborgenen Spuren gefunden</em></div></div>
+    <div class="fourth-question-message"><span>ABSCHLUSSMELDUNG</span><p>Fall gelöst. Archiv vollständig. Ermittlerstatus bestätigt.</p></div>
+    <button class="button primary full" data-close-dialog="fourthQuestionMarkDialog">Zur Fallkartei zurückkehren</button>
+  </section>`;
+  if(unlock.first) {
+    renderProfileProgress();
+    try {navigator.vibrate?.([18,35,18,35,42]);} catch {}
+  }
+  openDialog('fourthQuestionMarkDialog');
 }
 function scheduleArchiveAchievementCheck() {
   if(!achievementChecksEnabled||archiveCheckQueued||appState.debugArchivePreview) return;
@@ -387,6 +409,10 @@ function archiveBadgeHtml(data) {
 function archiveShareStyleHtml(data) {
   if(!data.archiveUnlocked||!data.archiveGoldBackgroundUnlocked) return '';
   return `<section class="archive-share-style"><div><span>Hintergrund fürs Teilen</span><small>Der Archivgold-Banner bleibt in beiden Varianten sichtbar.</small></div><div class="archive-share-style-options" role="group" aria-label="Hintergrund für das teilbare Profil"><button class="${data.archiveShareStyle==='normal'?'active':''}" data-action="archive-share-style" data-style="normal">Normal</button><button class="${data.archiveShareStyle==='gold'?'active':''}" data-action="archive-share-style" data-style="gold">Archivgold</button></div></section>`;
+}
+function fourthQuestionMarkBannerHtml(data) {
+  if(!data.fourthQuestionMarkUnlocked) return '';
+  return `<button class="fourth-question-profile-banner ${data.debugArchive?'is-debug':''}" data-action="fourth-question-mark-banner"><span class="fourth-question-banner-symbol" aria-hidden="true">????</span><span><small>${data.debugArchive?'DEBUG-VORSCHAU':'VERBORGENE AUSZEICHNUNG'}</small><strong>Das vierte Fragezeichen</strong><em>Alle verborgenen Spuren gefunden</em></span><b>›</b></button>`;
 }
 function renderProfileProgress() {
   const progress=archiveDisplayProgress();
@@ -499,7 +525,19 @@ function renderActiveFilters() {
   $('activeFilters').classList.toggle('hidden',!chips.length); $('activeFilters').innerHTML=chips.map(([key,label])=>`<button data-clear-filter="${key}">${esc(label)} ×</button>`).join('')+(chips.length>1?'<button data-clear-filter="all">Alle zurücksetzen</button>':'');
 }
 function renderEpisodes() {
-  const episodes=filteredEpisodes(),visible=episodes.slice(0,appState.episodeRenderLimit),view=appState.user.settings.episodeView;
+  const view=appState.user.settings.episodeView;
+  if(archiveCodeSearchMatch()) {
+    $('episodeCount').textContent='1 Sonderfolge';
+    $('episodeList').className='episode-list';
+    $('episodeList').innerHTML=fourthQuestionMarkSearchCard();
+    $('loadMoreEpisodes').classList.add('hidden');
+    renderActiveFilters();
+    $('clearSearch').classList.remove('hidden');
+    $$('#statusFilters [data-filter]').forEach((button)=>button.classList.toggle('active',button.dataset.filter===appState.filter));
+    $$('[data-episode-view]').forEach((button)=>button.classList.toggle('active',button.dataset.episodeView===view));
+    return;
+  }
+  const episodes=filteredEpisodes(),visible=episodes.slice(0,appState.episodeRenderLimit);
   $('episodeCount').textContent=`${episodes.length} Folge${episodes.length===1?'':'n'}`; $('episodeList').className=`episode-list ${view==='cover'?'cover-view':''}`; $('episodeList').innerHTML=visible.length?visible.map((episode)=>view==='detailed'?detailedCard(episode):view==='cover'?coverCard(episode):compactCard(episode)).join(''):'<div class="info-card">Keine passenden Folgen gefunden.</div>';
   $('loadMoreEpisodes').classList.toggle('hidden',visible.length>=episodes.length); renderActiveFilters(); $('clearSearch').classList.toggle('hidden',!appState.search);
   $$('#statusFilters [data-filter]').forEach((button)=>button.classList.toggle('active',button.dataset.filter===appState.filter));
@@ -679,6 +717,8 @@ function profileSnapshot() {
     archiveDossierFoundAt:appState.user.settings.archiveDossierFoundAt,
     archiveGoldBackgroundUnlocked:Boolean(appState.user.settings.archiveDossierFoundAt),
     archiveShareStyle:appState.user.settings.archiveDossierFoundAt&&appState.user.settings.archiveShareStyle==='gold'?'gold':'normal',
+    fourthQuestionMarkUnlocked:Boolean(appState.user.settings.fourthQuestionMarkUnlockedAt),
+    fourthQuestionMarkUnlockedAt:appState.user.settings.fourthQuestionMarkUnlockedAt,
     debugArchive:appState.debugArchivePreview,
   };
 }
@@ -714,6 +754,19 @@ async function profileImageBlob() {
   ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle=goldBackground?'#c9ae73':'#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,goldBackground?'rgba(75,55,21,.96)':'rgba(31,38,51,.96)',goldBackground?'#d8b55e':'#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
   ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=goldBackground?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
   if(archive){roundedRect(ctx,720,258,284,102,28,'rgba(74,53,18,.92)','#e1bb60');ctx.fillStyle='#f2d486';ctx.font='800 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('VOLLSTÄNDIGES ARCHIV',746,294);ctx.fillStyle='#fff3ca';ctx.font='850 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('ARCHIVGOLD',746,334);}
+  if(data.fourthQuestionMarkUnlocked){
+    roundedRect(ctx,720,368,284,50,17,'rgba(21,27,37,.96)','#8fa9d2');
+    ctx.textAlign='center';
+    ctx.fillStyle='#dceaff';
+    ctx.font='900 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('????',862,391);
+    ctx.fillStyle='#9fb6d9';
+    ctx.font='800 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='1.6px';
+    ctx.fillText('DAS VIERTE FRAGEZEICHEN',862,409);
+    ctx.letterSpacing='0px';
+    ctx.textAlign='left';
+  }
   const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,goldBackground?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=goldBackground?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
   ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
   const ratingData=[['Super',data.ratingCounts.super,'#f5c542'],['Plus',data.ratingCounts.plus,'#2980ff'],['Neutral',data.ratingCounts.neutral,'#727986'],['Minus',data.ratingCounts.minus,'#e0525b']],maxRating=Math.max(1,...ratingData.map((item)=>item[1]));
@@ -782,7 +835,7 @@ function profileFavoritesHtml(data) {
 }
 function renderProfile() {
   const data=profileSnapshot(),{profile,insights,heard,hours,ratings}=data;
-  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div>${archiveBadgeHtml(data)}${archiveShareStyleHtml(data)}<p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button ${data.archiveShareStyle==='gold'?'archive-gold':''}" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>${data.archiveUnlocked?`Archivgold-Banner · Hintergrund ${data.archiveShareStyle==='gold'?'Archivgold':'Normal'}`:data.displayName?`Erkennbar als Profil von ${esc(data.displayName)}`:'Zum Vergleichen mit Freunden'}</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
+  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div>${archiveBadgeHtml(data)}${fourthQuestionMarkBannerHtml(data)}${archiveShareStyleHtml(data)}<p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button ${data.archiveShareStyle==='gold'?'archive-gold':''}" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>Als Bild speichern oder teilen</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
 }
 function openProfileEntry() { if(!appState.user.settings.profileSetupSeen){openProfileEditor({returnTo:'profile',firstOpen:true});return;} renderProfile(); }
 function detailNeighbors(nr) { const available=appState.catalog.filter(availableEpisode); const index=available.findIndex((episode)=>episode.nr===Number(nr)); return {prev:available[index-1],next:available[index+1]}; }
@@ -1067,6 +1120,18 @@ function bindDelegatedEvents() {
         navigate('home',{restore:false});
         pickRecommendation();
         break;
+      case'copy-archive-code':{
+        const code=action.dataset.code||getArchiveCode();
+        try {
+          await navigator.clipboard.writeText(code);
+          toast('Archivcode kopiert.');
+        } catch {
+          toast('Archivcode konnte nicht kopiert werden.','warning');
+        }
+        break;
+      }
+      case'open-fourth-question-mark':renderFourthQuestionMarkCase();break;
+      case'fourth-question-mark-banner':renderFourthQuestionMarkCase();break;
       case'archive-share-style':{
         const style=setArchiveShareStyle(action.dataset.style);
         renderProfile();

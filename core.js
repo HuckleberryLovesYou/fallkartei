@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.3.3';
+export const APP_VERSION = '1.3.4';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -141,7 +141,8 @@ export function defaultUser() {
       lastBackupAt: null, lastBackupActivityCount: 0, backupReminderDismissedAt: null, lastVersionSeen: APP_VERSION,
       profileName: '', profileFavoriteNrs: [], profileSetupSeen: false,
       archiveUnlockedAt: null, archiveUnlockTotal: 0, archiveCelebrationSeen: false,
-      archiveDossierFoundAt: null, archiveShareStyle: 'normal',
+      archiveDossierFoundAt: null, archiveShareStyle: 'normal', archiveCodeValue: '',
+      fourthQuestionMarkUnlockedAt: null,
     }, updatedAt: null,
   };
 }
@@ -170,6 +171,12 @@ export function normalizeUser(raw = {}) {
   const archiveDossierFoundAt=rawSettings.archiveDossierFoundAt&&!Number.isNaN(new Date(rawSettings.archiveDossierFoundAt).getTime())
     ?new Date(rawSettings.archiveDossierFoundAt).toISOString()
     :null;
+  const archiveCodeValue=/^RB-\d{3,4}-[A-Z0-9]{7}$/.test(String(rawSettings.archiveCodeValue||'').toUpperCase())
+    ?String(rawSettings.archiveCodeValue).toUpperCase()
+    :'';
+  const fourthQuestionMarkUnlockedAt=rawSettings.fourthQuestionMarkUnlockedAt&&!Number.isNaN(new Date(rawSettings.fourthQuestionMarkUnlockedAt).getTime())
+    ?new Date(rawSettings.fourthQuestionMarkUnlockedAt).toISOString()
+    :null;
   const user = {
     version: APP_VERSION, episodes,
     playlists: asArray(source.playlists).map(normalizePlaylist),
@@ -189,6 +196,8 @@ export function normalizeUser(raw = {}) {
       archiveCelebrationSeen: Boolean(rawSettings.archiveCelebrationSeen),
       archiveDossierFoundAt,
       archiveShareStyle: archiveDossierFoundAt&&rawSettings.archiveShareStyle==='gold'?'gold':'normal',
+      archiveCodeValue: archiveDossierFoundAt?archiveCodeValue:'',
+      fourthQuestionMarkUnlockedAt: archiveDossierFoundAt?fourthQuestionMarkUnlockedAt:null,
     }, updatedAt: source.updatedAt || null,
   };
   for (const [nr,status] of Object.entries(user.episodes)) {
@@ -235,22 +244,44 @@ export function saveUser(immediate = false) {
     saveTimer = setTimeout(() => dbSet(USER_KEY,snapshot).then(resolve).catch((error) => { console.error(error); resolve(); }), 100);
   });
 }
+function createArchiveCode(settings) {
+  const total=Math.max(0,Number(settings.archiveUnlockTotal)||0);
+  const source=`${settings.archiveUnlockedAt||''}|${total}|DIE-FALLKARTEI`;
+  let hash=2166136261;
+  for(const char of source) {
+    hash^=char.charCodeAt(0);
+    hash=Math.imul(hash,16777619);
+  }
+  const code=Math.abs(hash>>>0).toString(36).toUpperCase().padStart(7,'0').slice(-7);
+  return `RB-${String(total).padStart(3,'0')}-${code}`;
+}
+export function getArchiveCode() {
+  const settings=appState.user?.settings;
+  if(!settings?.archiveDossierFoundAt) return '';
+  if(!/^RB-\d{3,4}-[A-Z0-9]{7}$/.test(String(settings.archiveCodeValue||''))) {
+    settings.archiveCodeValue=createArchiveCode(settings);
+    saveUser(true);
+  }
+  return settings.archiveCodeValue;
+}
 export function unlockArchiveDossier() {
   if(!appState.user?.settings?.archiveUnlockedAt&&!appState.debugArchivePreview) {
-    return {first:false,unlocked:false,foundAt:null,style:'normal'};
+    return {first:false,unlocked:false,foundAt:null,style:'normal',code:''};
   }
   const settings=appState.user.settings;
   const first=!settings.archiveDossierFoundAt;
   if(first) {
     settings.archiveDossierFoundAt=nowIso();
     settings.archiveShareStyle='gold';
-    saveUser(true);
   }
+  const code=getArchiveCode();
+  if(first) saveUser(true);
   return {
     first,
     unlocked:Boolean(settings.archiveDossierFoundAt),
     foundAt:settings.archiveDossierFoundAt,
     style:settings.archiveShareStyle==='gold'?'gold':'normal',
+    code,
   };
 }
 export function setArchiveShareStyle(style) {
@@ -262,6 +293,22 @@ export function setArchiveShareStyle(style) {
   settings.archiveShareStyle=style==='gold'?'gold':'normal';
   saveUser();
   return settings.archiveShareStyle;
+}
+export function unlockFourthQuestionMark() {
+  const settings=appState.user?.settings;
+  if(!settings?.archiveDossierFoundAt) {
+    return {first:false,unlocked:false,unlockedAt:null};
+  }
+  const first=!settings.fourthQuestionMarkUnlockedAt;
+  if(first) {
+    settings.fourthQuestionMarkUnlockedAt=nowIso();
+    saveUser(true);
+  }
+  return {
+    first,
+    unlocked:Boolean(settings.fourthQuestionMarkUnlockedAt),
+    unlockedAt:settings.fourthQuestionMarkUnlockedAt,
+  };
 }
 export function episodeState(nr) {
   const key = Number(nr); if (!appState.user.episodes[key]) appState.user.episodes[key] = normalizeEpisodeState({});

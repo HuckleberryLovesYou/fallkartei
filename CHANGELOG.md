@@ -2,6 +2,14 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.4 – 2026-08-07
+
+### Feinschliff
+
+- öffentliche Texte beim Teilen wurden weiter vereinfacht
+- selten erreichbare Abschlusszustände und kosmetische Profildetails wurden technisch erweitert
+- überraschungsbezogene Einzelheiten bleiben bewusst undokumentiert
+
 ## 1.3.3 – 2026-08-07
 
 ### Profil verbessern
