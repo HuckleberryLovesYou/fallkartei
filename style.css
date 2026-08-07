@@ -2198,3 +2198,30 @@ html{
   -webkit-overflow-scrolling:touch;
   touch-action:auto;
 }
+
+
+/* v1.5.4 – globale Snackbar immer über dem aktuell obersten Dialog
+   #toast wird bei geöffneten nativen <dialog>-Elementen direkt in den obersten
+   Dialog verschoben. So bleibt "Rückgängig" sichtbar und tatsächlich antippbar. */
+.toast{
+  z-index:2147483000;
+  pointer-events:auto;
+  isolation:isolate;
+}
+
+.toast.in-dialog{
+  bottom:calc(82px + env(safe-area-inset-bottom));
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.08);
+}
+
+.toast.in-dialog.has-action{
+  min-width:min(360px,calc(100vw - 28px));
+}
+
+.toast [data-toast-action]{
+  position:relative;
+  z-index:1;
+  touch-action:manipulation;
+}

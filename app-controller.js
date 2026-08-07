@@ -20,8 +20,33 @@ const $$ = (selector,root=document) => [...root.querySelectorAll(selector)];
 const symbols = { minus:'−',neutral:'0',plus:'+',super:'★' };
 let toastTimer, toastActionToken=0, confirmResolver, noteTimer, pendingWorker, reloadingForUpdate = false, smartPlaylistBusy = false, profileEditorReturn = 'profile';
 let achievementChecksEnabled=false,archiveCheckQueued=false,archiveBadgeTapCount=0,archiveBadgeTapTimer,settingsSecretTapCount=0,settingsSecretTimer;
+const dialogStack=[];
 const ARCHIVE_DEBUG_PASSWORD='AKTE100';
 
+function topOpenDialog() {
+  for(let index=dialogStack.length-1;index>=0;index--){
+    const dialog=$(dialogStack[index]);
+    if(dialog?.open) return dialog;
+  }
+  return null;
+}
+function mountToastLayer() {
+  const node=$('toast');
+  if(!node) return;
+  const dialog=topOpenDialog();
+  const target=dialog||document.body;
+  if(node.parentElement!==target) target.append(node);
+  node.classList.toggle('in-dialog',Boolean(dialog));
+}
+function hideToast(token=null) {
+  const node=$('toast');
+  if(!node) return;
+  if(token!==null&&token!==toastActionToken) return;
+  node.classList.add('hidden');
+  node.classList.remove('has-action');
+  if(node.parentElement!==document.body) document.body.append(node);
+  node.classList.remove('in-dialog');
+}
 function toast(message,type='default',action=null) {
   const node=$('toast');
   clearTimeout(toastTimer);
@@ -31,17 +56,20 @@ function toast(message,type='default',action=null) {
   node.setAttribute('aria-live',action?'off':'polite');
   node.innerHTML=`<span>${esc(message)}</span>${action?`<button type="button" data-toast-action>${esc(action.label||'Rückgängig')}</button>`:''}`;
   node.classList.toggle('has-action',Boolean(action));
+  mountToastLayer();
   node.classList.remove('hidden');
+
   if(action) {
     node.querySelector('[data-toast-action]')?.addEventListener('click',async()=>{
       if(token!==toastActionToken) return;
       toastActionToken+=1;
       clearTimeout(toastTimer);
-      node.classList.add('hidden');
+      hideToast();
       await action.run?.();
     },{once:true});
   }
-  toastTimer=setTimeout(()=>{if(token===toastActionToken)node.classList.add('hidden');},action?6000:2700);
+
+  toastTimer=setTimeout(()=>hideToast(token),action?6000:2700);
 }
 function cloneUserSnapshot() {
   return typeof structuredClone==='function'
@@ -73,8 +101,16 @@ function openDialog(id) {
   if (!dialog) return;
   resetSheetPosition(dialog);
   dialog.tabIndex=-1;
+
+  const existingIndex=dialogStack.indexOf(id);
+  if(existingIndex>=0) dialogStack.splice(existingIndex,1);
+
   if (!dialog.open) dialog.showModal();
+  dialogStack.push(id);
   document.documentElement.classList.add('dialog-open');
+
+  if(!$('toast')?.classList.contains('hidden')) mountToastLayer();
+
   requestAnimationFrame(()=>{
     if (!dialog.open) return;
     try { dialog.focus({preventScroll:true}); }
@@ -85,8 +121,17 @@ function closeDialog(id) {
   const dialog=$(id);
   if (dialog?.open) dialog.close();
   resetSheetPosition(dialog);
+
+  let index=dialogStack.lastIndexOf(id);
+  while(index>=0){
+    dialogStack.splice(index,1);
+    index=dialogStack.lastIndexOf(id);
+  }
+
   if(id==='episodeDialog'&&episodeFromHash()) history.replaceState(null,'','#episodes');
   if (!$$('dialog[open]').length) document.documentElement.classList.remove('dialog-open');
+
+  if(!$('toast')?.classList.contains('hidden')) mountToastLayer();
 }
 function dismissSheet(dialog) {
   if (!dialog?.open || dialog.classList.contains('is-dismissing')) return;

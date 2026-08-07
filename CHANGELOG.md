@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.4 – 2026-08-07
+
+### Rückgängig-Snackbar
+
+- die globale Snackbar bleibt jetzt auch über geöffneten nativen Dialogen sichtbar und bedienbar
+- bei einer Aktion innerhalb eines Folgendetails, einer Playlist oder eines anderen Dialogs wird die Snackbar in die aktuell oberste Dialogebene eingeblendet
+- schließt oder öffnet sich während der Laufzeit ein weiterer Dialog, folgt die Snackbar automatisch der obersten sichtbaren Ebene
+- der `Rückgängig`-Button kann dadurch direkt verwendet werden, ohne zuerst die Detailansicht schließen zu müssen
+
 ## 1.5.3 – 2026-08-07
 
 ### Folgendetails auf iOS
