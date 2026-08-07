@@ -1853,3 +1853,44 @@ body:has(dialog[open]) .page.active{
   margin:0;
   align-self:stretch;
 }
+
+
+/* v1.4.7 – iOS Standalone: volle physische CSS-Bildschirmhöhe
+   Die Variable wird in Standalone aus screen.height gesetzt. Im Browser
+   bleibt window.innerHeight maßgeblich. */
+:root{
+  --fallkartei-app-height:100vh;
+}
+
+/* Falls iOS außerhalb seines dynamischen Web-Viewports noch Systemfläche
+   zeichnet, erhält diese dieselbe Farbe wie die Bottom-Navigation. */
+html,
+body{
+  background:#0b0c0f;
+  width:100%;
+  height:var(--fallkartei-app-height);
+  min-height:var(--fallkartei-app-height);
+  max-height:var(--fallkartei-app-height);
+  overflow:hidden;
+}
+
+.app-shell{
+  position:absolute;
+  inset:0 0 auto 0;
+  width:100%;
+  height:var(--fallkartei-app-height);
+  min-height:var(--fallkartei-app-height);
+  max-height:var(--fallkartei-app-height);
+  background:
+    radial-gradient(circle at 50% -20%,#1a1d25 0,transparent 45%),
+    var(--bg);
+  overflow:hidden;
+}
+
+/* Bottom-Navigation bleibt als echtes Flex-Kind am Ende der nun explizit
+   bildschirmhohen Shell. */
+.bottom-nav{
+  position:relative;
+  flex:0 0 auto;
+  margin-top:0;
+}

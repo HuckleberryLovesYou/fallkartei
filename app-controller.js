@@ -1650,12 +1650,44 @@ function bindStaticEvents() {
   document.addEventListener('error',(event)=>{const image=event.target;if(image?.matches?.('[data-cover-image]'))image.classList.add('hidden');},true);
   $('confirmCancel').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('confirmAccept').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(true);confirmResolver=null;}); $('confirmDialog').addEventListener('cancel',(event)=>{event.preventDefault();closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('applyUpdate').addEventListener('click',()=>pendingWorker?.postMessage({type:'SKIP_WAITING'}));
 }
+function syncAppViewportHeight() {
+  const standalone=
+    window.matchMedia?.('(display-mode: standalone)')?.matches
+    || window.navigator.standalone===true;
+
+  // In iOS-Standalone kann 100dvh kleiner als die tatsächlich gerenderte
+  // Screenshot-/Screen-Fläche sein. screen.height liefert dort die volle
+  // CSS-Bildschirmhöhe inklusive der Edge-to-Edge-Fläche.
+  const screenHeight=Number(window.screen?.height)||0;
+  const innerHeight=Number(window.innerHeight)||0;
+  const height=standalone&&screenHeight>innerHeight
+    ?screenHeight
+    :innerHeight||screenHeight;
+
+  if(height>0){
+    document.documentElement.style.setProperty('--fallkartei-app-height',`${Math.round(height)}px`);
+  }
+}
+function setupAppViewportHeight() {
+  syncAppViewportHeight();
+  let timer=null;
+  const schedule=()=>{
+    clearTimeout(timer);
+    timer=setTimeout(syncAppViewportHeight,80);
+  };
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',schedule,{passive:true});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible') schedule();
+  });
+}
 function registerServiceWorker() {
   if(!('serviceWorker'in navigator))return; navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)return;reloadingForUpdate=true;location.reload();});
   navigator.serviceWorker.register('./sw.js').then((registration)=>{const show=(worker)=>{pendingWorker=worker;$('updateBanner').classList.remove('hidden');};if(registration.waiting)show(registration.waiting);registration.addEventListener('updatefound',()=>{const worker=registration.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});registration.update();}).catch((error)=>console.warn('Service Worker konnte nicht registriert werden.',error));
 }
 function renderAll(){renderHome();renderEpisodes();renderRanking();renderPlaylists();renderSettings();}
 export async function startApp() {
+  setupAppViewportHeight();
   $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();setupZoomLock();bindStaticEvents();setupSheetInteractions();renderAll();
   const hash=location.hash.slice(1);navigate(['episodes','ranking','playlists','settings'].includes(hash)?hash:'home',{restore:false});$('loadingScreen').classList.add('hidden');setTimeout(()=>$('loadingScreen')?.remove(),500);
   achievementChecksEnabled=true;scheduleArchiveAchievementCheck();

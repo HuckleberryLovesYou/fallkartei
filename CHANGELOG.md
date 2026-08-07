@@ -2,6 +2,16 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.7 – 2026-08-07
+
+### iOS-PWA-Viewport
+
+- die installierte PWA verwendet auf iOS nun die tatsächliche CSS-Bildschirmhöhe als feste App-Höhe
+- damit wird der Unterschied zwischen Apples dynamischem Web-Viewport und der vollständigen Standalone-Fläche berücksichtigt
+- bei Drehung, Größenänderung oder Rückkehr in die App wird die Höhe erneut synchronisiert
+- die Fläche außerhalb des Web-Viewports nutzt vorsorglich dieselbe Farbe wie die untere Navigation
+- die unabhängigen Scrollcontainer der Haupttabs und das erneute Antippen zum Hochscrollen bleiben unverändert
+
 ## 1.4.6 – 2026-08-07
 
 ### iOS-PWA-Layout
