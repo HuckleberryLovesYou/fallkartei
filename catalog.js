@@ -2,6 +2,7 @@ import { appState, asArray, availableEpisode, CATALOG_KEY, dbDelete, dbGet, dbSe
 
 const META_URL = 'https://dreimetadaten.de/data/Serie.json';
 const META_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
+const SPECIAL_ARTWORK_KEY = 'fallkarteiSpecialArtworkV1';
 const TAG_RULES = [
   ['Grusel',['geist','gespenst','spuk','grusel','schreck','dämon','vampir','werwolf','fluch','toten','monster','moor','nebel']],
   ['Mystery',['rätsel','geheimnis','mysteri','phantom','unsichtbar','vision','botschaft','zeichen','legende']],
@@ -127,6 +128,79 @@ async function fetchWithTimeout(url,timeout = 5000) {
   try { const response = await fetch(url,{signal:controller.signal,cache:'no-store'}); if (!response.ok) throw new Error(`HTTP ${response.status}`); return await response.json(); }
   finally { clearTimeout(timer); }
 }
+function appleLookupId(url='') {
+  const match=String(url||'').match(/\/(\d+)(?:\?.*)?$/);
+  return match?Number(match[1]):null;
+}
+function largeAppleArtwork(url='') {
+  const value=link(url);
+  if(!value) return '';
+  return value
+    .replace(/\/\d+x\d+bb\.(jpg|jpeg|png)$/i,'/600x600bb.$1')
+    .replace(/\/\d+x\d+(?:-\d+)?\.(jpg|jpeg|png)$/i,'/600x600bb.$1');
+}
+function applySpecialArtwork(catalog,covers={}) {
+  return catalog.map((episode)=>{
+    const cover=link(covers?.[episode.nr]);
+    if(!cover||episode.coverUrl) return episode;
+    return normalizeEpisode({
+      ...episode,
+      coverUrl:cover,
+      coverSource:'Apple Music',
+      coverSourceUrl:episode.appleMusicUrl,
+    });
+  });
+}
+export async function refreshSpecialArtwork({force=false}={}) {
+  const cached=await dbGet(SPECIAL_ARTWORK_KEY);
+  const cachedCovers=cached?.covers&&typeof cached.covers==='object'?cached.covers:{};
+  if(Object.keys(cachedCovers).length) {
+    appState.catalog=applySpecialArtwork(appState.catalog,cachedCovers);
+  }
+
+  const candidates=appState.catalog.filter((episode)=>
+    episode.collection!=='main'
+    && episode.appleMusicUrl
+    && (force||!episode.coverUrl)
+  );
+  if(!candidates.length) return {updated:false,count:0};
+
+  const lookupEntries=candidates
+    .map((episode)=>({episode,id:appleLookupId(episode.appleMusicUrl)}))
+    .filter((entry)=>Number.isFinite(entry.id));
+  if(!lookupEntries.length) return {updated:false,count:0};
+
+  const ids=[...new Set(lookupEntries.map((entry)=>entry.id))];
+  const raw=await fetchWithTimeout(
+    `https://itunes.apple.com/lookup?id=${ids.join(',')}&country=DE`,
+    7000
+  );
+  const results=Array.isArray(raw?.results)?raw.results:[];
+  const byId=new Map();
+  for(const result of results) {
+    const artwork=largeAppleArtwork(
+      result.artworkUrl600||result.artworkUrl512||result.artworkUrl100||result.artworkUrl60
+    );
+    if(!artwork) continue;
+    for(const id of [Number(result.collectionId),Number(result.trackId)]) {
+      if(Number.isFinite(id)&&!byId.has(id)) byId.set(id,artwork);
+    }
+  }
+
+  const covers={...cachedCovers};
+  let count=0;
+  for(const {episode,id} of lookupEntries) {
+    const artwork=byId.get(id);
+    if(!artwork) continue;
+    if(covers[episode.nr]!==artwork) count+=1;
+    covers[episode.nr]=artwork;
+  }
+  if(!count&&!force) return {updated:false,count:0};
+
+  appState.catalog=applySpecialArtwork(appState.catalog,covers);
+  await dbSet(SPECIAL_ARTWORK_KEY,{updatedAt:new Date().toISOString(),covers});
+  return {updated:count>0,count};
+}
 export async function loadCatalog() {
   let seed = asArray(window.DDF_EPISODES_SEED);
   if (!seed.length) { try { seed = await fetch('./episodes.json').then((response) => response.json()); } catch { seed = []; } }
@@ -137,19 +211,54 @@ export async function loadCatalog() {
     catalog = catalog.map((episode) => extras.has(episode.nr) ? mergeEpisode(episode,extras.get(episode.nr)) : episode);
     appState.metadataUpdatedAt = cached.updatedAt || null;
   }
+  const artworkCache=await dbGet(SPECIAL_ARTWORK_KEY);
+  if(artworkCache?.covers) catalog=applySpecialArtwork(catalog,artworkCache.covers);
   appState.catalog = catalog; return catalog;
 }
 export async function refreshMetadata({ force = false } = {}) {
-  const cached = await dbGet(CATALOG_KEY); const age = cached?.updatedAt ? Date.now() - new Date(cached.updatedAt).getTime() : Infinity;
-  if (!force && age < META_MAX_AGE) return { updated:false,count:appState.catalog.length };
-  const raw = await fetchWithTimeout(META_URL,7000); const metadata = catalogFrom(extractMetaArray(raw));
-  if (!metadata.length) throw new Error('Keine Metadaten empfangen.');
-  const map = new Map(metadata.map((episode) => [episode.nr,episode]));
-  appState.catalog = appState.catalog.map((episode) => map.has(episode.nr) ? mergeEpisode(episode,map.get(episode.nr)) : episode);
-  const updatedAt = new Date().toISOString(); await dbSet(CATALOG_KEY,{updatedAt,episodes:appState.catalog}); appState.metadataUpdatedAt = updatedAt;
-  return { updated:true,count:appState.catalog.length };
+  const cached = await dbGet(CATALOG_KEY);
+  const age = cached?.updatedAt ? Date.now() - new Date(cached.updatedAt).getTime() : Infinity;
+  let metadataUpdated=false;
+  let metadataError=null;
+
+  if (force || age >= META_MAX_AGE) {
+    try {
+      const raw = await fetchWithTimeout(META_URL,7000);
+      const metadata = catalogFrom(extractMetaArray(raw));
+      if (!metadata.length) throw new Error('Keine Metadaten empfangen.');
+      const map = new Map(metadata.map((episode) => [episode.nr,episode]));
+      appState.catalog = appState.catalog.map((episode) => map.has(episode.nr) ? mergeEpisode(episode,map.get(episode.nr)) : episode);
+      const updatedAt = new Date().toISOString();
+      await dbSet(CATALOG_KEY,{updatedAt,episodes:appState.catalog});
+      appState.metadataUpdatedAt = updatedAt;
+      metadataUpdated=true;
+    } catch(error) {
+      metadataError=error;
+    }
+  }
+
+  let artwork={updated:false,count:0};
+  try {
+    artwork=await refreshSpecialArtwork({force});
+  } catch(error) {
+    console.warn('Cover von Specials konnten nicht aktualisiert werden.',error);
+  }
+
+  if(metadataError&&!metadataUpdated&&!artwork.updated) throw metadataError;
+  return {
+    updated:metadataUpdated||artwork.updated,
+    metadataUpdated,
+    artworkUpdated:artwork.updated,
+    artworkCount:artwork.count,
+    count:appState.catalog.length,
+  };
 }
-export async function clearCatalogCache() { await dbDelete(CATALOG_KEY); for (const key of LEGACY_CATALOG_KEYS) await dbDelete(key); await loadCatalog(); }
+export async function clearCatalogCache() {
+  await dbDelete(CATALOG_KEY);
+  await dbDelete(SPECIAL_ARTWORK_KEY);
+  for (const key of LEGACY_CATALOG_KEYS) await dbDelete(key);
+  await loadCatalog();
+}
 
 function levenshtein(a,b) {
   if (!a) return b.length; if (!b) return a.length; const row = Array.from({length:b.length + 1},(_,i) => i);

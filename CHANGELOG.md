@@ -2,6 +2,35 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.0 – 2026-08-07
+
+### Smart Playlist – Zusammenhänge
+
+- die bisherige starre Blocklogik wurde durch ein gewichtetes Verbindungsnetz ersetzt
+- starke Handlungsstränge werden bei aktivierter Option verpflichtend verwendet, sofern mindestens zwei passende Folgen in Filter und Zielzeit passen
+- direkte Fortsetzungen, zentrale Gegenspieler, wiederkehrende Figuren und konkrete Rückbezüge besitzen unterschiedliche Gewichtungen
+- überlappende Zusammenhänge sind möglich; eine Folge darf gleichzeitig zu mehreren Strängen gehören
+- die letzten Vorschläge werden weiterhin gemieden, ohne erzählerische Zusammenhänge unnötig zu zerstören
+- die Vorschau erklärt nun sichtbar, welcher Zusammenhang den Kern der Auswahl bildet
+- hinterlegte Netze umfassen unter anderem Victor Hugenay, Brittany, Clarissa Franklin, Allie Jamison, Jelena Charkova, Dick Perry, Rubbish-George, Skinny Norris und konkrete Rückbezüge im dunklen Taipan
+- die Hugenay-Chronik wurde korrigiert und um `Poltergeist` sowie `Der rote Büffel` ergänzt
+
+### Live & Specials
+
+- ergänzt wurden ausschließlich eigenständige Live-Geschichten: `Master of Chess`, `Phonophobia – Sinfonie der Angst` und `Der dunkle Taipan`
+- Live-Versionen bereits vorhandener regulärer Geschichten werden nicht doppelt im Katalog geführt
+- vorhandene Spotify- und Apple-Music-Ziele wurden hinterlegt; nicht belegte Anbieter werden nicht erfunden
+- die drei Live-Originale erscheinen zusätzlich als kuratierte Liste
+- Live-Originale können gehört, bewertet, gesucht, vorgemerkt und in Playlists verwendet werden
+- sie verändern den normalen 100%-Fortschritt der Hauptsammlung nicht
+
+### Cover
+
+- fehlende Cover von Specials werden über die vorhandenen Apple-Music-Verweise ergänzt
+- damit erhalten insbesondere die Weihnachtsfolgen und die neuen Live-Originale Cover
+- Cover werden lokal zwischengespeichert und nach einem Katalog-Reload sofort erneut aufgelöst
+- die App bleibt ohne Internet vollständig nutzbar; bei fehlender Verbindung greift weiterhin der vorhandene Platzhalter
+
 ## 1.3.8 – 2026-08-07
 
 ### Profilgrafik

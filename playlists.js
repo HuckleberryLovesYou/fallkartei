@@ -3,8 +3,9 @@ import { moodMatches } from './catalog.js';
 import { buildTasteProfile, recommendationScore, similarEpisodes } from './recommendations.js';
 
 export const CURATED_PLAYLISTS = [
-  { id:'hugenay', icon:'♛', title:'Die Hugenay-Chronik', description:'Die wichtigsten Auftritte des Meisterdiebs.', category:'essentials', type:'numbers', numbers:[1,12,16,103,125], sequence:true },
+  { id:'hugenay', icon:'♛', title:'Die Hugenay-Chronik', description:'Die wichtigsten Auftritte des Meisterdiebs.', category:'essentials', type:'numbers', numbers:[1,12,73,103,125,237], sequence:true },
   { id:'feuriges-auge', icon:'◆', title:'Vom Rubin zum Feurigen Auge', description:'Klassischer Ursprung und Jubiläumsfortsetzung.', category:'essentials', type:'numbers', numbers:[5,200], sequence:true },
+  { id:'live-originals', icon:'◉', title:'Eigenständige Live-Fälle', description:'Geschichten, die eigens für die Bühne entstanden sind.', category:'essentials', type:'numbers', numbers:[10101,10102,10103], sequence:true },
   { id:'jubilaeum', icon:'★', title:'Die großen Jubiläen', description:'Die langen Jubiläumsfälle in Reihenfolge.', category:'essentials', type:'numbers', numbers:[100,125,150,175,200,225], sequence:true },
   { id:'halloween', icon:'☾', title:'Halloween in Rocky Beach', description:'Düstere und atmosphärische Fälle.', category:'essentials', type:'mood', mood:'grusel', max:14 },
   { id:'winter', icon:'❄', title:'Advent & Weihnachten', description:'Winterliche Hauptfolgen und Adventsspecials.', category:'essentials', type:'numbers', numbers:[77,142,202,10007,10008,10009,10010,10011,10012] },
@@ -14,11 +15,23 @@ export const CURATED_PLAYLISTS = [
   { id:'familie', icon:'⌂', title:'Familie & Rocky Beach', description:'Tante Mathilda, Onkel Titus und vertraute Gesichter.', category:'themes', type:'mood', mood:'familie', max:18 },
   { id:'football', icon:'⚽', title:'Fußballfälle', description:'Stadien, Spieler, Fouls und Turniere.', category:'themes', type:'numbers', numbers:[63,81,123,141,153,164,176,245] },
 ];
-export const STORY_BLOCKS = [
-  { id:'hugenay', title:'Hugenay-Chronik', numbers:[1,12,16,103,125] },
-  { id:'feuriges-auge', title:'Fluch des Rubins → Feuriges Auge', numbers:[5,200] },
-  { id:'jubilaeum', title:'Jubiläumsfolgen', numbers:[100,125,150,175,200,225] },
+export const STORY_RELATIONS = [
+  { id:'brittany', title:'Hugenay & Brittany', type:'Direkte Fortsetzung', strength:100, ordered:true, numbers:[103,125] },
+  { id:'clarissa', title:'Clarissa Franklin', type:'Fortlaufender Handlungsstrang', strength:96, ordered:true, numbers:[76,99,188,226] },
+  { id:'rubin', title:'Vom Fluch des Rubins zum Feurigen Auge', type:'Direkter Rückbezug', strength:95, ordered:true, numbers:[5,200] },
+  { id:'hugenay', title:'Victor Hugenay', type:'Handlungsstrang', strength:92, ordered:true, numbers:[1,12,73,103,125,237] },
+  { id:'taipan-callbacks', title:'Der dunkle Taipan · klassische Rückbezüge', type:'Callback-Netz', strength:88, ordered:false, anchor:10103, numbers:[2,5,16,23,25,10103] },
+  { id:'allie', title:'Allie Jamison & Familie Osborne', type:'Wiederkehrende Figuren', strength:74, ordered:true, numbers:[25,26,148,196,10103] },
+  { id:'dick-perry', title:'Dick Perry', type:'Wiederkehrender Gegenspieler', strength:70, ordered:true, numbers:[104,124] },
+  { id:'jelena', title:'Jelena Charkova', type:'Wiederkehrende Figur', strength:66, ordered:true, numbers:[84,95,100,121] },
+  { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrende Figur', strength:62, ordered:true, numbers:[125,129,152,197,200,214,237,238] },
+  { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:58, ordered:true, numbers:[9,13,17,23,100,117,130,149,157,180] },
+  { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012] },
+  { id:'jubilaeum', title:'Jubiläumsfolgen', type:'Formatreihe', strength:30, ordered:true, mandatory:false, numbers:[100,125,150,175,200,225] },
+  { id:'live-format', title:'Eigenständige Live-Fälle', type:'Live-Specials', strength:26, ordered:true, mandatory:false, numbers:[10101,10102,10103] },
 ];
+// Rückwärtskompatibel für externe Imports; die Smart-Playlist nutzt ab 1.4.0 STORY_RELATIONS.
+export const STORY_BLOCKS = STORY_RELATIONS;
 export function curatedPlaylists(category='essentials') { return CURATED_PLAYLISTS.filter((item) => item.category === category); }
 export function resolveCuratedPlaylist(definition) {
   let episodes = [];
@@ -61,25 +74,147 @@ function normalizeProposalRounds(recentProposals=[],previousEpisodeNrs=[]) {
   }
   return rounds.slice(-2);
 }
-function candidateBlocks({status,mood,author,continuity,excludedNrs=new Set()}) {
-  const basePool=appState.catalog.filter(availableEpisode)
+function filteredSmartPool({status,mood,author,excludedNrs=new Set()}) {
+  return appState.catalog.filter(availableEpisode)
     .filter((episode)=>status==='mixed'||(status==='heard')===Boolean(appState.user.episodes?.[episode.nr]?.heard))
     .filter((episode)=>mood==='any'||moodMatches(episode,mood))
-    .filter((episode)=>author==='all'||episode.author===author);
-  const pool=basePool.filter((episode)=>!excludedNrs.has(episode.nr));
-  const used=new Set(); const blocks=[];
-  if (continuity) for (const block of STORY_BLOCKS) {
-    const eligible=block.numbers.map((nr)=>basePool.find((episode)=>episode.nr===nr)).filter(Boolean);
-    const episodes=eligible.filter((episode)=>!excludedNrs.has(episode.nr));
-    if (eligible.length>1&&episodes.length===eligible.length&&!episodes.some((episode)=>used.has(episode.nr))) {
-      blocks.push({episodes,duration:episodes.reduce((sum,item)=>sum+(item.durationMin||0),0),label:block.title});
-      episodes.forEach((item)=>used.add(item.nr));
+    .filter((episode)=>author==='all'||episode.author===author)
+    .filter((episode)=>!excludedNrs.has(episode.nr));
+}
+function smartCombinations(items,min=2,max=4) {
+  const result=[];
+  const limit=Math.min(max,items.length);
+  function walk(start,current,size) {
+    if(current.length===size){result.push([...current]);return;}
+    for(let index=start;index<items.length;index++){
+      current.push(items[index]);walk(index+1,current,size);current.pop();
     }
   }
-  for (const episode of pool) if (!used.has(episode.nr)) {
-    blocks.push({episodes:[episode],duration:episode.durationMin||55,label:episode.titel});
+  for(let size=min;size<=limit;size++) walk(0,[],size);
+  return result;
+}
+function relationClusters(pool,target) {
+  const byNr=new Map(pool.map((episode)=>[episode.nr,episode]));
+  const clusters=[];
+  const seen=new Set();
+
+  for(const relation of STORY_RELATIONS) {
+    const eligible=relation.numbers.map((nr)=>byNr.get(nr)).filter(Boolean);
+    if(eligible.length<2) continue;
+
+    let subsets=[];
+    if(relation.anchor) {
+      const anchor=byNr.get(relation.anchor);
+      if(!anchor) continue;
+      const others=eligible.filter((episode)=>episode.nr!==relation.anchor);
+      for(const combo of smartCombinations(others,1,Math.min(3,others.length))) subsets.push([anchor,...combo]);
+    } else if(relation.ordered) {
+      for(let length=2;length<=Math.min(4,eligible.length);length++){
+        for(let start=0;start<=eligible.length-length;start++) subsets.push(eligible.slice(start,start+length));
+      }
+    } else {
+      subsets=smartCombinations(eligible,2,4);
+    }
+
+    for(const episodes of subsets) {
+      const duration=episodes.reduce((sum,episode)=>sum+(Number(episode.durationMin)||55),0);
+      if(duration>target+18) continue;
+      const signature=`${relation.id}:${proposalSignature(episodes.map((episode)=>episode.nr))}`;
+      if(seen.has(signature)) continue;
+      seen.add(signature);
+      clusters.push({
+        relation,
+        episodes,
+        duration,
+        mandatory:relation.mandatory!==false&&relation.strength>=55,
+      });
+    }
   }
-  return blocks;
+  return clusters;
+}
+function relationAffinity(nr,anchorNrs=[]) {
+  let best=0;
+  const anchors=new Set(anchorNrs.map(Number));
+  for(const relation of STORY_RELATIONS) {
+    if(!relation.numbers.includes(Number(nr))) continue;
+    if(relation.numbers.some((item)=>anchors.has(Number(item)))) best=Math.max(best,relation.strength);
+  }
+  return best;
+}
+function weightedRelationChoice(clusters,target,profile) {
+  if(!clusters.length) return null;
+  const ranked=clusters.map((cluster)=>{
+    const quality=cluster.episodes.reduce(
+      (sum,episode)=>sum+recommendationScore(episode,profile,{useDiversity:false}).total,
+      0
+    )/cluster.episodes.length;
+    const fit=Math.max(0,1-Math.abs(target-cluster.duration)/Math.max(target,1));
+    return {
+      cluster,
+      score:cluster.relation.strength*.38+quality*4.4+fit*20+Math.min(cluster.episodes.length,4)*2,
+    };
+  }).sort((a,b)=>b.score-a.score).slice(0,12);
+
+  const floor=Math.min(...ranked.map((entry)=>entry.score));
+  const weights=ranked.map((entry)=>Math.max(.25,entry.score-floor+1));
+  let roll=Math.random()*weights.reduce((sum,value)=>sum+value,0);
+  for(let index=0;index<ranked.length;index++){
+    roll-=weights[index];
+    if(roll<=0) return ranked[index].cluster;
+  }
+  return ranked[0].cluster;
+}
+function fillAroundRelation({pool,anchor,target,profile}) {
+  const chosen=[...(anchor?.episodes||[])];
+  const chosenSet=new Set(chosen.map((episode)=>episode.nr));
+  let duration=chosen.reduce((sum,episode)=>sum+(Number(episode.durationMin)||55),0);
+  const anchorNrs=chosen.map((episode)=>episode.nr);
+
+  const candidates=pool.filter((episode)=>!chosenSet.has(episode.nr));
+  const shuffled=candidates.map((episode)=>{
+    const personal=recommendationScore(episode,profile,{useDiversity:false}).total;
+    const affinity=anchor?relationAffinity(episode.nr,anchorNrs):0;
+    return {
+      episode,
+      affinity,
+      key:Math.random()+personal*.065+affinity*.011,
+    };
+  }).sort((a,b)=>b.key-a.key);
+
+  for(const entry of shuffled) {
+    const episode=entry.episode;
+    const episodeDuration=Number(episode.durationMin)||55;
+    const next=duration+episodeDuration;
+    if(next>target+18) continue;
+    const improves=Math.abs(target-next)<=Math.abs(target-duration);
+    if(next<=target||improves||Math.random()<.12){
+      chosen.push(episode);
+      chosenSet.add(episode.nr);
+      duration=next;
+    }
+  }
+  return {episodes:chosen,duration};
+}
+function continuityMeta(anchor,enabled,clusters) {
+  if(!enabled) return {enabled:false,used:false};
+  if(!anchor) {
+    return {
+      enabled:true,
+      used:false,
+      reason:clusters.length
+        ?'Eine Verbindung war vorhanden, passte aber nicht stabil in die beste Zusammenstellung.'
+        :'Mit diesen Filtern und der Zielzeit war keine zusammenhängende Gruppe aus mindestens zwei Folgen möglich.',
+    };
+  }
+  return {
+    enabled:true,
+    used:true,
+    id:anchor.relation.id,
+    title:anchor.relation.title,
+    type:anchor.relation.type,
+    strength:anchor.relation.strength,
+    episodeNrs:anchor.episodes.map((episode)=>episode.nr),
+  };
 }
 function weightedSmartChoice(candidates) {
   const pool=candidates.slice(0,Math.min(12,candidates.length));
@@ -112,39 +247,36 @@ export function generateSmartPlaylist(
       ]
     : [{excludedNrs:new Set(),cooldownRelaxed:false}];
 
-  for (const pass of passes) {
-    const blocks=candidateBlocks({status,mood,author,continuity,excludedNrs:pass.excludedNrs});
-    if (!blocks.length) continue;
+  for(const pass of passes) {
+    const pool=filteredSmartPool({
+      status,mood,author,
+      excludedNrs:pass.excludedNrs,
+    });
+    if(!pool.length) continue;
+
+    const clusters=continuity?relationClusters(pool,target):[];
+    const mandatoryClusters=clusters.filter((cluster)=>cluster.mandatory);
+    const requireConnection=continuity&&mandatoryClusters.length>0;
     const candidateMap=new Map();
 
-    for (let attempt=0;attempt<700;attempt++) {
-      const shuffled=blocks.map((block)=>({
-        block,
-        key:Math.random()+recommendationScore(block.episodes[0],profile,{useDiversity:false}).total*.065,
-      })).sort((a,b)=>b.key-a.key).map((entry)=>entry.block);
-
-      const chosen=[]; let estimatedDuration=0;
-      for (const block of shuffled) {
-        const next=estimatedDuration+block.duration;
-        if (next>target+18) continue;
-        const improves=Math.abs(target-next)<=Math.abs(target-estimatedDuration);
-        if (next<=target||improves||Math.random()<.16) {
-          chosen.push(block); estimatedDuration=next;
-        }
+    for(let attempt=0;attempt<700;attempt++) {
+      let anchor=null;
+      if(continuity&&clusters.length){
+        const source=requireConnection?mandatoryClusters:clusters;
+        // Bei vorhandener starker Verbindung ist ein Zusammenhang keine Option mehr,
+        // sondern Pflicht. Schwächere Themenreihen dienen nur als Bonus.
+        if(requireConnection||Math.random()<.62) anchor=weightedRelationChoice(source,target,profile);
       }
-      if (!chosen.length) continue;
 
-      const seen=new Set();
-      const episodes=chosen.flatMap((block)=>block.episodes).filter((episode)=>{
-        if (seen.has(episode.nr)) return false;
-        seen.add(episode.nr); return true;
-      });
-      if (!episodes.length) continue;
+      const built=fillAroundRelation({pool,anchor,target,profile});
+      const episodes=built.episodes;
+      if(!episodes.length) continue;
+
+      if(requireConnection&&(!anchor||anchor.episodes.length<2)) continue;
 
       const signature=proposalSignature(episodes.map((episode)=>episode.nr));
-      if (!signature||rejectedSignatures.has(signature)) continue;
+      if(!signature||rejectedSignatures.has(signature)) continue;
 
-      const duration=episodes.reduce((sum,episode)=>sum+(episode.durationMin||0),0);
       const quality=episodes.reduce(
         (sum,episode)=>sum+recommendationScore(episode,profile,{useDiversity:false}).total,
         0
@@ -152,30 +284,41 @@ export function generateSmartPlaylist(
       const repeatedLatest=episodes.filter((episode)=>latestSet.has(episode.nr)).length;
       const repeatedRecent=episodes.filter((episode)=>recentSet.has(episode.nr)).length;
       const newEpisodes=episodes.length-repeatedLatest;
+      const connectionBonus=anchor
+        ? anchor.relation.strength*.16+Math.max(0,anchor.episodes.length-1)*4.2
+        : 0;
       const score=
-        -Math.abs(duration-target)
+        -Math.abs(built.duration-target)
         +quality*7
         +Math.min(episodes.length,8)*.65
         +newEpisodes*2.4
+        +connectionBonus
         -repeatedRecent*4.8
         -repeatedLatest*6.5;
 
       const candidate={
-        episodes,duration,score,signature,newEpisodes,
+        episodes,
+        duration:built.duration,
+        score,
+        signature,
+        newEpisodes,
         repeatedEpisodes:repeatedLatest,
         cooldownRelaxed:pass.cooldownRelaxed,
+        continuity:continuityMeta(anchor,continuity,clusters),
       };
       const existing=candidateMap.get(signature);
-      if (!existing||candidate.score>existing.score) candidateMap.set(signature,candidate);
+      if(!existing||candidate.score>existing.score) candidateMap.set(signature,candidate);
     }
 
     const candidates=[...candidateMap.values()].sort((a,b)=>b.score-a.score);
     const selected=weightedSmartChoice(candidates);
-    if (!selected) continue;
+    if(!selected) continue;
 
     return {
       name:String(name||'Meine Hörsession').trim().slice(0,60)||'Meine Hörsession',
-      description:`Automatisch geplant für ungefähr ${target} Minuten.`,
+      description:selected.continuity?.used
+        ?`Automatisch geplant für ungefähr ${target} Minuten · Zusammenhang: ${selected.continuity.title}.`
+        :`Automatisch geplant für ungefähr ${target} Minuten.`,
       targetMinutes:target,
       options:{mood,status,author,continuity},
       episodeNrs:selected.episodes.map((episode)=>episode.nr),

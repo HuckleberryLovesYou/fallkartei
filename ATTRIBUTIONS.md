@@ -32,3 +32,11 @@ Markennamen und Links zu Spotify, Apple Music, BookBeat, Amazon Music, YouTube M
 ## Eigenes Projektmaterial
 
 Der Name **Die Fallkartei**, das App-Interface, der selbst erstellte Quellcode und das für dieses Projekt erstellte App-Icon sind eigenständige Projektbestandteile. Für den Quellcode wird derzeit keine Open-Source-Lizenz erteilt.
+
+
+## Ergänzungen ab 1.4.0
+
+- Metadaten zu den eigenständigen Live-Geschichten wurden anhand offizieller Serien-/Produktinformationen sowie der jeweiligen Streaming-Veröffentlichungen ergänzt.
+- Bei Specials ohne vorhandenes Cover kann die App das Artwork zur Laufzeit über die öffentliche Apple-iTunes-Lookup-Schnittstelle aus dem bereits hinterlegten Apple-Music-Eintrag auflösen.
+- Die App speichert diese externen Cover nicht im Repository, sondern nur als lokale URL-Zuordnung im Browser-Cache.
+- Die Verbindungsdaten der Smart Playlist beschreiben redaktionell hinterlegte Handlungsstränge, wiederkehrende Figuren und dokumentierte Rückbezüge. Sie sind keine automatische Inhaltsanalyse.
