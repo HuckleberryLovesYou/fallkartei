@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.4 – 2026-08-07
+
+### Navigation
+
+- die untere Tabbar ist jetzt Teil des festen App-Layouts statt ein überlagerndes `fixed`-Element
+- die iPhone-Safe-Area wird dadurch nur noch an der tatsächlich benötigten Stelle berücksichtigt
+- unnötiger Leerraum unter den Navigationselementen wurde deutlich reduziert
+- die Tabbar ist kompakter, bleibt aber vollständig oberhalb des Home-Indikators bedienbar
+- der Inhaltsbereich endet nun oberhalb der Tabbar und benötigt keinen künstlichen Navigationsabstand mehr
+- die unabhängigen Scrollpositionen der fünf Haupttabs aus 1.4.3 bleiben unverändert erhalten
+
 ## 1.4.3 – 2026-08-07
 
 ### Navigation
