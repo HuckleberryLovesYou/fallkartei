@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.2.3';
+export const APP_VERSION = '1.2.4';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -26,7 +26,7 @@ export const appState = {
   filter: 'all', authorFilter: 'all', eraFilter: 'all', yearFilter: 'all', sort: 'nr',
   search: '', time: 'any', mood: 'any', recommendationAuthor: 'all', recommendationEra: 'all', ranking: 'rocky', playlistTab: 'essentials',
   episodeRenderLimit: 40, quickRateQueue: [], quickRateIndex: 0, quickRateHistory: [], importCandidate: null,
-  metadataUpdatedAt: null, currentPlaylistId: null, smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], scrollPositions: {},
+  metadataUpdatedAt: null, currentPlaylistId: null, playlistSearch: '', smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], scrollPositions: {},
 };
 
 export const nowIso = () => new Date().toISOString();
@@ -236,6 +236,32 @@ export function addListen(nr) {
   appState.user.history.unshift({ id: uid('listen'), nr: Number(nr), at }); status.listenCount = appState.user.history.filter((item) => item.nr === Number(nr)).length;
   status.updatedAt = at; saveUser(); return status;
 }
+export function removeListen(id) {
+  const listenId=String(id||'');
+  const index=appState.user.history.findIndex((item)=>String(item.id)===listenId);
+  if(index<0) return null;
+
+  const [removed]=appState.user.history.splice(index,1);
+  const status=episodeState(removed.nr);
+  const remaining=appState.user.history.filter((item)=>item.nr===Number(removed.nr));
+  status.listenCount=remaining.length;
+
+  if(remaining.length) {
+    status.heard=true;
+    status.heardAt=remaining.reduce(
+      (latest,item)=>new Date(item.at)>new Date(latest)?item.at:latest,
+      remaining[0].at
+    );
+  } else {
+    status.heard=false;
+    status.rating=null;
+    status.heardAt=null;
+  }
+
+  status.updatedAt=nowIso();
+  saveUser();
+  return {removed,status,remaining:remaining.length};
+}
 export function setRating(nr, rating) {
   const status = episodeState(nr); const normalized = normalizeRating(rating);
   if (normalized && !status.heard) setHeard(nr,true);
@@ -273,5 +299,5 @@ export function resetRuntimeState() {
   appState.detailNr = null; appState.recommendationNr = null; appState.search = '';
   appState.time='any'; appState.mood='any'; appState.recommendationAuthor='all'; appState.recommendationEra='all';
   appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = [];
-  appState.currentPlaylistId = null; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
+  appState.currentPlaylistId = null; appState.playlistSearch = ''; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
 }

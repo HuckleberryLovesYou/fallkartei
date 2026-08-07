@@ -2,6 +2,26 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.2.4 – 2026-08-07
+
+### Playlists
+
+- jede eigene Playlist besitzt nun direkt eine Suche nach Folgen
+- gesucht werden kann nach Folgennummer, Titel, Autor und Ära
+- Suchergebnisse lassen sich über eine Plus-Taste sofort hinzufügen
+- nach dem Erstellen einer Playlist öffnet sich unmittelbar deren Detailansicht
+- auch nach dem Bearbeiten gelangt man zurück in die betreffende Playlist
+- Playlistnamen in der Zuordnungsansicht einer Folge sind größer, weiß und deutlicher hervorgehoben
+
+### Hörverlauf
+
+- „1. Hören“ bezeichnet nun korrekt den ältesten Hörvorgang
+- weitere Hörvorgänge werden chronologisch als 2., 3. usw. darunter einsortiert
+- einzelne Hörvorgänge können durch Wischen nach links und Antippen des roten × gelöscht werden
+- beim Löschen bleibt die Nummerierung automatisch korrekt
+- wird der einzige Hörvorgang gelöscht, warnt die App vorher und setzt die Folge anschließend auf ungehört
+- in diesem Sonderfall wird eine vorhandene Bewertung entfernt; Notiz und Playlistzuordnungen bleiben bestehen
+
 ## 1.2.3 – 2026-08-07
 
 ### Feinschliff
