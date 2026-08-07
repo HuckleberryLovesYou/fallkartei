@@ -2023,3 +2023,68 @@ html{
     transition-duration:.001ms!important;
   }
 }
+
+
+/* v1.5.1 – Folgendetail auf iOS gegen horizontales Verrutschen absichern */
+.episode-dialog{
+  overflow:hidden;
+  max-width:100vw;
+}
+
+.episode-dialog .dialog-body{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  overflow-x:hidden;
+  overflow-y:auto;
+  touch-action:pan-y;
+}
+
+.episode-dialog .detail-cover-hero,
+.episode-dialog .detail-hero,
+.episode-dialog .detail-section,
+.episode-dialog .detail-nav,
+.episode-dialog .episode-link-action,
+.episode-dialog .story-relation-list,
+.episode-dialog .story-relation-card{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+
+.story-relation-episodes{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+}
+
+.story-relation-episodes button{
+  flex:0 0 auto;
+  width:auto;
+  max-width:210px;
+}
+
+.story-relation-episodes span{
+  min-width:0;
+}
+
+/* Auch sehr lange Inhalte dürfen die Dialogbreite nicht vergrößern. */
+.episode-dialog h1,
+.episode-dialog h2,
+.episode-dialog h3,
+.episode-dialog h4,
+.episode-dialog p,
+.episode-dialog strong,
+.episode-dialog small,
+.episode-dialog li,
+.episode-dialog .fact{
+  max-width:100%;
+  overflow-wrap:anywhere;
+}

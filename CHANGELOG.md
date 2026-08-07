@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.1 – 2026-08-07
+
+### Folgendetails
+
+- ein iOS-Layoutfehler behoben, durch den sich der gesamte Folgendetail-Dialog horizontal verschieben ließ
+- der Dialogkörper bleibt jetzt strikt auf die Gerätebreite begrenzt
+- nur die Folgenreihen innerhalb von `Zusammenhänge` dürfen weiterhin bewusst horizontal gescrollt werden
+- lange Titel, Beschreibungen und Metadaten können die Breite des Dialogs nicht mehr vergrößern
+
 ## 1.5.0 – 2026-08-07
 
 ### Finaler Produkt-Polish
