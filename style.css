@@ -826,3 +826,27 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
   .archive-file-sheet,.archive-seal,.archive-profile-badge.tap-pulse{animation:none}
   .archive-seal{transform:scale(1) rotate(-8deg)}
 }
+
+
+/* v1.3.1 – klar gekennzeichnete, nicht persistente Debug-Sandbox */
+body.archive-debug-active::after{
+  content:"DEBUG-VORSCHAU · NICHT GESPEICHERT";
+  position:fixed;
+  z-index:10000;
+  left:50%;
+  bottom:calc(82px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  max-width:calc(100vw - 28px);
+  padding:7px 12px;
+  border:1px solid #e4ba54;
+  border-radius:999px;
+  background:rgba(35,25,7,.94);
+  color:#ffe4a0;
+  box-shadow:0 8px 28px rgba(0,0,0,.42);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-align:center;
+  white-space:nowrap;
+  pointer-events:none;
+}

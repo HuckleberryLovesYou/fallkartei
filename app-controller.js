@@ -1,7 +1,7 @@
 import {
-  APP_VERSION, STREAMING_SERVICES, appState, RATING_LABELS, RATING_ORDER, activityCount, addListen, addManyToQueue, availableEpisode,
+  APP_VERSION, STREAMING_SERVICES, appState, RATING_LABELS, RATING_ORDER, activityCount, addListen, addManyToQueue, availableEpisode, beginArchiveDebugSession,
   cleanProfileName, downloadBlob, esc, formatDate, formatDuration, formatRelativeDate, getEpisode, loadUser, moveQueueItem, nowIso, persistFilters,
-  normalizeText, profileInitials, profileRatingCount, removeFromQueue, removeListen, resetRuntimeState, saveUser, setHeard, setNote, setRating, setStoredFilters,
+  endArchiveDebugSession, normalizeText, profileInitials, profileRatingCount, removeFromQueue, removeListen, resetRuntimeState, saveUser, setHeard, setNote, setRating, setStoredFilters,
   togglePinned, toggleQueue,
 } from './core.js';
 import { catalogValidation, clearCatalogCache, loadCatalog, moodMatches, refreshMetadata, searchScore, timeMatches } from './catalog.js';
@@ -293,7 +293,7 @@ function showArchiveCelebration({debug=false}={}) {
     ?{...actualArchiveProgress(),heard:actualArchiveProgress().total,percent:100,debug:true}
     :archiveDisplayProgress();
   const content=$('archiveCelebrationContent');
-  content.innerHTML=`<div class="archive-confetti" aria-hidden="true">${confettiHtml()}</div><section class="archive-celebration-card"><div class="archive-file-animation" aria-hidden="true"><div class="archive-file-tab">DIE FALLKARTEI</div><div class="archive-file-sheet"><span>LETZTE AKTE</span><strong>✓</strong></div><div class="archive-seal">100 %</div></div><span class="eyebrow">${debug?'Debug-Vorschau':'Meilenstein erreicht'}</span><h2>Fallkartei vollständig</h2><p>Du hast jede aktuell verfügbare Folge gehört. Das vollständige Archiv gehört jetzt dir.</p><div class="archive-celebration-reward"><strong>Vollständiges Archiv</strong><span>Abzeichen und Profilhintergrund „Archivgold“ dauerhaft freigeschaltet</span></div><div class="archive-celebration-actions"><button class="button primary full" data-action="archive-relisten">Lange nicht gehörte Folge finden</button><button class="button secondary full" data-action="archive-open-profile">Archivprofil ansehen</button><button class="text-button" data-action="archive-open-dossier">Geheime Akte öffnen</button><button class="text-button muted-button" data-close-dialog="archiveCelebrationDialog">Schließen</button></div></section>`;
+  content.innerHTML=`<div class="archive-confetti" aria-hidden="true">${confettiHtml()}</div><section class="archive-celebration-card"><div class="archive-file-animation" aria-hidden="true"><div class="archive-file-tab">DIE FALLKARTEI</div><div class="archive-file-sheet"><span>LETZTE AKTE</span><strong>✓</strong></div><div class="archive-seal">100 %</div></div><span class="eyebrow">${debug?'Debug-Vorschau':'Meilenstein erreicht'}</span><h2>Fallkartei vollständig</h2><p>Du hast jede aktuell verfügbare Folge gehört. Das vollständige Archiv gehört jetzt dir.</p><div class="archive-celebration-reward"><strong>${debug?'Testansicht Archivgold':'Vollständiges Archiv'}</strong><span>${debug?'Nur temporäre Vorschau – nichts wird freigeschaltet oder gespeichert.':'Abzeichen und Profilhintergrund „Archivgold“ dauerhaft freigeschaltet'}</span></div><div class="archive-celebration-actions"><button class="button primary full" data-action="archive-relisten">Lange nicht gehörte Folge finden</button><button class="button secondary full" data-action="archive-open-profile">Archivprofil ansehen</button><button class="text-button" data-action="archive-open-dossier">Geheime Akte öffnen</button><button class="text-button muted-button" data-close-dialog="archiveCelebrationDialog">Schließen</button></div></section>`;
   openDialog('archiveCelebrationDialog');
   try {navigator.vibrate?.([24,45,24]);} catch {}
 }
@@ -663,6 +663,20 @@ async function profileImageBlob() {
   taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,archive?'rgba(31,26,17,.94)':'rgba(20,24,32,.9)',archive?'#6f5829':'#2d3440');ctx.fillStyle=archive?'#bba672':'#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
   const favoriteText=data.favorites.length?`Favoriten: ${data.favorites.map((episode)=>`${episode.nr}. ${episode.titel}`).join(' · ')}`:'Bewerte weitere Folgen, um deine Favoriten zu zeigen.';
   ctx.fillStyle=archive?'#c8b58b':'#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
+  if(data.debugArchive){
+    ctx.save();
+    ctx.translate(540,674);
+    ctx.rotate(-.22);
+    ctx.globalAlpha=.88;
+    roundedRect(ctx,-390,-55,780,110,26,'rgba(27,18,4,.92)','#f0c75d');
+    ctx.fillStyle='#ffe6a0';
+    ctx.font='900 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('DEBUG-VORSCHAU',0,2);
+    ctx.font='800 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('NICHT FREIGESCHALTET · NICHT GESPEICHERT',0,37);
+    ctx.restore();
+  }
   ctx.fillStyle=archive?'#8e794d':'#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
   return await new Promise((resolve,reject)=>canvas.toBlob((blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),'image/png',.95));
 }
@@ -1110,27 +1124,33 @@ function bindStaticEvents() {
     if(valid) toast('Archivprüfung entsperrt.');
   });
   $('runArchiveDebug').addEventListener('click',()=>{
-    appState.debugArchivePreview=true;
+    beginArchiveDebugSession();
+    document.body.classList.add('archive-debug-active');
     closeDialog('archiveDebugDialog');
     renderAll();
     showArchiveCelebration({debug:true});
   });
   $('previewArchiveProfile').addEventListener('click',()=>{
-    appState.debugArchivePreview=true;
+    beginArchiveDebugSession();
+    document.body.classList.add('archive-debug-active');
     closeDialog('archiveDebugDialog');
     renderAll();
     renderProfile();
   });
   $('openArchiveDossierDebug').addEventListener('click',()=>{
-    appState.debugArchivePreview=true;
+    beginArchiveDebugSession();
+    document.body.classList.add('archive-debug-active');
     closeDialog('archiveDebugDialog');
     renderAll();
     renderArchiveDossier();
   });
   $('stopArchiveDebug').addEventListener('click',()=>{
-    appState.debugArchivePreview=false;
+    endArchiveDebugSession();
+    document.body.classList.remove('archive-debug-active');
+    setStoredFilters();
+    populateSelects();
     renderAll();
-    toast('Debug-Vorschau beendet.');
+    toast('Debug-Vorschau beendet. Alle Teständerungen wurden verworfen.');
   });
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
   $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});

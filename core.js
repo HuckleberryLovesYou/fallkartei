@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.3.1';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -201,13 +201,32 @@ export async function loadUser() {
   appState.user = normalizeUser(raw || {}); await dbSet(USER_KEY, appState.user); return appState.user;
 }
 let saveTimer;
+let archiveDebugUserSnapshot=null;
+function cloneUserData(value) {
+  if(typeof structuredClone==='function') return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+export function beginArchiveDebugSession() {
+  if(!appState.user) return false;
+  if(!archiveDebugUserSnapshot) archiveDebugUserSnapshot=cloneUserData(appState.user);
+  appState.debugArchivePreview=true;
+  return true;
+}
+export function endArchiveDebugSession() {
+  if(archiveDebugUserSnapshot) appState.user=cloneUserData(archiveDebugUserSnapshot);
+  archiveDebugUserSnapshot=null;
+  appState.debugArchivePreview=false;
+  return appState.user;
+}
 export function saveUser(immediate = false) {
-  if (!appState.user) return Promise.resolve();
-  appState.user.version = APP_VERSION; appState.user.updatedAt = nowIso();
+  if (!appState.user || appState.debugArchivePreview) return Promise.resolve();
+  appState.user.version = APP_VERSION;
+  appState.user.updatedAt = nowIso();
+  const snapshot=cloneUserData(appState.user);
   clearTimeout(saveTimer);
-  if (immediate) return dbSet(USER_KEY, appState.user);
+  if (immediate) return dbSet(USER_KEY,snapshot);
   return new Promise((resolve) => {
-    saveTimer = setTimeout(() => dbSet(USER_KEY, appState.user).then(resolve).catch((error) => { console.error(error); resolve(); }), 100);
+    saveTimer = setTimeout(() => dbSet(USER_KEY,snapshot).then(resolve).catch((error) => { console.error(error); resolve(); }), 100);
   });
 }
 export function episodeState(nr) {
@@ -304,5 +323,5 @@ export function resetRuntimeState() {
   appState.detailNr = null; appState.recommendationNr = null; appState.search = '';
   appState.time='any'; appState.mood='any'; appState.recommendationStatus='unheard'; appState.recommendationAuthor='all'; appState.recommendationEra='all'; appState.recommendationSessionHistory=[];
   appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = [];
-  appState.currentPlaylistId = null; appState.playlistSearch = ''; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = []; appState.debugArchivePreview=false;
+  appState.currentPlaylistId = null; appState.playlistSearch = ''; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
 }

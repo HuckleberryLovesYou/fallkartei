@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.3.0" src="https://img.shields.io/badge/Version-1.3.0-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.3.1" src="https://img.shields.io/badge/Version-1.3.1-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -154,7 +154,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.3.0** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.3.1** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 
@@ -174,4 +174,12 @@ Beim erstmaligen Erreichen von 100 Prozent wird dauerhaft das Abzeichen **Vollst
 freigeschaltet. Neue Folgen können den aktuellen Fortschritt später wieder unter 100 Prozent
 senken; das bereits verdiente Abzeichen und das Archivgold-Design der teilbaren Profilkarte
 bleiben trotzdem erhalten.
+
+
+## Debug-Sandbox
+
+Die versteckte Archivprüfung ist vollständig nicht persistent. Beim Start wird eine temporäre
+Kopie der persönlichen Daten angelegt. Sämtliche Änderungen während der Vorschau bleiben nur im
+Arbeitsspeicher und werden beim Beenden oder Neuladen verworfen. Debug-Profilbilder tragen einen
+sichtbaren Hinweis und können nicht mit einer echten Archivfreischaltung verwechselt werden.
 

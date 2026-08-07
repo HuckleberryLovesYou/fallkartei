@@ -2,6 +2,22 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.1 – 2026-08-07
+
+### Debug-Sandbox
+
+- die versteckte 100%-Prüfung läuft nun als vollständig nicht persistente Sandbox
+- beim Start wird eine temporäre Kopie aller persönlichen Daten angelegt
+- sämtliche Speichervorgänge werden während der Debug-Vorschau blockiert
+- Bewertungen, Gehört-Status, Hörverlauf, Playlists, Profilangaben, Warteschlange und Empfehlungshistorie können den echten Datenstand nicht verändern
+- beim Beenden werden sämtliche während der Vorschau vorgenommenen Änderungen verworfen
+- auch ein Neuladen stellt automatisch den zuletzt regulär gespeicherten Datenstand wieder her
+- bereits vorgemerkte reguläre Speichervorgänge verwenden nun eine unveränderliche Momentaufnahme und können nicht versehentlich Debug-Daten übernehmen
+- während der Vorschau erscheint dauerhaft der Hinweis „DEBUG-VORSCHAU · NICHT GESPEICHERT“
+- in der Debug-Animation wird ausdrücklich keine dauerhafte Freischaltung behauptet
+- aus der Debug-Vorschau erzeugte Profilbilder erhalten ein deutliches Wasserzeichen
+- echte 100%-Freischaltungen und reguläre Archivgold-Profilbilder bleiben unverändert
+
 ## 1.3.0 – 2026-08-07
 
 ### Startseitenempfehlung
