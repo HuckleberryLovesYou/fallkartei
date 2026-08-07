@@ -266,14 +266,41 @@ function levenshtein(a,b) {
   return row[b.length];
 }
 export function searchScore(episode,query) {
-  let q = normalizeText(query); if (!q) return 1; q = ALIASES.get(q) || q; const fields = episode.searchFields;
-  const weights = [['title',150],['featured',130],['keywords',122],['characters',108],['chapters',92],['tags',78],['description',72],['people',60]];
-  let score = 0; for (const [key,weight] of weights) { if (fields[key].includes(q)) score = Math.max(score,weight); }
-  const tokens = q.split(' ').filter(Boolean); const matched = tokens.filter((token) => episode.searchText.includes(token)).length;
-  if (tokens.length && matched) score = Math.max(score,35 + matched / tokens.length * 50);
-  if (!score && q.length >= 4) {
-    const words = fields.title.split(' ').concat(fields.featured.split(' ')).filter((word) => word.length >= 4);
-    const distance = Math.min(...words.map((word) => levenshtein(q,word)),99); if (distance <= Math.max(1,Math.floor(q.length * .25))) score = 28 - distance;
+  let q=normalizeText(query); if(!q) return 1; q=ALIASES.get(q)||q; const fields=episode.searchFields;
+  const weights=[['title',150],['featured',130],['keywords',122],['characters',108],['chapters',92],['tags',78],['description',72],['people',60]];
+  let score=0;
+  for(const [key,weight] of weights) if(fields[key].includes(q)) score=Math.max(score,weight);
+
+  // Zusammengeschriebene Titel bleiben auch bei eingegebenen Leerzeichen auffindbar:
+  // „Feuer mond“ -> „Feuermond“.
+  const compact=q.replace(/\s+/g,'');
+  if(compact.length>=4) {
+    for(const [key,weight] of weights.slice(0,4)) {
+      const compactField=fields[key].replace(/\s+/g,'');
+      if(compactField.includes(compact)) score=Math.max(score,weight-4);
+    }
+  }
+
+  const tokens=q.split(' ').filter(Boolean);
+  let matched=0,fuzzyMatched=0;
+  const words=episode.searchText.split(' ').filter(Boolean);
+  for(const token of tokens) {
+    if(episode.searchText.includes(token)){matched+=1;continue;}
+    if(token.length>=3&&words.some((word)=>word.startsWith(token)||token.startsWith(word))){matched+=1;continue;}
+    if(token.length>=4) {
+      const limit=Math.max(1,Math.floor(token.length*.24));
+      if(words.some((word)=>Math.abs(word.length-token.length)<=limit&&levenshtein(token,word)<=limit)) fuzzyMatched+=1;
+    }
+  }
+  if(tokens.length&&(matched||fuzzyMatched)) {
+    const ratio=(matched+fuzzyMatched*.72)/tokens.length;
+    score=Math.max(score,35+ratio*55);
+  }
+
+  if(!score&&q.length>=4) {
+    const important=fields.title.split(' ').concat(fields.featured.split(' ')).filter((word)=>word.length>=4);
+    const distance=Math.min(...important.map((word)=>levenshtein(q,word)),99);
+    if(distance<=Math.max(1,Math.floor(q.length*.25))) score=28-distance;
   }
   return score;
 }

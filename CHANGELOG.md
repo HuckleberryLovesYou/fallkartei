@@ -2,6 +2,18 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.0 – 2026-08-07
+
+### Finaler Produkt-Polish
+
+- Folgendetails unterscheiden jetzt ausdrücklich zwischen echten Handlungs-/Figurenzusammenhängen und allgemein ähnlichen Folgen
+- hinterlegte Zusammenhänge zeigen eine kurze Begründung und direkt verknüpfte Folgen
+- die normale Folgen- und Playlist-Suche toleriert Leerzeichen in zusammengesetzten Titeln sowie kleinere Tippfehler besser und berücksichtigt hinterlegte Zusammenhangsbegriffe
+- Folgendetails besitzen teilbare Direktlinks; ein solcher Link öffnet die jeweilige Folge direkt
+- einzelne Entfernen-Aktionen bei Warteschlange, Anheftungen, Hörverlauf und eigenen Playlists bieten kurz eine Rückgängig-Aktion an
+- der Einstellungsbereich zeigt kompakt den Backup-Status, Änderungen seit der letzten Sicherung und den aktuellen Katalog-/Metadatenstatus
+- Touch-Ziele, Dialogbeschriftungen, Bottom-Tab-Zustand, sehr schmale Displays und Reduced Motion wurden nochmals vereinheitlicht
+
 ## 1.4.8 – 2026-08-07
 
 ### Navigation

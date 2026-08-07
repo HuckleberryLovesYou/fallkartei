@@ -16,22 +16,35 @@ export const CURATED_PLAYLISTS = [
   { id:'football', icon:'⚽', title:'Fußballfälle', description:'Stadien, Spieler, Fouls und Turniere.', category:'themes', type:'numbers', numbers:[63,81,123,141,153,164,176,245] },
 ];
 export const STORY_RELATIONS = [
-  { id:'brittany', title:'Hugenay & Brittany', type:'Direkte Fortsetzung', strength:100, ordered:true, numbers:[103,125] },
-  { id:'clarissa', title:'Clarissa Franklin', type:'Fortlaufender Handlungsstrang', strength:96, ordered:true, numbers:[76,99,188,226] },
-  { id:'rubin', title:'Vom Fluch des Rubins zum Feurigen Auge', type:'Direkter Rückbezug', strength:95, ordered:true, numbers:[5,200] },
-  { id:'hugenay', title:'Victor Hugenay', type:'Handlungsstrang', strength:92, ordered:true, numbers:[1,12,73,103,125,237] },
-  { id:'taipan-callbacks', title:'Der dunkle Taipan · klassische Rückbezüge', type:'Callback-Netz', strength:88, ordered:false, anchor:10103, numbers:[2,5,16,23,25,10103] },
-  { id:'allie', title:'Allie Jamison & Familie Osborne', type:'Wiederkehrende Figuren', strength:74, ordered:true, numbers:[25,26,148,196,10103] },
-  { id:'dick-perry', title:'Dick Perry', type:'Wiederkehrender Gegenspieler', strength:70, ordered:true, numbers:[104,124] },
-  { id:'jelena', title:'Jelena Charkova', type:'Wiederkehrende Figur', strength:66, ordered:true, numbers:[84,95,100,121] },
-  { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrende Figur', strength:62, ordered:true, numbers:[125,129,152,197,200,214,237,238] },
-  { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:58, ordered:true, numbers:[9,13,17,23,100,117,130,149,157,180] },
-  { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012] },
-  { id:'jubilaeum', title:'Jubiläumsfolgen', type:'Formatreihe', strength:30, ordered:true, mandatory:false, numbers:[100,125,150,175,200,225] },
-  { id:'live-format', title:'Eigenständige Live-Fälle', type:'Live-Specials', strength:26, ordered:true, mandatory:false, numbers:[10101,10102,10103] },
+  { id:'brittany', title:'Hugenay & Brittany', type:'Direkte Fortsetzung', strength:100, ordered:true, numbers:[103,125], description:'Feuermond führt den in Das Erbe des Meisterdiebs begonnenen Hugenay- und Brittany-Strang direkt weiter.' },
+  { id:'clarissa', title:'Clarissa Franklin', type:'Fortlaufender Handlungsstrang', strength:96, ordered:true, numbers:[76,99,188,226], description:'Clarissa Franklin kehrt über mehrere Fälle als zentrale Gegenspielerin zurück und ihre Geschichte wird wieder aufgegriffen.' },
+  { id:'rubin', title:'Vom Fluch des Rubins zum Feurigen Auge', type:'Direkter Rückbezug', strength:95, ordered:true, numbers:[5,200], description:'Das Feurige Auge greift den Rubin und Motive aus dem frühen Fall Der Fluch des Rubins ausdrücklich wieder auf.' },
+  { id:'hugenay', title:'Victor Hugenay', type:'Handlungsstrang', strength:92, ordered:true, numbers:[1,12,73,103,125,237], description:'Victor Hugenay kehrt als Meisterdieb in mehreren Fällen wieder; spätere Begegnungen bauen teilweise auf früheren auf.' },
+  { id:'taipan-callbacks', title:'Der dunkle Taipan · klassische Rückbezüge', type:'Callback-Netz', strength:88, ordered:false, anchor:10103, numbers:[2,5,16,23,25,10103], description:'Der Live-Fall verbindet bewusst Figuren, Gegenstände und Motive aus mehreren klassischen Fällen.' },
+  { id:'allie', title:'Allie Jamison & Familie Osborne', type:'Wiederkehrende Figuren', strength:74, ordered:true, numbers:[25,26,148,196,10103], description:'Allie Jamison und ihr familiäres Umfeld tauchen in mehreren Fällen wieder auf und verbinden die Geschichten miteinander.' },
+  { id:'dick-perry', title:'Dick Perry', type:'Wiederkehrender Gegenspieler', strength:70, ordered:true, numbers:[104,124], description:'Dick Perry kehrt als Gegenspieler zurück; die spätere Folge knüpft an seine frühere Rolle an.' },
+  { id:'jelena', title:'Jelena Charkova', type:'Wiederkehrende Figur', strength:66, ordered:true, numbers:[84,95,100,121], description:'Jelena Charkova ist eine wiederkehrende Figur und verbindet mehrere Fälle aus Bobs Umfeld.' },
+  { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrende Figur', strength:62, ordered:true, numbers:[125,129,152,197,200,214,237,238], description:'Rubbish-George kehrt als Informant und bekannte Figur in mehreren späteren Fällen zurück.' },
+  { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:58, ordered:true, numbers:[9,13,17,23,100,117,130,149,157,180], description:'Skinny Norris taucht über viele Jahre immer wieder als Rivale der drei ??? auf.' },
+  { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012], description:'Eigenständige Advents- und Weihnachtsgeschichten mit gemeinsamem saisonalem Rahmen.' },
+  { id:'jubilaeum', title:'Jubiläumsfolgen', type:'Formatreihe', strength:30, ordered:true, mandatory:false, numbers:[100,125,150,175,200,225], description:'Die großen Jubiläumsfolgen bilden eine Formatreihe; das ist kein durchgehender Handlungsstrang.' },
+  { id:'live-format', title:'Eigenständige Live-Fälle', type:'Live-Specials', strength:26, ordered:true, mandatory:false, numbers:[10101,10102,10103], description:'Eigenständige Geschichten, die eigens für große Live-Produktionen entstanden sind.' },
 ];
 // Rückwärtskompatibel für externe Imports; die Smart-Playlist nutzt ab 1.4.0 STORY_RELATIONS.
 export const STORY_BLOCKS = STORY_RELATIONS;
+export function storyRelationsForEpisode(nr) {
+  const number=Number(nr);
+  if(!Number.isFinite(number)) return [];
+  return STORY_RELATIONS
+    .filter((relation)=>relation.numbers.includes(number))
+    .map((relation)=>({
+      ...relation,
+      episodes:relation.numbers.map(getEpisode).filter(Boolean),
+      relatedEpisodes:relation.numbers.filter((item)=>item!==number).map(getEpisode).filter(Boolean),
+    }))
+    .filter((relation)=>relation.relatedEpisodes.length)
+    .sort((a,b)=>b.strength-a.strength);
+}
 export function curatedPlaylists(category='essentials') { return CURATED_PLAYLISTS.filter((item) => item.category === category); }
 export function resolveCuratedPlaylist(definition) {
   let episodes = [];
@@ -213,6 +226,7 @@ function continuityMeta(anchor,enabled,clusters) {
     title:anchor.relation.title,
     type:anchor.relation.type,
     strength:anchor.relation.strength,
+    reason:anchor.relation.description||'',
     episodeNrs:anchor.episodes.map((episode)=>episode.nr),
   };
 }

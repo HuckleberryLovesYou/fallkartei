@@ -1920,3 +1920,106 @@ body{
   font-size:10px;
   font-weight:750;
 }
+
+
+/* v1.5.0 – finaler Produkt-Polish */
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+
+/* Interaktiver Snackbar/Undo */
+.toast{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  max-width:min(520px,calc(100% - 28px));
+  min-height:46px;
+}
+.toast>span{min-width:0;line-height:1.35}
+.toast.has-action{padding:7px 8px 7px 14px}
+.toast [data-toast-action]{
+  flex:0 0 auto;
+  min-height:44px;
+  padding:0 12px;
+  border:0;
+  border-radius:11px;
+  background:#eef2f8;
+  color:#11141a;
+  font-weight:850;
+  cursor:pointer;
+}
+
+/* Statuskarten in Einstellungen */
+.settings-status-card{
+  display:grid;
+  gap:13px;
+  padding:15px;
+  margin:0 0 10px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:linear-gradient(145deg,#15181e,#101216);
+}
+.settings-status-head{display:flex;align-items:center;gap:10px;min-width:0}
+.settings-status-head>div{display:grid;min-width:0}
+.settings-status-head strong{font-size:14px}
+.settings-status-head small{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}
+.settings-status-dot{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#69717d;box-shadow:0 0 0 4px rgba(105,113,125,.12)}
+.settings-status-dot.good{background:#64c98b;box-shadow:0 0 0 4px rgba(100,201,139,.12)}
+.settings-status-dot.warning{background:#e4b44d;box-shadow:0 0 0 4px rgba(228,180,77,.12)}
+.settings-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.settings-status-grid>div{min-width:0;padding:9px;border-radius:10px;background:#0d0f13}
+.settings-status-grid span,.settings-status-grid strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.settings-status-grid span{color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+.settings-status-grid strong{margin-top:4px;font-size:13px}
+.settings-status-card>p{margin:0;color:#959eaa;font-size:10px;line-height:1.45}
+
+/* Explizite Folgen-Zusammenhänge */
+.detail-section-heading h3{margin-bottom:4px}
+.detail-section-heading p,.detail-section-caption{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.45}
+.story-relation-list{display:grid;gap:10px}
+.story-relation-card{padding:13px;border:1px solid #31415a;border-radius:14px;background:radial-gradient(circle at 0 0,rgba(58,113,188,.12),transparent 44%),#12161d}
+.story-relation-card>span{display:block;color:#91a9cb;font-size:9px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.story-relation-card>strong{display:block;margin-top:4px;font-size:15px;line-height:1.3}
+.story-relation-card>p{margin:6px 0 10px;color:#aeb5c0;font-size:11px;line-height:1.45}
+.story-relation-episodes{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.story-relation-episodes::-webkit-scrollbar{display:none}
+.story-relation-episodes button{display:grid;grid-template-columns:28px minmax(92px,1fr);align-items:center;gap:7px;min-height:44px;padding:6px 9px;border:1px solid var(--line);border-radius:11px;background:#171b23;color:var(--text);text-align:left;cursor:pointer}
+.story-relation-episodes b{display:grid;width:28px;height:28px;place-items:center;border-radius:8px;background:#232a35;font-size:10px}
+.story-relation-episodes span{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:750}
+.episode-link-action{display:flex;justify-content:flex-end;margin:-7px 0 5px}
+.episode-link-action .text-button{font-size:11px}
+
+/* Touch-Ziele und robuste iPhone-Bedienung */
+.text-button{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.icon-button{min-width:44px;min-height:44px}
+@media(pointer:coarse){
+  .compact-actions .icon-button,
+  .row-actions button,
+  .search-box button,
+  .playlist-item>div button,
+  .listen-history-delete{
+    min-width:44px;
+    min-height:44px;
+  }
+  .filter-scroll button,.segmented button{min-height:44px}
+}
+
+/* Lange Inhalte dürfen Layouts nicht sprengen. */
+.detail-cover-copy>strong,.story-relation-card>strong,.settings-status-head strong{overflow-wrap:anywhere}
+@media(max-width:370px){
+  .settings-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .detail-cover-copy>strong{font-size:19px}
+  .story-relation-episodes button{grid-template-columns:26px minmax(78px,1fr)}
+}
+
+/* Reduced Motion: funktional identisch, ohne dekorative Bewegung. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+}
