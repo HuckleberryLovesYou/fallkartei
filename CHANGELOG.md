@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.2 – 2026-08-07
+
+### Folgendetails
+
+- das Cover einer Folge erscheint jetzt direkt im oberen Bereich der Folgendetails
+- Titel, Folgentyp, Autor, Laufzeit und Veröffentlichungsdatum bleiben dort kompakt zusammen sichtbar
+- ein Tipp auf ein vorhandenes Cover öffnet eine große, fokussierte Cover-Vorschau
+- beim Schließen bleibt das Folgendetail geöffnet; die aktuelle Stelle in der App geht nicht verloren
+- Folgen ohne verfügbares Cover behalten einen ruhigen Platzhalter ohne funktionslosen Vergrößerungsbutton
+- die Cover-Vorschau funktioniert unabhängig davon, von welchem Bereich der App die Folgendetails geöffnet wurden
+
 ## 1.4.1 – 2026-08-07
 
 ### Fortschritt
