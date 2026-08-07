@@ -2,6 +2,19 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.2.1 – 2026-08-07
+
+### Smart Playlists
+
+- „Andere Vorschläge“ meidet nun vorübergehend die Folgen der letzten zwei verworfenen Vorschläge
+- dieselbe Folgenmenge kann nicht mehr lediglich in anderer Reihenfolge erneut erscheinen
+- aus mehreren ähnlich guten Kombinationen wird gewichtet eine abwechslungsreichere Auswahl getroffen
+- bei engen Filtern wird der Cooldown schrittweise gelockert, statt sofort dieselbe Kombination zurückzugeben
+- die Vorschlagshistorie gilt nur für die aktuelle Planung und wird nicht dauerhaft gespeichert
+- jede Folge in der Vorschau lässt sich antippen und in der vollständigen Detailansicht prüfen
+- nach dem Schließen der Folgendetails bleibt die ursprüngliche Playlist-Vorschau vollständig erhalten
+- Speichern, „Als Nächstes übernehmen“, einzelne Folgen entfernen und neu generieren bleiben danach verfügbar
+
 ## 1.2.0 – 2026-08-07
 
 ### Installation

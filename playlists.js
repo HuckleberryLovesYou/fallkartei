@@ -46,63 +46,143 @@ export function playlistStats(episodes) {
   const duration = episodes.reduce((sum,episode) => sum + (Number(episode.durationMin) || 0),0); const remaining = episodes.filter((episode) => !appState.user.episodes?.[episode.nr]?.heard).reduce((sum,episode) => sum + (Number(episode.durationMin) || 0),0);
   return { total,heard,duration,remaining };
 }
-function candidateBlocks({status,mood,author,continuity}) {
-  let pool = appState.catalog.filter(availableEpisode).filter((episode) => status === 'mixed' || (status === 'heard') === Boolean(appState.user.episodes?.[episode.nr]?.heard)).filter((episode) => mood === 'any' || moodMatches(episode,mood)).filter((episode) => author === 'all' || episode.author === author);
-  const used = new Set(); const blocks = [];
-  if (continuity) for (const block of STORY_BLOCKS) {
-    const episodes = block.numbers.map((nr) => pool.find((episode) => episode.nr === nr)).filter(Boolean);
-    if (episodes.length > 1) { blocks.push({episodes,duration:episodes.reduce((sum,item) => sum + (item.durationMin || 0),0),label:block.title}); episodes.forEach((item) => used.add(item.nr)); }
+function proposalSignature(values=[]) {
+  return [...new Set(values.map(Number).filter(Number.isFinite))].sort((a,b)=>a-b).join(',');
+}
+function normalizeProposalRounds(recentProposals=[],previousEpisodeNrs=[]) {
+  const source=[...(Array.isArray(recentProposals)?recentProposals:[])];
+  if (Array.isArray(previousEpisodeNrs)&&previousEpisodeNrs.length) source.push(previousEpisodeNrs);
+  const rounds=[]; const signatures=new Set();
+  for (const value of source) {
+    const round=[...new Set((Array.isArray(value)?value:[]).map(Number).filter(Number.isFinite))];
+    const signature=proposalSignature(round);
+    if (!round.length||signatures.has(signature)) continue;
+    signatures.add(signature); rounds.push(round);
   }
-  for (const episode of pool) if (!used.has(episode.nr)) blocks.push({episodes:[episode],duration:episode.durationMin || 55,label:episode.titel});
+  return rounds.slice(-2);
+}
+function candidateBlocks({status,mood,author,continuity,excludedNrs=new Set()}) {
+  const basePool=appState.catalog.filter(availableEpisode)
+    .filter((episode)=>status==='mixed'||(status==='heard')===Boolean(appState.user.episodes?.[episode.nr]?.heard))
+    .filter((episode)=>mood==='any'||moodMatches(episode,mood))
+    .filter((episode)=>author==='all'||episode.author===author);
+  const pool=basePool.filter((episode)=>!excludedNrs.has(episode.nr));
+  const used=new Set(); const blocks=[];
+  if (continuity) for (const block of STORY_BLOCKS) {
+    const eligible=block.numbers.map((nr)=>basePool.find((episode)=>episode.nr===nr)).filter(Boolean);
+    const episodes=eligible.filter((episode)=>!excludedNrs.has(episode.nr));
+    if (eligible.length>1&&episodes.length===eligible.length&&!episodes.some((episode)=>used.has(episode.nr))) {
+      blocks.push({episodes,duration:episodes.reduce((sum,item)=>sum+(item.durationMin||0),0),label:block.title});
+      episodes.forEach((item)=>used.add(item.nr));
+    }
+  }
+  for (const episode of pool) if (!used.has(episode.nr)) {
+    blocks.push({episodes:[episode],duration:episode.durationMin||55,label:episode.titel});
+  }
   return blocks;
 }
-function playlistSignature(episodes) {
-  return episodes.map((episode) => Number(episode.nr)).sort((a,b) => a-b).join(',');
-}
-function scoredCandidateBlocks(blocks,profile) {
-  return blocks.map((block) => {
-    const quality = block.episodes.reduce((sum,episode) => sum + recommendationScore(episode,profile,{useDiversity:false}).total,0) / Math.max(1,block.episodes.length);
-    return { ...block,quality };
-  });
-}
-export function generateSmartPlaylist({name,targetMinutes,mood='any',status='unheard',author='all',continuity=true},{previousEpisodeNrs=[]}={}) {
-  const target = Math.max(20,Number(targetMinutes) || 120); const profile = buildTasteProfile();
-  const blocks = scoredCandidateBlocks(candidateBlocks({status,mood,author,continuity}),profile); if (!blocks.length) return null;
-  const previous = new Set(previousEpisodeNrs.map(Number).filter(Number.isFinite));
-  const previousSignature = [...previous].sort((a,b) => a-b).join(',');
-  const desiredNewEpisodes = previous.size ? Math.max(1,Math.ceil(previous.size * .4)) : 0;
-  const seen = new Set(); let best = null; let fallback = null;
-  const attempts = blocks.length > 180 ? 280 : 360;
-  for (let attempt=0;attempt<attempts;attempt++) {
-    const shuffled = blocks.map((block) => ({
-      block,
-      key:Math.random() * 1.35 + block.quality * .085 + (previous.size && block.episodes.some((episode) => previous.has(episode.nr)) ? -.22 : .12),
-    })).sort((a,b) => b.key-a.key).map((entry) => entry.block);
-    const chosen = []; let duration = 0;
-    for (const block of shuffled) {
-      const next = duration + block.duration;
-      if (next <= target + 18 && (next <= target || Math.random() < .2)) { chosen.push(block); duration = next; }
-    }
-    if (!chosen.length) continue;
-    const episodes = chosen.flatMap((block) => block.episodes); const signature = playlistSignature(episodes);
-    if (seen.has(signature) || (previous.size && signature === previousSignature)) continue; seen.add(signature);
-    const quality = episodes.reduce((sum,episode) => sum + recommendationScore(episode,profile,{useDiversity:false}).total,0) / episodes.length;
-    const newEpisodes = previous.size ? episodes.filter((episode) => !previous.has(episode.nr)).length : 0;
-    const overlap = previous.size ? episodes.filter((episode) => previous.has(episode.nr)).length / Math.max(1,Math.min(previous.size,episodes.length)) : 0;
-    const score = -Math.abs(duration-target) + quality * 7 + Math.min(episodes.length,8) * .5 + (previous.size ? (1-overlap) * 16 + newEpisodes * 1.4 : 0);
-    const candidate = {episodes,duration,score,newEpisodes};
-    if (!fallback || score > fallback.score) fallback = candidate;
-    if ((!previous.size || newEpisodes >= desiredNewEpisodes) && (!best || score > best.score)) best = candidate;
+function weightedSmartChoice(candidates) {
+  const pool=candidates.slice(0,Math.min(12,candidates.length));
+  if (!pool.length) return null;
+  const floor=Math.min(...pool.map((entry)=>entry.score));
+  const weights=pool.map((entry)=>Math.max(.18,entry.score-floor+.55));
+  let roll=Math.random()*weights.reduce((sum,value)=>sum+value,0);
+  for (let index=0;index<pool.length;index++) {
+    roll-=weights[index];
+    if (roll<=0) return pool[index];
   }
-  const selected = best || fallback; if (!selected) return null;
-  return {
-    name:String(name || 'Meine Hörsession').trim().slice(0,60) || 'Meine Hörsession',
-    description:`Automatisch geplant für ungefähr ${target} Minuten.`,
-    targetMinutes:target,
-    options:{mood,status,author,continuity},
-    episodeNrs:selected.episodes.map((episode) => episode.nr),
-    ...selected,
-  };
+  return pool[0];
+}
+export function generateSmartPlaylist(
+  {name,targetMinutes,mood='any',status='unheard',author='all',continuity=true},
+  {recentProposals=[],previousEpisodeNrs=[]}={}
+) {
+  const target=Math.max(20,Number(targetMinutes)||120);
+  const profile=buildTasteProfile();
+  const rounds=normalizeProposalRounds(recentProposals,previousEpisodeNrs);
+  const latestRound=rounds.at(-1)||[];
+  const latestSet=new Set(latestRound);
+  const recentSet=new Set(rounds.flat());
+  const rejectedSignatures=new Set(rounds.map(proposalSignature));
+  const passes=rounds.length
+    ? [
+        {excludedNrs:new Set(recentSet),cooldownRelaxed:false},
+        ...(rounds.length>1?[{excludedNrs:new Set(latestSet),cooldownRelaxed:true}]:[]),
+        {excludedNrs:new Set(),cooldownRelaxed:true},
+      ]
+    : [{excludedNrs:new Set(),cooldownRelaxed:false}];
+
+  for (const pass of passes) {
+    const blocks=candidateBlocks({status,mood,author,continuity,excludedNrs:pass.excludedNrs});
+    if (!blocks.length) continue;
+    const candidateMap=new Map();
+
+    for (let attempt=0;attempt<700;attempt++) {
+      const shuffled=blocks.map((block)=>({
+        block,
+        key:Math.random()+recommendationScore(block.episodes[0],profile,{useDiversity:false}).total*.065,
+      })).sort((a,b)=>b.key-a.key).map((entry)=>entry.block);
+
+      const chosen=[]; let estimatedDuration=0;
+      for (const block of shuffled) {
+        const next=estimatedDuration+block.duration;
+        if (next>target+18) continue;
+        const improves=Math.abs(target-next)<=Math.abs(target-estimatedDuration);
+        if (next<=target||improves||Math.random()<.16) {
+          chosen.push(block); estimatedDuration=next;
+        }
+      }
+      if (!chosen.length) continue;
+
+      const seen=new Set();
+      const episodes=chosen.flatMap((block)=>block.episodes).filter((episode)=>{
+        if (seen.has(episode.nr)) return false;
+        seen.add(episode.nr); return true;
+      });
+      if (!episodes.length) continue;
+
+      const signature=proposalSignature(episodes.map((episode)=>episode.nr));
+      if (!signature||rejectedSignatures.has(signature)) continue;
+
+      const duration=episodes.reduce((sum,episode)=>sum+(episode.durationMin||0),0);
+      const quality=episodes.reduce(
+        (sum,episode)=>sum+recommendationScore(episode,profile,{useDiversity:false}).total,
+        0
+      )/episodes.length;
+      const repeatedLatest=episodes.filter((episode)=>latestSet.has(episode.nr)).length;
+      const repeatedRecent=episodes.filter((episode)=>recentSet.has(episode.nr)).length;
+      const newEpisodes=episodes.length-repeatedLatest;
+      const score=
+        -Math.abs(duration-target)
+        +quality*7
+        +Math.min(episodes.length,8)*.65
+        +newEpisodes*2.4
+        -repeatedRecent*4.8
+        -repeatedLatest*6.5;
+
+      const candidate={
+        episodes,duration,score,signature,newEpisodes,
+        repeatedEpisodes:repeatedLatest,
+        cooldownRelaxed:pass.cooldownRelaxed,
+      };
+      const existing=candidateMap.get(signature);
+      if (!existing||candidate.score>existing.score) candidateMap.set(signature,candidate);
+    }
+
+    const candidates=[...candidateMap.values()].sort((a,b)=>b.score-a.score);
+    const selected=weightedSmartChoice(candidates);
+    if (!selected) continue;
+
+    return {
+      name:String(name||'Meine Hörsession').trim().slice(0,60)||'Meine Hörsession',
+      description:`Automatisch geplant für ungefähr ${target} Minuten.`,
+      targetMinutes:target,
+      options:{mood,status,author,continuity},
+      episodeNrs:selected.episodes.map((episode)=>episode.nr),
+      ...selected,
+    };
+  }
+  return null;
 }
 export function playlistSuggestions(id,limit=6) {
   const playlist = getPlaylist(id); if (!playlist?.episodes?.length || String(id).startsWith('curated:')) return [];

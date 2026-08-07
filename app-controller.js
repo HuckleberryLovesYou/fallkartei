@@ -327,29 +327,55 @@ function smartPlaylistOptionsFromForm() {
     continuity:$('smartContinuity').checked,
   };
 }
+function smartProposalSignature(values=[]) {
+  return [...new Set(values.map(Number).filter(Number.isFinite))].sort((a,b)=>a-b).join(',');
+}
 function renderSmartPlaylistPreview() {
   const draft=appState.smartPlaylistDraft; if (!draft) return;
   const difference=draft.duration-draft.targetMinutes;
   const differenceText=Math.abs(difference)<=5?'nahezu genau passend':difference>0?`${difference} Min. länger als geplant`:`${Math.abs(difference)} Min. kürzer als geplant`;
+  const variationText=draft.cooldownRelaxed
+    ? 'Die Auswahl war eng. Der Cooldown wurde deshalb teilweise gelockert, dieselbe reine Umsortierung bleibt aber ausgeschlossen.'
+    : 'Bei „Andere Vorschläge“ werden die letzten zwei verworfenen Zusammenstellungen vorübergehend gemieden.';
   $('smartPlaylistDialogTitle').innerHTML=`<span class="eyebrow">Smart Playlist · Vorschau</span><h2>${esc(draft.name)}</h2>`;
-  $('smartPlaylistPreview').innerHTML=`<section class="smart-preview-hero"><div class="smart-preview-stats"><div><strong>${draft.episodes.length}</strong><span>Folgen</span></div><div><strong>${formatDuration(draft.duration)}</strong><span>Vorschlag</span></div><div><strong>${formatDuration(draft.targetMinutes)}</strong><span>Zielzeit</span></div></div><p>${esc(differenceText)}. Es wird noch nichts gespeichert.</p></section><section class="smart-preview-list" aria-label="Vorgeschlagene Folgen">${draft.episodes.map((episode,index)=>`<article class="smart-preview-item"><span class="smart-preview-position">${index+1}</span><div><strong>${esc(episodeTitle(episode))}</strong><small>${metaLine(episode)}</small></div><button class="icon-button subtle" data-action="smart-remove" data-nr="${episode.nr}" aria-label="${esc(episode.titel)} aus dem Vorschlag entfernen">×</button></article>`).join('')||'<div class="info-card">Der Vorschlag enthält keine Folgen mehr.</div>'}</section><div class="smart-preview-actions"><button class="button secondary full" data-action="smart-regenerate">Andere Vorschläge</button><div class="button-row"><button class="button secondary" data-action="smart-queue" ${draft.episodes.length?'':'disabled'}>Als Nächstes übernehmen</button><button class="button primary" data-action="smart-save" ${draft.episodes.length?'':'disabled'}>Playlist speichern</button></div></div>`;
+  $('smartPlaylistPreview').innerHTML=`<section class="smart-preview-hero"><div class="smart-preview-stats"><div><strong>${draft.episodes.length}</strong><span>Folgen</span></div><div><strong>${formatDuration(draft.duration)}</strong><span>Vorschlag</span></div><div><strong>${formatDuration(draft.targetMinutes)}</strong><span>Zielzeit</span></div></div><p>${esc(differenceText)}. Es wird noch nichts gespeichert.</p></section><section class="smart-preview-list" aria-label="Vorgeschlagene Folgen">${draft.episodes.map((episode,index)=>`<article class="smart-preview-item"><button class="smart-preview-main" data-open-episode="${episode.nr}" aria-label="Details zu ${esc(episode.titel)} öffnen"><span class="smart-preview-position">${index+1}</span><span class="smart-preview-copy"><strong>${esc(episodeTitle(episode))}</strong><small>${metaLine(episode)}</small></span></button><button class="icon-button subtle" data-action="smart-remove" data-nr="${episode.nr}" aria-label="${esc(episode.titel)} aus dem Vorschlag entfernen">×</button></article>`).join('')||'<div class="info-card">Der Vorschlag enthält keine Folgen mehr.</div>'}</section><div class="smart-preview-actions"><button class="button secondary full" data-action="smart-regenerate">Andere Vorschläge</button><small class="smart-regenerate-hint">${esc(variationText)}</small><div class="button-row"><button class="button secondary" data-action="smart-queue" ${draft.episodes.length?'':'disabled'}>Als Nächstes übernehmen</button><button class="button primary" data-action="smart-save" ${draft.episodes.length?'':'disabled'}>Playlist speichern</button></div></div>`;
 }
 async function createSmartPlaylistPreview(options=smartPlaylistOptionsFromForm(),{regenerate=false}={}) {
   if (smartPlaylistBusy) return; smartPlaylistBusy=true;
-  const previousDraft=appState.smartPlaylistDraft; const previousEpisodeNrs=regenerate ? [...(previousDraft?.episodeNrs||[])] : [];
+  const previousDraft=appState.smartPlaylistDraft;
+  const currentRound=regenerate?[...(previousDraft?.episodeNrs||[])]:[];
+  let proposalHistory=regenerate?[...(appState.smartPlaylistHistory||[])]:[];
+  if (currentRound.length) {
+    const currentSignature=smartProposalSignature(currentRound);
+    proposalHistory=proposalHistory.filter((round)=>smartProposalSignature(round)!==currentSignature);
+    proposalHistory.push(currentRound);
+    proposalHistory=proposalHistory.slice(-2);
+  }
+  appState.smartPlaylistHistory=proposalHistory;
   setSmartPlannerButtonLoading(!regenerate); renderSmartPlaylistLoading(regenerate); openDialog('smartPlaylistDialog');
   const started=performance.now();
   try {
     await waitForPaint();
-    const result=generateSmartPlaylist(options,{previousEpisodeNrs});
+    const result=generateSmartPlaylist(options,{recentProposals:proposalHistory});
     const remaining=180-(performance.now()-started); if (remaining>0) await wait(remaining);
     if (!result) {
-      if (previousDraft) { appState.smartPlaylistDraft=previousDraft; renderSmartPlaylistPreview(); toast('Für diese Auswahl wurde keine deutlich andere Kombination gefunden.','warning'); }
-      else { closeDialog('smartPlaylistDialog'); toast('Für diese Auswahl wurden keine passenden Vorschläge gefunden.','warning'); }
+      if (previousDraft) {
+        appState.smartPlaylistDraft=previousDraft;
+        renderSmartPlaylistPreview();
+        toast('Mit diesen Filtern wurde keine wirklich andere Kombination gefunden.','warning');
+      } else {
+        closeDialog('smartPlaylistDialog');
+        toast('Für diese Auswahl wurden keine passenden Vorschläge gefunden.','warning');
+      }
       return;
     }
     appState.smartPlaylistOptions=options; appState.smartPlaylistDraft=result; renderSmartPlaylistPreview();
-    if (regenerate) toast(`${result.newEpisodes||1} neue Folge${result.newEpisodes===1?'':'n'} im Vorschlag.`);
+    if (regenerate) {
+      const count=Number(result.newEpisodes)||0;
+      if (count>=result.episodes.length) toast('Komplett neuer Vorschlag.');
+      else if (count>0) toast(`${count} neue Folge${count===1?'':'n'} im Vorschlag.`);
+      else toast('Neue Zusammenstellung gefunden.');
+    }
   } finally {
     $('smartPlaylistPreview')?.removeAttribute('aria-busy'); setSmartPlannerButtonLoading(false); smartPlaylistBusy=false;
   }

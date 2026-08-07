@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.2.1';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -26,7 +26,7 @@ export const appState = {
   filter: 'all', authorFilter: 'all', eraFilter: 'all', yearFilter: 'all', sort: 'nr',
   search: '', time: 'any', mood: 'any', ranking: 'rocky', playlistTab: 'essentials',
   episodeRenderLimit: 40, quickRateQueue: [], quickRateIndex: 0, quickRateHistory: [], importCandidate: null,
-  metadataUpdatedAt: null, currentPlaylistId: null, smartPlaylistDraft: null, smartPlaylistOptions: null, scrollPositions: {},
+  metadataUpdatedAt: null, currentPlaylistId: null, smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], scrollPositions: {},
 };
 
 export const nowIso = () => new Date().toISOString();
@@ -258,5 +258,5 @@ export function setStoredFilters() {
   const filters = appState.user?.settings?.filters || {}; appState.filter = filters.filter || 'all'; appState.authorFilter = filters.author || 'all'; appState.eraFilter = filters.era || 'all'; appState.yearFilter = filters.year || 'all'; appState.sort = filters.sort || 'nr';
 }
 export function resetRuntimeState() {
-  appState.detailNr = null; appState.recommendationNr = null; appState.search = ''; appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = []; appState.currentPlaylistId = null; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null;
+  appState.detailNr = null; appState.recommendationNr = null; appState.search = ''; appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = []; appState.currentPlaylistId = null; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
 }
