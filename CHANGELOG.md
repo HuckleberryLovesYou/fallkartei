@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.7 – 2026-08-07
+
+### Teilbares Hörprofil
+
+- das frühere, ruhigere Profilkarten-Layout dient wieder stärker als gestalterische Grundlage
+- Bewertungsbalken entfallen zugunsten einer klareren Hierarchie
+- Geschmacksprofil und Favoriten wurden kompakter und persönlicher angeordnet
+- Favoriten erscheinen wieder als gut lesbare Liste statt als große Einzelkarten
+- kosmetische Profilauszeichnungen nutzen den verbleibenden Raum deutlich effizienter
+- die Darstellung passt sich weiterhin dynamisch an vorhandene Auszeichnungen an
+
 ## 1.3.6 – 2026-08-07
 
 ### Teilbares Hörprofil
