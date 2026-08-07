@@ -167,29 +167,3 @@ Dies ist ein **inoffizielles, nicht-kommerzielles Fanprojekt** und steht in kein
 ## Lizenz
 
 Für dieses Repository wird derzeit keine Open-Source-Lizenz erteilt. Der Quellcode wird öffentlich zur technischen Bereitstellung und Nachvollziehbarkeit der App gehostet. Alle Rechte an den selbst erstellten Projektbestandteilen bleiben vorbehalten.
-
-## Vollständiges Archiv
-
-Beim erstmaligen Erreichen von 100 Prozent merkt sich die App diesen Meilenstein dauerhaft.
-Neue Folgen können den aktuellen Fortschritt später wieder senken, ohne den bereits erreichten
-Abschluss zu löschen. Einige Details rund um diesen Moment bleiben bewusst undokumentiert.
-
-## Interne Tests
-
-Interne Vorschauen arbeiten nicht persistent und verändern keine regulär gespeicherten
-Bewertungen, Hörvorgänge, Playlists oder Profileinstellungen.
-
-
-## Zoom-Sperre
-
-Pinch-Zoom, Doppeltipp-Zoom sowie die üblichen Browser-Zoomgesten werden in der App unterdrückt,
-damit schnelle Mehrfachtipps und Bediengesten keine unbeabsichtigte Vergrößerung auslösen.
-
-
-## Folgendetails in „Profil verbessern“
-
-Der Titel der aktuell vorgeschlagenen Folge ist antippbar. Dadurch kann die vollständige
-Folgendetailansicht direkt aus der Schnellbewertung geöffnet werden. Dort stehen unter anderem
-„Als Nächstes“ und die Playlistzuordnung zur Verfügung. Nach dem Schließen bleibt die
-Schnellbewertung an derselben Stelle geöffnet.
-
