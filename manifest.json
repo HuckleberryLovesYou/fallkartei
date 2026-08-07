@@ -9,15 +9,60 @@
   "orientation": "any",
   "background_color": "#08090c",
   "theme_color": "#08090c",
-  "categories": ["entertainment", "utilities"],
+  "categories": [
+    "entertainment",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Folgen durchsuchen", "short_name": "Folgen", "description": "Katalog und Suche öffnen", "url": "./#episodes", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "Hörlisten öffnen", "short_name": "Listen", "description": "Playlists und Warteschlange öffnen", "url": "./#playlists", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Folgen durchsuchen",
+      "short_name": "Folgen",
+      "description": "Katalog und Suche öffnen",
+      "url": "./#episodes",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Hörlisten öffnen",
+      "short_name": "Listen",
+      "description": "Playlists und Warteschlange öffnen",
+      "url": "./#playlists",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

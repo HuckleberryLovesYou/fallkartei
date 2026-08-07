@@ -24,9 +24,26 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="install-guide.css">
   <title>Die Fallkartei – persönlicher Hörspielbegleiter</title>
 </head>
-<body>
+<body class="install-guide-pending">
+
+  <div id="installGuide" class="install-guide" aria-hidden="true">
+    <div class="install-guide-shade" aria-hidden="true"></div>
+    <section class="install-guide-panel" role="dialog" aria-modal="true" aria-labelledby="installGuideTitle">
+      <div id="installGuideContent"></div>
+    </section>
+    <div id="installEdgeHint" class="install-edge-hint hidden" aria-hidden="true"></div>
+  </div>
+  <button id="installGuideReopen" class="install-guide-reopen hidden" type="button">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5"/>
+      <path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/>
+    </svg>
+    Installationshilfe
+  </button>
+
   <div id="app" class="app-shell">
     <header class="topbar">
       <button class="brand" data-go="home" aria-label="Startseite"><img src="icon-192.png" alt=""><span><strong>Die Fallkartei</strong><small>Persönlicher Hörspielbegleiter</small></span></button>
@@ -89,7 +106,7 @@
         <section class="settings-group"><span class="eyebrow">Hilfe</span><article class="settings-list"><button id="startTutorial"><span><strong>Kurze Einführung starten</strong><small>Drei Schritte statt eines langen Rundgangs</small></span><b>›</b></button><button id="openHelp"><span><strong>Kurzanleitung öffnen</strong><small>Bewertungen, Empfehlungen, Warteschlange und Backups</small></span><b>›</b></button></article></section>
         <section class="settings-group"><span class="eyebrow">Diagnose</span><article id="diagnosticsCard" class="diagnostics-card"></article><div class="button-row"><button id="copyDiagnostics" class="button secondary">Diagnose kopieren</button><button id="validateCatalog" class="button secondary">Katalog prüfen</button></div></section>
         <section class="settings-group"><span class="eyebrow">Zurücksetzen</span><article class="settings-list danger-list"><button id="resetPersonalData"><span><strong>Persönliche Daten zurücksetzen</strong><small>Hörstatus, Bewertungen, Listen und Verlauf löschen</small></span><b>›</b></button></article></section>
-        <section class="about-card"><img src="icon-192.png" alt="App-Icon"><div><strong>Die Fallkartei</strong><span>Version 1.0 · Offline-fähig</span><small>Inoffizielles, nicht-kommerzielles Fanprojekt. Persönliche Daten bleiben lokal. Marken, Titelbilder und Illustrationen gehören den jeweiligen Rechteinhabern.</small></div></section>
+        <section class="about-card"><img src="icon-192.png" alt="App-Icon"><div><strong>Die Fallkartei</strong><span>Version 1.2.0 · Offline-fähig</span><small>Inoffizielles, nicht-kommerzielles Fanprojekt. Persönliche Daten bleiben lokal. Marken, Titelbilder und Illustrationen gehören den jeweiligen Rechteinhabern.</small></div></section>
       </section>
     </main>
 
@@ -112,6 +129,7 @@
   <dialog id="helpDialog" class="sheet-dialog"><div class="dialog-handle"></div><header><div><span class="eyebrow">Kurzanleitung</span><h2>So funktioniert Die Fallkartei</h2></div><button class="icon-button" data-close-dialog="helpDialog">×</button></header><div class="dialog-body help-content"><h3>Bewertungen</h3><p>Eine Bewertung markiert die Folge automatisch als gehört. Beim Zurücksetzen auf ungehört wird die Bewertung nach Bestätigung entfernt.</p><h3>Empfehlungen</h3><p>Die Fallkartei kombiniert deinen Geschmack mit Community-Wertung, Verfügbarkeit und Abwechslung. Der Match-Score ist eine Orientierung, keine Wahrscheinlichkeit.</p><h3>Als Nächstes</h3><p>Die Warteschlange ist dein aktueller Hörplan. Playlists bleiben davon unabhängig.</p><h3>Cover</h3><p>In der Folgenansicht kannst du zwischen Kompakt, Details und Cover wechseln. Cover werden online von den in den Metadaten hinterlegten offiziellen Bildquellen geladen.</p><h3>Streaming</h3><p>Dein bevorzugter Anbieter erscheint als Hauptbutton. Weitere vorhandene Dienste findest du platzsparend unter „Weitere Anbieter“.</p><h3>Profil personalisieren</h3><p>Ein optionaler Anzeigename erzeugt automatisch Initialen. Außerdem kannst du bis zu drei Lieblingsfolgen selbst festlegen; freie Plätze werden automatisch ergänzt.</p><h3>Statistik teilen</h3><p>Öffne dein Hörprofil und tippe auf „Statistik als Bild teilen“, um eine Grafik für Freunde zu erzeugen. Der freiwillige Anzeigename und deine Top 3 können darin erscheinen. Notizen und private Verlaufsdaten werden nicht gezeigt.</p><h3>Backups</h3><p>Deine Daten liegen lokal im Browser. Exportiere regelmäßig eine JSON-Datei, besonders vor einem Gerätewechsel.</p></div></dialog>
   <dialog id="confirmDialog" class="confirm-dialog"><div><span id="confirmEyebrow" class="eyebrow">Bestätigen</span><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="button-row"><button id="confirmCancel" class="button secondary">Abbrechen</button><button id="confirmAccept" class="button danger">Bestätigen</button></div></div></dialog>
 
+  <script src="install-guide.js"></script>
   <script src="episodes-seed.js"></script>
   <script type="module" src="app.js"></script>
 </body>

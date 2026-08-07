@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.1.4" src="https://img.shields.io/badge/Version-1.1.4-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.2.0" src="https://img.shields.io/badge/Version-1.2.0-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -81,15 +81,26 @@ Die veröffentlichte App läuft direkt über GitHub Pages:
 
 **https://letsmagic.github.io/fallkartei/**
 
+Beim Öffnen im Browser erkennt Die Fallkartei automatisch die passende Installationsmöglichkeit und führt Schritt für Schritt durch den Vorgang.
+
 ### iPhone und iPad
 
-1. Seite in Safari öffnen
+In der neuen kompakten Safari-Ansicht erklärt die Hilfe:
+
+1. unten rechts die drei Punkte öffnen
 2. **Teilen** auswählen
-3. **Zum Home-Bildschirm** antippen
+3. **Zu Home-Bildschirm hinzufügen** antippen
+4. mit **Hinzufügen** bestätigen
 
-### Desktop und Android
+Bei Safari-Layouts mit direkt sichtbarem Teilen-Symbol wird ein verkürzter Ablauf angeboten.
 
-Unterstützte Browser zeigen eine eigene Installationsoption in der Adressleiste oder im Browsermenü an.
+### Android
+
+In unterstützten Chromium-Browsern erscheint ein eigener Button, der direkt den nativen Installationsdialog öffnet. Ist dieser nicht verfügbar, zeigt die App eine verständliche Anleitung über das Drei-Punkte-Menü.
+
+### Nach der Installation
+
+Beim Start über das App-Symbol wird die Installationshilfe übersprungen und stattdessen die kurze Einführung der eigentlichen App geöffnet. Die Installation bleibt freiwillig; über **Vorerst im Browser ansehen** kann Die Fallkartei auch ohne Installation verwendet werden.
 
 ## Daten und Datenschutz
 
@@ -125,7 +136,9 @@ Die App ist bewusst ohne Framework und ohne Build-Schritt umgesetzt:
 ```text
 index.html             Oberfläche und Dialoge
 style.css              Layout, Komponenten und mobile Anpassungen
+install-guide.css      Darstellung der geführten Installation
 app.js                  Einstiegspunkt
+install-guide.js       Geräteerkennung und Installationsführung
 app-controller.js       Rendering und Interaktionen
 core.js                 Zustand, Speicherung und Migration
 catalog.js              Katalog, Metadaten und Suche
@@ -140,7 +153,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.1.4** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.2.0** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 

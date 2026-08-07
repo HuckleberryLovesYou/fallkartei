@@ -2,6 +2,27 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.2.0 – 2026-08-07
+
+### Installation
+
+- neue geführte Installationshilfe beim Öffnen im normalen Browser
+- automatische Unterscheidung zwischen iPhone/iPad, Android und Desktop
+- Unterstützung der neuen kompakten Safari-Ansicht über „Drei Punkte → Teilen“
+- alternativer Safari-Ablauf bei direkt sichtbarem Teilen-Symbol
+- animierte Hinweise auf die ungefähre Position der benötigten Browserbedienelemente
+- vereinfachte Safari-Darstellungen für „Teilen“, „Zu Home-Bildschirm hinzufügen“ und „Hinzufügen“
+- direkter nativer Installationsbutton in unterstützten Android- und Chromium-Browsern
+- verständlicher manueller Android-Ablauf als Fallback
+- freiwillige Nutzung im Browser mit erneut aufrufbarer Installationshilfe
+
+### Ersteinrichtung
+
+- die Installationshilfe erscheint nur im normalen Browser
+- beim Start über das installierte App-Symbol beginnt stattdessen die eigentliche App-Einführung
+- bestehende lokale Bewertungen, Playlists und Einstellungen bleiben erhalten
+- die bestehende PWA-Identität und der GitHub-Pages-Pfad bleiben unverändert
+
 ## 1.1.4 – 2026-08-07
 
 ### Feinschliff
