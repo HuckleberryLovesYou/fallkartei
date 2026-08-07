@@ -2,6 +2,18 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.3 – 2026-08-07
+
+### Navigation
+
+- die fünf Haupttabs besitzen jetzt technisch voneinander unabhängige Scrollbereiche
+- beim Tabwechsel wird die Fensterposition nicht mehr programmatisch nach oben oder unten verschoben
+- jeder Tab bleibt unmittelbar an der Stelle stehen, an der er verlassen wurde
+- dadurch entfällt die sichtbare Auf-/Abbewegung beim Wechsel zwischen unterschiedlich langen Seiten
+- ein noch nicht benutzter Tab beginnt weiterhin oben
+- erneutes Antippen des bereits aktiven unteren Tabs scrollt weiterhin bewusst weich zum Seitenanfang
+- geöffnete Dialoge sperren auch die neuen internen Seiten-Scrollbereiche zuverlässig
+
 ## 1.4.2 – 2026-08-07
 
 ### Folgendetails

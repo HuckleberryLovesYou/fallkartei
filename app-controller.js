@@ -1344,25 +1344,40 @@ function renderTutorial(step=0) {
   $('tutorialContent').innerHTML=`<div class="quick-rate-card"><div class="tutorial-visual">${item.icon}</div><p>${esc(item.text)}</p><div class="tutorial-dots">${steps.map((_,index)=>`<span class="${index===step?'active':''}"></span>`).join('')}</div><button class="button primary full" data-tutorial-next="${step}">${step===steps.length-1?'App benutzen':'Weiter'}</button>${step<steps.length-1?'<button class="text-button" data-tutorial-skip>Überspringen</button>':''}</div>`; openDialog('tutorialDialog');
 }
 
-function scrollPageTo(y,{smooth=false}={}) {
+function pageScroller(page=appState.page) {
+  return document.querySelector(`.page[data-page="${CSS.escape(String(page||''))}"]`);
+}
+function scrollTabToTop(page,{smooth=false}={}) {
+  const scroller=pageScroller(page);
+  if(!scroller) return;
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  window.scrollTo({top:Math.max(0,Number(y)||0),left:0,behavior:smooth&&!reduced?'smooth':'auto'});
+  scroller.scrollTo({
+    top:0,
+    left:0,
+    behavior:smooth&&!reduced?'smooth':'auto',
+  });
 }
 function navigate(page,{restore=true,topIfActive=false}={}) {
+  const target=pageScroller(page);
+  if(!target) return;
+
   if(page===appState.page&&topIfActive) {
-    appState.scrollPositions[page]=0;
-    scrollPageTo(0,{smooth:true});
+    scrollTabToTop(page,{smooth:true});
     return;
   }
-  if(page===appState.page) return;
+  if(page===appState.page) {
+    if(!restore) scrollTabToTop(page);
+    return;
+  }
 
-  if(appState.page) appState.scrollPositions[appState.page]=window.scrollY;
+  // Jede Hauptseite ist ihr eigener Scrollcontainer. Beim Ausblenden bleibt
+  // scrollTop direkt am Element erhalten; es muss nichts am Fenster bewegt werden.
+  if(!restore) target.scrollTop=0;
+
   appState.page=page;
-  $$('.page').forEach((node)=>node.classList.toggle('active',node.dataset.page===page));
+  $$('.page').forEach((node)=>node.classList.toggle('active',node===target));
   $$('.bottom-nav [data-go]').forEach((button)=>button.classList.toggle('active',button.dataset.go===page));
   history.replaceState(null,'',page==='home'?'./':`#${page}`);
-  const target=restore?(appState.scrollPositions[page]||0):0;
-  requestAnimationFrame(()=>scrollPageTo(target));
 }
 function refreshViews(detailNr=null) { renderHome(); renderEpisodes(); renderRanking(); renderPlaylists(); renderSettings(); if (detailNr&&$('episodeDialog').open) renderEpisodeDetail(detailNr); }
 async function toggleHeardAction(nr) {
