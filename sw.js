@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fallkartei-1.5.1';
+const CACHE_NAME = 'fallkartei-1.5.2';
 const CACHE_PREFIXES = ['fallkartei-','spurzeichen-','ddf-tracker-'];
 const APP_SHELL = [
   './','./index.html','./style.css','./install-guide.css','./install-guide.js','./app.js','./manifest.json','./episodes-seed.js','./episodes.json',

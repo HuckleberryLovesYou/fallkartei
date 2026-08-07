@@ -2088,3 +2088,40 @@ html{
   max-width:100%;
   overflow-wrap:anywhere;
 }
+
+
+/* v1.5.2 – Folgendetail: horizontal fest, vertikal wieder vollständig scrollbar */
+.episode-dialog[open]{
+  display:flex;
+  flex-direction:column;
+  width:min(820px,100%);
+  max-width:100vw;
+  max-height:min(92dvh,calc(var(--fallkartei-app-height) - 28px));
+  overflow:hidden;
+}
+
+.episode-dialog>.dialog-handle,
+.episode-dialog>header,
+.episode-dialog>.sticky-dialog-actions{
+  flex:0 0 auto;
+}
+
+.episode-dialog .dialog-body{
+  flex:1 1 auto;
+  min-height:0;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+
+/* Sticky ist innerhalb eines Flex-Dialogs nicht mehr nötig:
+   Die Aktionsleiste ist ohnehin ein festes eigenes Flex-Kind unten. */
+.episode-dialog>.sticky-dialog-actions{
+  position:relative;
+  bottom:auto;
+  z-index:3;
+}

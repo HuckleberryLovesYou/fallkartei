@@ -2,6 +2,16 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.2 – 2026-08-07
+
+### Folgendetails
+
+- vertikales Scrollen im Folgendetail unter iOS wiederhergestellt
+- der Dialog verwendet jetzt ein klares Flex-Layout mit festem Kopf und fester Aktionsleiste
+- nur der mittlere Inhaltsbereich scrollt vertikal
+- die horizontale Begrenzung aus 1.5.1 bleibt erhalten
+- Zusammenhangsreihen können weiterhin unabhängig horizontal gewischt werden
+
 ## 1.5.1 – 2026-08-07
 
 ### Folgendetails
