@@ -2,6 +2,34 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.2 – 2026-08-07
+
+### Akte 100
+
+- der normale 100%-Moment verrät das Easter Egg nicht mehr
+- der sichtbare Button „Geheime Akte öffnen“ wurde aus der Belohnungsansicht entfernt
+- auch der versteckte Debug-Bereich besitzt keinen direkten Akte-100-Button mehr
+- Akte 100 ist ausschließlich über das mehrfache Antippen des Archivabzeichens erreichbar
+- die geheime Akte erhielt eine deutlich umfangreichere Darstellung mit Verschlussstufe, personalisiertem Archivcode, erster Spur, Archivweg, ältester Wiederhörspur und geheimer Protokollseite
+- beim erstmaligen Finden von Akte 100 wird als zweite Belohnungsstufe der Archivgold-Hintergrund für teilbare Profilbilder freigeschaltet
+- die geheime Freischaltung bleibt dauerhaft erhalten, auch wenn später neue Folgen erscheinen
+
+### Profil teilen
+
+- direkt nach 100 Prozent besitzt das geteilte Profil weiterhin den normalen Hintergrund, aber bereits den Archivgold-Banner
+- nach dem Finden von Akte 100 kann zwischen „Normal“ und „Archivgold“ gewählt werden
+- der Archivgold-Banner bleibt in beiden Varianten sichtbar
+- die gewählte Hintergrundvariante wird lokal gespeichert
+- die Debug-Sandbox kann auch diese Freischaltung testen, verwirft sie danach aber vollständig
+
+### Bedienung
+
+- Pinch-Zoom und Doppeltipp-Zoom wurden appweit deaktiviert
+- Browser-Zoom über Strg/Befehlstaste und Mausrad beziehungsweise Plus/Minus wird innerhalb der App unterdrückt
+- Mehrfachtipps auf Versionskarte und Archivabzeichen lösen dadurch keine unbeabsichtigte Vergrößerung mehr aus
+- nach dem Beenden der Debug-Vorschau verschwindet „Archivprüfung“ wieder aus den Einstellungen
+- für einen erneuten Test muss die Versionskarte wieder siebenmal angetippt werden
+
 ## 1.3.1 – 2026-08-07
 
 ### Debug-Sandbox

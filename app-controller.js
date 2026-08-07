@@ -1,8 +1,8 @@
 import {
   APP_VERSION, STREAMING_SERVICES, appState, RATING_LABELS, RATING_ORDER, activityCount, addListen, addManyToQueue, availableEpisode, beginArchiveDebugSession,
   cleanProfileName, downloadBlob, esc, formatDate, formatDuration, formatRelativeDate, getEpisode, loadUser, moveQueueItem, nowIso, persistFilters,
-  endArchiveDebugSession, normalizeText, profileInitials, profileRatingCount, removeFromQueue, removeListen, resetRuntimeState, saveUser, setHeard, setNote, setRating, setStoredFilters,
-  togglePinned, toggleQueue,
+  endArchiveDebugSession, normalizeText, profileInitials, profileRatingCount, removeFromQueue, removeListen, resetRuntimeState, saveUser, setArchiveShareStyle, setHeard, setNote, setRating, setStoredFilters,
+  togglePinned, toggleQueue, unlockArchiveDossier,
 } from './core.js';
 import { catalogValidation, clearCatalogCache, loadCatalog, moodMatches, refreshMetadata, searchScore, timeMatches } from './catalog.js';
 import {
@@ -266,6 +266,16 @@ function confettiHtml(count=44) {
     return `<i style="--x:${left}%;--delay:${delay}s;--duration:${duration}s;--drift:${drift}px;--rotate:${rotate}deg;--confetti:${colors[index%colors.length]}"></i>`;
   }).join('');
 }
+function archiveCode(data) {
+  const source=`${data.unlockedAt||''}|${data.total}|${cleanProfileName(appState.user.settings.profileName)||'ANONYM'}`;
+  let hash=2166136261;
+  for(const char of source) {
+    hash^=char.charCodeAt(0);
+    hash=Math.imul(hash,16777619);
+  }
+  const code=Math.abs(hash>>>0).toString(36).toUpperCase().padStart(7,'0').slice(-7);
+  return `RB-${String(data.total).padStart(3,'0')}-${code}`;
+}
 function archiveStats() {
   const progress=archiveDisplayProgress();
   const totalMinutes=appState.user.history.reduce((sum,item)=>sum+(getEpisode(item.nr)?.durationMin||0),0);
@@ -277,29 +287,72 @@ function archiveStats() {
   const ratingCounts={minus:0,neutral:0,plus:0,super:0};
   ratings.forEach((status)=>{ratingCounts[status.rating]=(ratingCounts[status.rating]||0)+1;});
   const commonRating=Object.entries(ratingCounts).sort((a,b)=>b[1]-a[1])[0];
+  const historyDates=appState.user.history
+    .map((item)=>new Date(item.at))
+    .filter((date)=>!Number.isNaN(date.getTime()))
+    .sort((a,b)=>a-b);
+  const firstListenAt=historyDates[0]?.toISOString()||null;
+  const heardEpisodes=appState.catalog.filter((episode)=>statusOf(episode.nr).heard);
+  const oldestRevisit=heardEpisodes
+    .map((episode)=>({episode,at:statusOf(episode.nr).heardAt}))
+    .filter((entry)=>entry.at&&!Number.isNaN(new Date(entry.at).getTime()))
+    .sort((a,b)=>new Date(a.at)-new Date(b.at))[0]||null;
+  const unlockedAt=archiveDate();
+  const completionDays=firstListenAt&&unlockedAt
+    ?Math.max(0,Math.round((new Date(unlockedAt)-new Date(firstListenAt))/86400000))
+    :0;
+  const profile=buildTasteProfile();
+  const insights=topProfileInsights(profile);
   return {
     ...progress,
     hours:Math.round(totalMinutes/60),
     ratings:ratings.length,
+    ratedPercent:progress.total?Math.round(ratings.length/progress.total*100):0,
     reheard:[...listenCounts.values()].filter((count)=>count>1).length,
     mostEpisode,
     mostCount:mostListened?.[1]||0,
     commonRating:commonRating?.[1]?RATING_LABELS[commonRating[0]]:'Noch offen',
-    unlockedAt:archiveDate(),
+    firstListenAt,
+    oldestRevisit,
+    completionDays,
+    favoriteTheme:insights.tags[0]?.label||'Noch nicht ermittelt',
+    unlockedAt,
   };
 }
 function showArchiveCelebration({debug=false}={}) {
-  const progress=debug
-    ?{...actualArchiveProgress(),heard:actualArchiveProgress().total,percent:100,debug:true}
-    :archiveDisplayProgress();
   const content=$('archiveCelebrationContent');
-  content.innerHTML=`<div class="archive-confetti" aria-hidden="true">${confettiHtml()}</div><section class="archive-celebration-card"><div class="archive-file-animation" aria-hidden="true"><div class="archive-file-tab">DIE FALLKARTEI</div><div class="archive-file-sheet"><span>LETZTE AKTE</span><strong>✓</strong></div><div class="archive-seal">100 %</div></div><span class="eyebrow">${debug?'Debug-Vorschau':'Meilenstein erreicht'}</span><h2>Fallkartei vollständig</h2><p>Du hast jede aktuell verfügbare Folge gehört. Das vollständige Archiv gehört jetzt dir.</p><div class="archive-celebration-reward"><strong>${debug?'Testansicht Archivgold':'Vollständiges Archiv'}</strong><span>${debug?'Nur temporäre Vorschau – nichts wird freigeschaltet oder gespeichert.':'Abzeichen und Profilhintergrund „Archivgold“ dauerhaft freigeschaltet'}</span></div><div class="archive-celebration-actions"><button class="button primary full" data-action="archive-relisten">Lange nicht gehörte Folge finden</button><button class="button secondary full" data-action="archive-open-profile">Archivprofil ansehen</button><button class="text-button" data-action="archive-open-dossier">Geheime Akte öffnen</button><button class="text-button muted-button" data-close-dialog="archiveCelebrationDialog">Schließen</button></div></section>`;
+  content.innerHTML=`<div class="archive-confetti" aria-hidden="true">${confettiHtml()}</div><section class="archive-celebration-card"><div class="archive-file-animation" aria-hidden="true"><div class="archive-file-tab">DIE FALLKARTEI</div><div class="archive-file-sheet"><span>LETZTE AKTE</span><strong>✓</strong></div><div class="archive-seal">100 %</div></div><span class="eyebrow">${debug?'Debug-Vorschau':'Meilenstein erreicht'}</span><h2>Fallkartei vollständig</h2><p>Du hast jede aktuell verfügbare Folge gehört. Das vollständige Archiv gehört jetzt dir.</p><div class="archive-celebration-reward"><strong>${debug?'Testansicht des Archivabzeichens':'Vollständiges Archiv'}</strong><span>${debug?'Nur temporäre Vorschau – nichts wird freigeschaltet oder gespeichert.':'Abzeichen und Archivgold-Banner für dein teilbares Profil dauerhaft freigeschaltet'}</span></div><div class="archive-celebration-actions"><button class="button primary full" data-action="archive-relisten">Lange nicht gehörte Folge finden</button><button class="button secondary full" data-action="archive-open-profile">Archivprofil ansehen</button><button class="text-button muted-button" data-close-dialog="archiveCelebrationDialog">Schließen</button></div></section>`;
   openDialog('archiveCelebrationDialog');
   try {navigator.vibrate?.([24,45,24]);} catch {}
 }
 function renderArchiveDossier() {
+  const unlock=unlockArchiveDossier();
   const data=archiveStats();
-  $('archiveDossierContent').innerHTML=`<section class="archive-dossier ${data.debug?'is-debug':''}"><div class="archive-dossier-stamp">${data.debug?'TEST':'FREIGEGEBEN'}</div><div class="archive-dossier-heading"><span>AKTE 100</span><strong>Vollständiges Archiv</strong><small>${data.debug?'Temporäre Debug-Vorschau':`Erstmals vollständig am ${formatDate(data.unlockedAt)}`}</small></div><div class="archive-dossier-grid"><div><span>Status</span><strong>${data.percent===100?'Vollständig':`${data.heard}/${data.total}`}</strong></div><div><span>Hörzeit</span><strong>${data.hours} Std.</strong></div><div><span>Bewertungen</span><strong>${data.ratings}</strong></div><div><span>Mehrfach gehört</span><strong>${data.reheard}</strong></div></div><div class="archive-dossier-feature"><span>Meistgehörte Folge</span><strong>${data.mostEpisode?`${data.mostEpisode.nr}. ${esc(data.mostEpisode.titel)}`:'Noch keine'}</strong><small>${data.mostCount?`${data.mostCount} Hörvorgänge`:'Noch kein Verlauf vorhanden'}</small></div><div class="archive-dossier-feature"><span>Häufigste Bewertung</span><strong>${esc(data.commonRating)}</strong><small>Die Akte verändert keine persönlichen Daten.</small></div></section>`;
+  const firstDiscovery=unlock.first;
+  const code=archiveCode(data);
+  const firstListen=data.firstListenAt?formatDate(data.firstListenAt):'Nicht dokumentiert';
+  const oldestTrace=data.oldestRevisit
+    ?`${data.oldestRevisit.episode.nr}. ${data.oldestRevisit.episode.titel}`
+    :'Noch keine Spur';
+  $('archiveDossierContent').innerHTML=`<section class="archive-dossier ${data.debug?'is-debug':''} ${firstDiscovery?'first-discovery':''}">
+    <div class="archive-dossier-stamp">${data.debug?'TEST':'STRENG VERTRAULICH'}</div>
+    ${firstDiscovery?`<div class="archive-secret-unlock"><span class="archive-secret-key">✦</span><div><small>ZUSATZFREIGABE ERTEILT</small><strong>Archivgold-Hintergrund</strong><p>Du hast Akte 100 gefunden. Der goldene Hintergrund für teilbare Profilbilder wurde freigeschaltet und kann ab jetzt jederzeit ein- oder ausgeschaltet werden.</p></div></div>`:''}
+    <div class="archive-dossier-heading"><span>AKTE 100 · VERSCHLUSSSTUFE GOLD</span><strong>Hüter des vollständigen Archivs</strong><small>${data.debug?'Temporäre Debug-Vorschau':`Erstmals vollständig am ${formatDate(data.unlockedAt)}`}</small></div>
+    <div class="archive-clearance-card"><span>PERSONALISIERTER ARCHIVCODE</span><strong>${esc(code)}</strong><small>Erzeugt aus Abschlussdatum, Katalogumfang und lokalem Profil. Keine Übertragung an einen Server.</small></div>
+    <div class="archive-dossier-grid archive-dossier-grid-six">
+      <div><span>Status</span><strong>${data.percent===100?'Vollständig':`${data.heard}/${data.total}`}</strong></div>
+      <div><span>Hörzeit</span><strong>${data.hours} Std.</strong></div>
+      <div><span>Bewertet</span><strong>${data.ratedPercent} %</strong></div>
+      <div><span>Mehrfach gehört</span><strong>${data.reheard}</strong></div>
+      <div><span>Erste Spur</span><strong>${esc(firstListen)}</strong></div>
+      <div><span>Archivweg</span><strong>${data.completionDays} Tage</strong></div>
+    </div>
+    <div class="archive-dossier-feature"><span>Meistgehörter Fall</span><strong>${data.mostEpisode?`${data.mostEpisode.nr}. ${esc(data.mostEpisode.titel)}`:'Noch keiner'}</strong><small>${data.mostCount?`${data.mostCount} dokumentierte Hörvorgänge`:'Noch kein Verlauf vorhanden'}</small></div>
+    <div class="archive-dossier-feature"><span>Älteste Wiederhörspur</span><strong>${esc(oldestTrace)}</strong><small>${data.oldestRevisit?`Zuletzt gehört: ${formatDate(data.oldestRevisit.at)}`:'Noch nicht ermittelt'}</small></div>
+    <div class="archive-dossier-feature"><span>Archivsignatur</span><strong>${esc(data.favoriteTheme)} · ${esc(data.commonRating)}</strong><small>Bevorzugtes Motiv und häufigste Bewertung deiner Fallkartei.</small></div>
+    <div class="archive-secret-protocol"><span>GEHEIMES PROTOKOLL</span><p>Die vollständige Fallkartei ist kein Endpunkt. Neue Akten dürfen hinzukommen – der Rang bleibt bestehen.</p><div><i></i><i></i><i></i></div></div>
+  </section>`;
+  if(firstDiscovery&&$('profileDialog')?.open) renderProfile();
   openDialog('archiveDossierDialog');
 }
 function scheduleArchiveAchievementCheck() {
@@ -330,6 +383,10 @@ function archiveBadgeHtml(data) {
     ?`${data.total} von ${data.total} Folgen · aktuell vollständig`
     :`Einmal vollständig abgeschlossen · aktuell ${data.heard} von ${data.total}`;
   return `<button class="archive-profile-badge ${data.debugArchive?'is-debug':''}" data-action="archive-badge"><span class="archive-badge-mark">✓</span><span><small>${data.debugArchive?'DEBUG-VORSCHAU':'DAUERHAFT FREIGESCHALTET'}</small><strong>Vollständiges Archiv</strong><em>${esc(current)}</em></span><b>Archivgold</b></button>`;
+}
+function archiveShareStyleHtml(data) {
+  if(!data.archiveUnlocked||!data.archiveGoldBackgroundUnlocked) return '';
+  return `<section class="archive-share-style"><div><span>Hintergrund fürs Teilen</span><small>Der Archivgold-Banner bleibt in beiden Varianten sichtbar.</small></div><div class="archive-share-style-options" role="group" aria-label="Hintergrund für das teilbare Profil"><button class="${data.archiveShareStyle==='normal'?'active':''}" data-action="archive-share-style" data-style="normal">Normal</button><button class="${data.archiveShareStyle==='gold'?'active':''}" data-action="archive-share-style" data-style="gold">Archivgold</button></div></section>`;
 }
 function renderProfileProgress() {
   const progress=archiveDisplayProgress();
@@ -619,6 +676,9 @@ function profileSnapshot() {
     archiveUnlocked:archiveUnlocked(),
     archiveUnlockedAt:archiveDate(),
     archiveUnlockTotal:appState.debugArchivePreview?available.length:appState.user.settings.archiveUnlockTotal,
+    archiveDossierFoundAt:appState.user.settings.archiveDossierFoundAt,
+    archiveGoldBackgroundUnlocked:Boolean(appState.user.settings.archiveDossierFoundAt),
+    archiveShareStyle:appState.user.settings.archiveDossierFoundAt&&appState.user.settings.archiveShareStyle==='gold'?'gold':'normal',
     debugArchive:appState.debugArchivePreview,
   };
 }
@@ -634,35 +694,35 @@ function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=3) {
 }
 async function profileImageBlob() {
   const data=profileSnapshot(),canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1350; const ctx=canvas.getContext('2d'); if(!ctx)throw new Error('Canvas wird von diesem Browser nicht unterstützt.');
-  const archive=data.archiveUnlocked;
+  const archive=data.archiveUnlocked,goldBackground=archive&&data.archiveGoldBackgroundUnlocked&&data.archiveShareStyle==='gold';
   const background=ctx.createLinearGradient(0,0,1080,1350);
-  if(archive){background.addColorStop(0,'#231b0d');background.addColorStop(.42,'#090a0d');background.addColorStop(1,'#171109');}
+  if(goldBackground){background.addColorStop(0,'#231b0d');background.addColorStop(.42,'#090a0d');background.addColorStop(1,'#171109');}
   else{background.addColorStop(0,'#171b24');background.addColorStop(.5,'#090b10');background.addColorStop(1,'#11151d');}
   ctx.fillStyle=background;ctx.fillRect(0,0,1080,1350);
   const glow=ctx.createRadialGradient(870,110,0,870,110,520);
-  glow.addColorStop(0,archive?'rgba(231,183,73,.34)':'rgba(41,128,255,.24)');
-  glow.addColorStop(1,archive?'rgba(231,183,73,0)':'rgba(41,128,255,0)');
+  glow.addColorStop(0,goldBackground?'rgba(231,183,73,.34)':'rgba(41,128,255,.24)');
+  glow.addColorStop(1,goldBackground?'rgba(231,183,73,0)':'rgba(41,128,255,0)');
   ctx.fillStyle=glow;ctx.fillRect(0,0,1080,650);
-  if(archive){
+  if(goldBackground){
     ctx.save();ctx.globalAlpha=.15;ctx.strokeStyle='#d5aa52';ctx.lineWidth=1;
     for(let x=-200;x<1280;x+=54){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+520,1350);ctx.stroke();}
     ctx.restore();
     roundedRect(ctx,24,24,1032,1302,34,'rgba(0,0,0,0)','#b98a34');
     roundedRect(ctx,38,38,1004,1274,28,'rgba(0,0,0,0)','rgba(238,203,118,.35)');
   }
-  ctx.fillStyle=archive?'#e8c36d':'#aeb5c0';ctx.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.letterSpacing='4px';ctx.fillText(data.displayName?`HÖRPROFIL VON ${data.displayName.toLocaleUpperCase('de-DE')}`:'MEIN HÖRPROFIL',76,90);ctx.letterSpacing='0px';
-  ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle=archive?'#c9ae73':'#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,archive?'rgba(75,55,21,.96)':'rgba(31,38,51,.96)',archive?'#d8b55e':'#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
-  ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=archive?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
+  ctx.fillStyle=goldBackground?'#e8c36d':'#aeb5c0';ctx.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.letterSpacing='4px';ctx.fillText(data.displayName?`HÖRPROFIL VON ${data.displayName.toLocaleUpperCase('de-DE')}`:'MEIN HÖRPROFIL',76,90);ctx.letterSpacing='0px';
+  ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle=goldBackground?'#c9ae73':'#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,goldBackground?'rgba(75,55,21,.96)':'rgba(31,38,51,.96)',goldBackground?'#d8b55e':'#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
+  ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=goldBackground?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
   if(archive){roundedRect(ctx,720,258,284,102,28,'rgba(74,53,18,.92)','#e1bb60');ctx.fillStyle='#f2d486';ctx.font='800 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('VOLLSTÄNDIGES ARCHIV',746,294);ctx.fillStyle='#fff3ca';ctx.font='850 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('ARCHIVGOLD',746,334);}
-  const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,archive?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',archive?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=archive?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
-  ctx.fillStyle=archive?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
+  const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,goldBackground?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=goldBackground?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
+  ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
   const ratingData=[['Super',data.ratingCounts.super,'#f5c542'],['Plus',data.ratingCounts.plus,'#2980ff'],['Neutral',data.ratingCounts.neutral,'#727986'],['Minus',data.ratingCounts.minus,'#e0525b']],maxRating=Math.max(1,...ratingData.map((item)=>item[1]));
-  ratingData.forEach(([label,value,color],index)=>{const y=704+index*58;ctx.fillStyle=archive?'#c6b386':'#aeb5c0';ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,76,y+25);roundedRect(ctx,230,y,676,30,15,archive?'#292318':'#202630');if(value)roundedRect(ctx,230,y,Math.max(28,676*value/maxRating),30,15,color);ctx.fillStyle='#f5f6f8';ctx.textAlign='right';ctx.fillText(String(value),1004,y+25);ctx.textAlign='left';});
-  ctx.fillStyle=archive?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEIN GESCHMACK',76,970);
+  ratingData.forEach(([label,value,color],index)=>{const y=704+index*58;ctx.fillStyle=goldBackground?'#c6b386':'#aeb5c0';ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,76,y+25);roundedRect(ctx,230,y,676,30,15,goldBackground?'#292318':'#202630');if(value)roundedRect(ctx,230,y,Math.max(28,676*value/maxRating),30,15,color);ctx.fillStyle='#f5f6f8';ctx.textAlign='right';ctx.fillText(String(value),1004,y+25);ctx.textAlign='left';});
+  ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEIN GESCHMACK',76,970);
   const taste=[['Thema',data.insights.tags[0]?.label||'Noch offen'],['Autor',data.insights.authors[0]?.label||'Noch offen'],['Figur',data.insights.characters[0]?.label||'Noch offen']];
-  taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,archive?'rgba(31,26,17,.94)':'rgba(20,24,32,.9)',archive?'#6f5829':'#2d3440');ctx.fillStyle=archive?'#bba672':'#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
+  taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,goldBackground?'rgba(31,26,17,.94)':'rgba(20,24,32,.9)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle=goldBackground?'#bba672':'#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
   const favoriteText=data.favorites.length?`Favoriten: ${data.favorites.map((episode)=>`${episode.nr}. ${episode.titel}`).join(' · ')}`:'Bewerte weitere Folgen, um deine Favoriten zu zeigen.';
-  ctx.fillStyle=archive?'#c8b58b':'#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
+  ctx.fillStyle=goldBackground?'#c8b58b':'#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
   if(data.debugArchive){
     ctx.save();
     ctx.translate(540,674);
@@ -677,7 +737,7 @@ async function profileImageBlob() {
     ctx.fillText('NICHT FREIGESCHALTET · NICHT GESPEICHERT',0,37);
     ctx.restore();
   }
-  ctx.fillStyle=archive?'#8e794d':'#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
+  ctx.fillStyle=goldBackground?'#8e794d':'#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
   return await new Promise((resolve,reject)=>canvas.toBlob((blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),'image/png',.95));
 }
 function dataNameForShare(){const name=cleanProfileName(appState.user.settings.profileName);return name?`Hörprofil von ${name} – Die Fallkartei`:'';}
@@ -722,7 +782,7 @@ function profileFavoritesHtml(data) {
 }
 function renderProfile() {
   const data=profileSnapshot(),{profile,insights,heard,hours,ratings}=data;
-  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div>${archiveBadgeHtml(data)}<p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button ${data.archiveUnlocked?'archive-gold':''}" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>${data.displayName?`Erkennbar als Profil von ${esc(data.displayName)}`:'Zum Vergleichen mit Freunden'}</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
+  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div>${archiveBadgeHtml(data)}${archiveShareStyleHtml(data)}<p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button ${data.archiveShareStyle==='gold'?'archive-gold':''}" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>${data.archiveUnlocked?`Archivgold-Banner · Hintergrund ${data.archiveShareStyle==='gold'?'Archivgold':'Normal'}`:data.displayName?`Erkennbar als Profil von ${esc(data.displayName)}`:'Zum Vergleichen mit Freunden'}</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
 }
 function openProfileEntry() { if(!appState.user.settings.profileSetupSeen){openProfileEditor({returnTo:'profile',firstOpen:true});return;} renderProfile(); }
 function detailNeighbors(nr) { const available=appState.catalog.filter(availableEpisode); const index=available.findIndex((episode)=>episode.nr===Number(nr)); return {prev:available[index-1],next:available[index+1]}; }
@@ -997,7 +1057,6 @@ function bindDelegatedEvents() {
         if(archiveBadgeTapCount>=3){archiveBadgeTapCount=0;clearTimeout(archiveBadgeTapTimer);renderArchiveDossier();}
         break;
       }
-      case'archive-open-dossier':closeDialog('archiveCelebrationDialog');renderArchiveDossier();break;
       case'archive-open-profile':closeDialog('archiveCelebrationDialog');renderProfile();break;
       case'archive-relisten':
         closeDialog('archiveCelebrationDialog');
@@ -1008,6 +1067,12 @@ function bindDelegatedEvents() {
         navigate('home',{restore:false});
         pickRecommendation();
         break;
+      case'archive-share-style':{
+        const style=setArchiveShareStyle(action.dataset.style);
+        renderProfile();
+        toast(style==='gold'?'Archivgold-Hintergrund aktiviert.':'Normaler Hintergrund aktiviert.');
+        break;
+      }
       case'share-profile':await shareProfileImage();break;case'edit-profile':closeDialog('profileDialog');openProfileEditor({returnTo:'profile'});break;case'open-quick-rate':closeDialog('profileDialog');openQuickRate();break;case'open-my-ratings':appState.ranking='mine';renderRanking();closeDialog('profileDialog');navigate('ranking',{restore:false});break;case'rate-focus':$('episodeDialogBody').querySelector('.rating-buttons')?.scrollIntoView({behavior:'smooth',block:'center'});break;case'new-playlist-with':openPlaylistEditor(null,nr);break;
       case'queue-playlist':{const playlist=getPlaylist(action.dataset.playlistId);if(playlist){addManyToQueue(playlist.episodes.map((episode)=>episode.nr));renderPlaylists();renderHome();toast(`${playlist.episodes.length} Folgen vorgemerkt.`);}break;}
       case'share-playlist':await sharePlaylist(action.dataset.playlistId);break;case'playlist-up':movePlaylistEpisode(action.dataset.playlistId,nr,-1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-down':movePlaylistEpisode(action.dataset.playlistId,nr,1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-remove':removeEpisodeFromPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-add':addEpisodeToPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();toast('Zur Playlist hinzugefügt.');break;
@@ -1018,6 +1083,19 @@ function bindDelegatedEvents() {
       case'smart-save':{const draft=appState.smartPlaylistDraft;if(draft?.episodes.length){const playlist=createPlaylist({name:draft.name,description:draft.description,episodeNrs:draft.episodes.map((episode)=>episode.nr),generated:true});appState.playlistTab='mine';appState.user.settings.playlistTab='mine';saveUser();closeDialog('smartPlaylistDialog');renderPlaylists();renderPlaylistDetail(playlist.id);toast(`Playlist mit ${draft.episodes.length} Folgen gespeichert.`);}break;}
       case'detail-prev':{const previous=detailNeighbors(appState.detailNr).prev;if(previous)renderEpisodeDetail(previous.nr);break;}case'detail-next':{const next=detailNeighbors(appState.detailNr).next;if(next)renderEpisodeDetail(next.nr);break;}
     }
+  });
+}
+function setupZoomLock() {
+  const preventGesture=(event)=>event.preventDefault();
+  document.addEventListener('gesturestart',preventGesture,{passive:false});
+  document.addEventListener('gesturechange',preventGesture,{passive:false});
+  document.addEventListener('gestureend',preventGesture,{passive:false});
+  document.addEventListener('wheel',(event)=>{
+    if(event.ctrlKey||event.metaKey) event.preventDefault();
+  },{passive:false});
+  document.addEventListener('keydown',(event)=>{
+    if(!(event.ctrlKey||event.metaKey)) return;
+    if(['+','-','=','0'].includes(event.key)) event.preventDefault();
   });
 }
 function bindStaticEvents() {
@@ -1137,16 +1215,13 @@ function bindStaticEvents() {
     renderAll();
     renderProfile();
   });
-  $('openArchiveDossierDebug').addEventListener('click',()=>{
-    beginArchiveDebugSession();
-    document.body.classList.add('archive-debug-active');
-    closeDialog('archiveDebugDialog');
-    renderAll();
-    renderArchiveDossier();
-  });
   $('stopArchiveDebug').addEventListener('click',()=>{
     endArchiveDebugSession();
     document.body.classList.remove('archive-debug-active');
+    $('developerSettings').classList.add('hidden');
+    settingsSecretTapCount=0;
+    clearTimeout(settingsSecretTimer);
+    closeDialog('archiveDebugDialog');
     setStoredFilters();
     populateSelects();
     renderAll();
@@ -1164,7 +1239,7 @@ function registerServiceWorker() {
 }
 function renderAll(){renderHome();renderEpisodes();renderRanking();renderPlaylists();renderSettings();}
 export async function startApp() {
-  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();bindStaticEvents();setupSheetInteractions();renderAll();
+  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();setupZoomLock();bindStaticEvents();setupSheetInteractions();renderAll();
   const hash=location.hash.slice(1);navigate(['episodes','ranking','playlists','settings'].includes(hash)?hash:'home',{restore:false});$('loadingScreen').classList.add('hidden');setTimeout(()=>$('loadingScreen')?.remove(),500);
   achievementChecksEnabled=true;scheduleArchiveAchievementCheck();
   const installedMode=window.FallkarteiInstallGuide?.isStandalone?.()??window.matchMedia?.('(display-mode: standalone)')?.matches??window.navigator.standalone===true;if(installedMode&&!appState.user.settings.tutorialCompleted)setTimeout(()=>renderTutorial(0),350);refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
