@@ -170,28 +170,15 @@ Für dieses Repository wird derzeit keine Open-Source-Lizenz erteilt. Der Quellc
 
 ## Vollständiges Archiv
 
-Beim erstmaligen Erreichen von 100 Prozent wird dauerhaft das Abzeichen **Vollständiges Archiv**
-freigeschaltet. Neue Folgen können den aktuellen Fortschritt später wieder unter 100 Prozent
-senken; das bereits verdiente Abzeichen und das Archivgold-Design der teilbaren Profilkarte
-bleiben trotzdem erhalten.
+Beim erstmaligen Erreichen von 100 Prozent merkt sich die App diesen Meilenstein dauerhaft.
+Neue Folgen können den aktuellen Fortschritt später wieder senken, ohne den bereits erreichten
+Abschluss zu löschen. Einige Details rund um diesen Moment bleiben bewusst undokumentiert.
 
+## Interne Tests
 
-## Debug-Sandbox
+Interne Vorschauen arbeiten nicht persistent und verändern keine regulär gespeicherten
+Bewertungen, Hörvorgänge, Playlists oder Profileinstellungen.
 
-Die versteckte Archivprüfung ist vollständig nicht persistent. Beim Start wird eine temporäre
-Kopie der persönlichen Daten angelegt. Sämtliche Änderungen während der Vorschau bleiben nur im
-Arbeitsspeicher und werden beim Beenden oder Neuladen verworfen. Debug-Profilbilder tragen einen
-sichtbaren Hinweis und können nicht mit einer echten Archivfreischaltung verwechselt werden.
-
-
-## Akte 100 und Teilen-Hintergründe
-
-Das erstmalige Erreichen von 100 Prozent schaltet das dauerhafte Archivabzeichen und den
-Archivgold-Banner auf teilbaren Profilbildern frei. Der vollständig goldene Hintergrund bleibt
-zunächst verborgen. Er wird erst durch das Easter Egg **Akte 100** freigeschaltet.
-
-Nach der geheimen Freischaltung kann im Profil jederzeit zwischen normalem und goldenem
-Teilen-Hintergrund gewechselt werden. Der Archivgold-Banner bleibt in beiden Varianten sichtbar.
 
 ## Zoom-Sperre
 

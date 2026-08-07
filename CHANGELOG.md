@@ -14,47 +14,26 @@ Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumenti
 
 ## 1.3.2 – 2026-08-07
 
-### Akte 100
+### Abschlussmoment und Profil
 
-- der normale 100%-Moment verrät das Easter Egg nicht mehr
-- der sichtbare Button „Geheime Akte öffnen“ wurde aus der Belohnungsansicht entfernt
-- auch der versteckte Debug-Bereich besitzt keinen direkten Akte-100-Button mehr
-- Akte 100 ist ausschließlich über das mehrfache Antippen des Archivabzeichens erreichbar
-- die geheime Akte erhielt eine deutlich umfangreichere Darstellung mit Verschlussstufe, personalisiertem Archivcode, erster Spur, Archivweg, ältester Wiederhörspur und geheimer Protokollseite
-- beim erstmaligen Finden von Akte 100 wird als zweite Belohnungsstufe der Archivgold-Hintergrund für teilbare Profilbilder freigeschaltet
-- die geheime Freischaltung bleibt dauerhaft erhalten, auch wenn später neue Folgen erscheinen
-
-### Profil teilen
-
-- direkt nach 100 Prozent besitzt das geteilte Profil weiterhin den normalen Hintergrund, aber bereits den Archivgold-Banner
-- nach dem Finden von Akte 100 kann zwischen „Normal“ und „Archivgold“ gewählt werden
-- der Archivgold-Banner bleibt in beiden Varianten sichtbar
-- die gewählte Hintergrundvariante wird lokal gespeichert
-- die Debug-Sandbox kann auch diese Freischaltung testen, verwirft sie danach aber vollständig
+- die Darstellung des dauerhaft erreichten 100%-Meilensteins wurde weiter verfeinert
+- kosmetische Möglichkeiten für teilbare Profile wurden erweitert
+- überraschungsbezogene Details bleiben bewusst undokumentiert
 
 ### Bedienung
 
 - Pinch-Zoom und Doppeltipp-Zoom wurden appweit deaktiviert
 - Browser-Zoom über Strg/Befehlstaste und Mausrad beziehungsweise Plus/Minus wird innerhalb der App unterdrückt
-- Mehrfachtipps auf Versionskarte und Archivabzeichen lösen dadurch keine unbeabsichtigte Vergrößerung mehr aus
-- nach dem Beenden der Debug-Vorschau verschwindet „Archivprüfung“ wieder aus den Einstellungen
-- für einen erneuten Test muss die Versionskarte wieder siebenmal angetippt werden
+- interne Testoberflächen werden nach dem Beenden vollständig zurückgesetzt
 
 ## 1.3.1 – 2026-08-07
 
-### Debug-Sandbox
+### Interne Tests
 
-- die versteckte 100%-Prüfung läuft nun als vollständig nicht persistente Sandbox
-- beim Start wird eine temporäre Kopie aller persönlichen Daten angelegt
-- sämtliche Speichervorgänge werden während der Debug-Vorschau blockiert
-- Bewertungen, Gehört-Status, Hörverlauf, Playlists, Profilangaben, Warteschlange und Empfehlungshistorie können den echten Datenstand nicht verändern
-- beim Beenden werden sämtliche während der Vorschau vorgenommenen Änderungen verworfen
-- auch ein Neuladen stellt automatisch den zuletzt regulär gespeicherten Datenstand wieder her
-- bereits vorgemerkte reguläre Speichervorgänge verwenden nun eine unveränderliche Momentaufnahme und können nicht versehentlich Debug-Daten übernehmen
-- während der Vorschau erscheint dauerhaft der Hinweis „DEBUG-VORSCHAU · NICHT GESPEICHERT“
-- in der Debug-Animation wird ausdrücklich keine dauerhafte Freischaltung behauptet
-- aus der Debug-Vorschau erzeugte Profilbilder erhalten ein deutliches Wasserzeichen
-- echte 100%-Freischaltungen und reguläre Archivgold-Profilbilder bleiben unverändert
+- interne Vorschauen laufen in einer vollständig nicht persistenten Sandbox
+- während einer Vorschau werden keine Änderungen am regulären Datenstand gespeichert
+- beim Beenden oder Neuladen wird der zuvor gespeicherte Zustand wiederhergestellt
+- Testausgaben werden sichtbar als Vorschau gekennzeichnet
 
 ## 1.3.0 – 2026-08-07
 
@@ -72,22 +51,15 @@ Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumenti
 
 ### Vollständiges Archiv
 
-- erstmaliges Erreichen von 100 Prozent löst eine goldene Vollbildanimation mit Konfetti aus
-- dauerhaftes Profilabzeichen „Vollständiges Archiv“
-- Freischaltdatum und damaliger Katalogumfang werden lokal gespeichert
-- Abzeichen und kosmetische Belohnung bleiben erhalten, wenn später neue Folgen erscheinen
-- teilbare Profilbilder verwenden nach der Freischaltung automatisch den Hintergrund „Archivgold“
-- die Profilanzeige erhält einen goldenen Fortschrittsakzent
-- dreimaliges Antippen des Archivabzeichens öffnet das Easter Egg „Akte 100“
-- die geheime Akte zeigt unter anderem Hörzeit, Bewertungen und die meistgehörte Folge
-- aus der Belohnungsansicht kann direkt eine lange nicht gehörte Folge gesucht werden
+- das erstmalige Erreichen von 100 Prozent wird dauerhaft als Meilenstein gespeichert
+- später veröffentlichte Folgen nehmen einen bereits erreichten Abschluss nicht wieder weg
+- der Abschluss erhielt einen besonderen Moment und zusätzliche kosmetische Details
+- weitergehende Überraschungen werden im Änderungsverlauf bewusst nicht beschrieben
 
-### Versteckte Archivprüfung
+### Interne Tests
 
-- siebenmaliges Antippen der Versionskarte in den Einstellungen blendet einen versteckten Testbereich ein
-- der passwortgeschützte Test simuliert 100 Prozent ausschließlich für die aktuelle Sitzung
-- Bewertungen, Hörverlauf, Playlists und die echte Freischaltung werden dabei nicht verändert
-- Animation, Archivgold-Profil und „Akte 100“ können separat geprüft werden
+- für die Entwicklungsprüfung wurde ein nicht persistenter Vorschauweg ergänzt
+- persönliche Daten und echte Freischaltungen bleiben dabei unverändert
 
 ## 1.2.4 – 2026-08-07
 
