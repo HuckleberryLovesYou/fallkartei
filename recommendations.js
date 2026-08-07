@@ -59,12 +59,18 @@ function isSuppressed(nr) {
   if (appState.user.settings.hiddenRecommendations.includes(Number(nr))) return true;
   const until = appState.user.settings.snoozedRecommendations?.[nr]; return Boolean(until && new Date(until) > new Date());
 }
-export function recommendationCandidates({ time='any',mood='any',includeHeard=false,timeMatcher,moodMatcher } = {}) {
+export function recommendationCandidates({
+  time='any',mood='any',author='all',era='all',includeHeard=false,timeMatcher,moodMatcher
+} = {}) {
   const profile = buildTasteProfile();
   return appState.catalog.filter((episode) => availableEpisode(episode) && !isSuppressed(episode.nr))
     .filter((episode) => includeHeard || !appState.user.episodes?.[episode.nr]?.heard)
-    .filter((episode) => !timeMatcher || timeMatcher(episode,time)).filter((episode) => !moodMatcher || moodMatcher(episode,mood))
-    .map((episode) => ({ episode,score:recommendationScore(episode,profile) })).sort((a,b) => b.score.total-a.score.total);
+    .filter((episode) => author==='all' || episode.author===author)
+    .filter((episode) => era==='all' || episode.era===era)
+    .filter((episode) => !timeMatcher || timeMatcher(episode,time))
+    .filter((episode) => !moodMatcher || moodMatcher(episode,mood))
+    .map((episode) => ({ episode,score:recommendationScore(episode,profile) }))
+    .sort((a,b) => b.score.total-a.score.total);
 }
 export function chooseRecommendation(options = {}) {
   let candidates = recommendationCandidates(options); if (!candidates.length && !options.includeHeard) candidates = recommendationCandidates({ ...options,includeHeard:true });

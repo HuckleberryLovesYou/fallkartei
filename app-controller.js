@@ -242,7 +242,14 @@ function renderProfileProgress() {
   $('profileProgress').textContent=`${total?Math.round(heard/total*100):0} %`;
 }
 function pickRecommendation() {
-  const result=chooseRecommendation({time:appState.time,mood:appState.mood,timeMatcher:timeMatches,moodMatcher:moodMatches});
+  const result=chooseRecommendation({
+    time:appState.time,
+    mood:appState.mood,
+    author:appState.recommendationAuthor,
+    era:appState.recommendationEra,
+    timeMatcher:timeMatches,
+    moodMatcher:moodMatches,
+  });
   appState.recommendationNr=result?.episode.nr||null; renderRecommendation(); if (!result) toast('Für diese Auswahl wurde keine passende Folge gefunden.','warning');
 }
 function renderRecommendation() {
@@ -535,9 +542,30 @@ function renderSettings() {
   $('diagnosticsCard').innerHTML=diagnosticsText().split('\n').map((line)=>{const [label,...rest]=line.split(': ');return`<div class="diagnostic"><span>${esc(label)}</span><strong>${esc(rest.join(': '))}</strong></div>`;}).join('');
 }
 function populateSelects() {
-  const authors=[...new Set(appState.catalog.map((episode)=>episode.author).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de')); const eras=[...new Set(appState.catalog.map((episode)=>episode.era).filter(Boolean))]; const years=[...new Set(appState.catalog.map((episode)=>episode.year).filter(Boolean))].sort((a,b)=>b-a);
-  $('authorFilter').innerHTML='<option value="all">Alle</option>'+authors.map((value)=>`<option>${esc(value)}</option>`).join(''); $('smartAuthor').innerHTML='<option value="all">Alle</option>'+authors.map((value)=>`<option>${esc(value)}</option>`).join(''); $('eraFilter').innerHTML='<option value="all">Alle</option>'+eras.map((value)=>`<option>${esc(value)}</option>`).join(''); $('yearFilter').innerHTML='<option value="all">Alle</option>'+years.map((value)=>`<option>${value}</option>`).join('');
-  $('authorFilter').value=authors.includes(appState.authorFilter)?appState.authorFilter:'all'; $('eraFilter').value=eras.includes(appState.eraFilter)?appState.eraFilter:'all'; $('yearFilter').value=years.map(String).includes(String(appState.yearFilter))?String(appState.yearFilter):'all'; $('episodeSort').value=appState.sort;
+  const authors=[...new Set(appState.catalog.map((episode)=>episode.author).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));
+  const eras=[...new Set(appState.catalog.map((episode)=>episode.era).filter(Boolean))];
+  const years=[...new Set(appState.catalog.map((episode)=>episode.year).filter(Boolean))].sort((a,b)=>b-a);
+  const authorOptions=authors.map((value)=>`<option>${esc(value)}</option>`).join('');
+  const eraOptions=eras.map((value)=>`<option>${esc(value)}</option>`).join('');
+
+  $('authorFilter').innerHTML='<option value="all">Alle</option>'+authorOptions;
+  $('smartAuthor').innerHTML='<option value="all">Alle</option>'+authorOptions;
+  $('recommendationAuthor').innerHTML='<option value="all">Alle Autoren</option>'+authorOptions;
+  $('eraFilter').innerHTML='<option value="all">Alle</option>'+eraOptions;
+  $('recommendationEra').innerHTML='<option value="all">Alle Ären</option>'+eraOptions;
+  $('yearFilter').innerHTML='<option value="all">Alle</option>'+years.map((value)=>`<option>${value}</option>`).join('');
+
+  appState.authorFilter=authors.includes(appState.authorFilter)?appState.authorFilter:'all';
+  appState.eraFilter=eras.includes(appState.eraFilter)?appState.eraFilter:'all';
+  appState.recommendationAuthor=authors.includes(appState.recommendationAuthor)?appState.recommendationAuthor:'all';
+  appState.recommendationEra=eras.includes(appState.recommendationEra)?appState.recommendationEra:'all';
+
+  $('authorFilter').value=appState.authorFilter;
+  $('eraFilter').value=appState.eraFilter;
+  $('recommendationAuthor').value=appState.recommendationAuthor;
+  $('recommendationEra').value=appState.recommendationEra;
+  $('yearFilter').value=years.map(String).includes(String(appState.yearFilter))?String(appState.yearFilter):'all';
+  $('episodeSort').value=appState.sort;
 }
 function renderImportPreview(candidate) {
   appState.importCandidate=candidate; const preview=backupPreview(candidate); $('importPreview').innerHTML=`<p>Backup ${preview.exportedAt?`vom <strong>${formatDate(preview.exportedAt)}</strong>`:'ohne Datumsangabe'} · Version ${esc(preview.version)}</p><div class="import-summary"><div><strong>${preview.episodeStates}</strong><span>Folgenstände</span></div><div><strong>${preview.playlists}</strong><span>Playlists</span></div><div><strong>${preview.pinned}</strong><span>Anheftungen</span></div><div><strong>${preview.history}</strong><span>Verlaufseinträge</span></div></div><p class="muted">${preview.conflicts} Einträge unterscheiden sich vom aktuellen Stand.</p><div class="button-row"><button class="button primary" data-import-mode="merge">Zusammenführen</button><button class="button danger" data-import-mode="replace">Ersetzen</button></div><p class="muted">Beim Ersetzen wird vorher automatisch dein aktueller Stand heruntergeladen.</p>`; openDialog('importDialog');
@@ -555,10 +583,25 @@ function navigate(page,{restore=true}={}) {
 }
 function refreshViews(detailNr=null) { renderHome(); renderEpisodes(); renderRanking(); renderPlaylists(); renderSettings(); if (detailNr&&$('episodeDialog').open) renderEpisodeDetail(detailNr); }
 async function toggleHeardAction(nr) {
-  const status=statusOf(nr); if (status.heard&&status.rating) { const yes=await confirmAction({title:'Wieder auf ungehört setzen?',text:'Dabei wird auch deine Bewertung entfernt. Notiz und Playlists bleiben erhalten.',accept:'Auf ungehört setzen'}); if (!yes) return; }
-  setHeard(nr,!status.heard); toast(status.heard?'Als gehört markiert.':'Auf ungehört gesetzt.'); refreshViews(nr);
+  const status=statusOf(nr);
+  if (status.heard&&status.rating) {
+    const yes=await confirmAction({title:'Wieder auf ungehört setzen?',text:'Dabei wird auch deine Bewertung entfernt. Notiz und Playlists bleiben erhalten.',accept:'Auf ungehört setzen'});
+    if (!yes) return;
+  }
+  const wasQueued=appState.user.settings.queue.includes(Number(nr));
+  const nextStatus=setHeard(nr,!status.heard);
+  const message=nextStatus.heard
+    ? wasQueued?'Als gehört markiert und aus „Als Nächstes“ entfernt.':'Als gehört markiert.'
+    : 'Auf ungehört gesetzt.';
+  toast(message); refreshViews(nr);
 }
-function handleRating(nr,rating) { const status=setRating(nr,rating); toast(status.rating?`${RATING_LABELS[status.rating]} gespeichert.`:'Bewertung entfernt.'); refreshViews(nr); }
+function handleRating(nr,rating) {
+  const wasQueued=appState.user.settings.queue.includes(Number(nr));
+  const status=setRating(nr,rating);
+  const message=status.rating?`${RATING_LABELS[status.rating]} gespeichert.`:'Bewertung entfernt.';
+  toast(wasQueued&&status.heard?`${message} Aus „Als Nächstes“ entfernt.`:message);
+  refreshViews(nr);
+}
 async function sharePlaylist(id) {
   const playlist=getPlaylist(id); if (!playlist) return; const text=[playlist.name||playlist.title,...playlist.episodes.map((episode)=>`${episode.nr}. ${episode.titel}`)].join('\n');
   try { if (navigator.share) await navigator.share({title:playlist.name||playlist.title,text}); else { await navigator.clipboard.writeText(text); toast('Playlist kopiert.'); } } catch(error) { if(error?.name!=='AbortError') toast('Teilen nicht möglich.','error'); }
@@ -599,7 +642,18 @@ function bindDelegatedEvents() {
 }
 function bindStaticEvents() {
   bindDelegatedEvents(); $('profileButton').addEventListener('click',openProfileEntry); $('findRecommendation').addEventListener('click',pickRecommendation); $('anotherRecommendation').addEventListener('click',pickRecommendation); $('recommendationFeedback').addEventListener('click',renderFeedback); $('quickRateHome').addEventListener('click',openQuickRate);
-  $('recommendationTime').addEventListener('change',(event)=>{appState.time=event.target.value;}); $('recommendationMood').addEventListener('change',(event)=>{appState.mood=event.target.value;});
+  for (const [id,key] of [
+    ['recommendationTime','time'],
+    ['recommendationMood','mood'],
+    ['recommendationAuthor','recommendationAuthor'],
+    ['recommendationEra','recommendationEra'],
+  ]) {
+    $(id).addEventListener('change',(event)=>{
+      appState[key]=event.target.value;
+      appState.recommendationNr=null;
+      renderRecommendation();
+    });
+  }
   $('episodeSearch').addEventListener('input',(event)=>{appState.search=event.target.value;appState.episodeRenderLimit=40;renderEpisodes();}); $('clearSearch').addEventListener('click',()=>{appState.search='';$('episodeSearch').value='';renderEpisodes();});
   $('statusFilters').addEventListener('click',(event)=>{const button=event.target.closest('[data-filter]');if(!button)return;appState.filter=button.dataset.filter;appState.episodeRenderLimit=40;persistFilters();renderEpisodes();});
   for(const [id,key] of [['authorFilter','authorFilter'],['eraFilter','eraFilter'],['yearFilter','yearFilter'],['episodeSort','sort']])$(id).addEventListener('change',(event)=>{appState[key]=event.target.value;appState.episodeRenderLimit=40;persistFilters();renderEpisodes();});
@@ -616,7 +670,24 @@ function bindStaticEvents() {
   $('episodeDialogBody').addEventListener('change',(event)=>{const box=event.target.closest('[data-playlist-check]');if(!box)return;if(box.checked)addEpisodeToPlaylist(box.dataset.playlistCheck,Number(box.dataset.nr));else removeEpisodeFromPlaylist(box.dataset.playlistCheck,Number(box.dataset.nr));renderPlaylists();toast(box.checked?'Zur Playlist hinzugefügt.':'Aus Playlist entfernt.');});
   $('exportBackup').addEventListener('click',async()=>{await exportBackup();renderHome();renderSettings();toast('Backup wurde bereitgestellt.');}); $('backupNow').addEventListener('click',async()=>{await exportBackup();renderHome();toast('Backup wurde bereitgestellt.');}); $('dismissBackupReminder').addEventListener('click',()=>{appState.user.settings.backupReminderDismissedAt=nowIso();saveUser();renderHome();}); $('importBackup').addEventListener('click',()=>$('backupFile').click()); $('backupFile').addEventListener('change',async(event)=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;try{renderImportPreview(parseBackupText(await file.text()));}catch(error){toast(error.message,'error');}});
   $('refreshMetadata').addEventListener('click',async()=>{const button=$('refreshMetadata');button.disabled=true;try{const result=await refreshMetadata({force:true});populateSelects();renderAll();toast(result.updated?'Folgenwissen wurde aktualisiert.':'Folgenwissen ist aktuell.');}catch(error){toast(`Aktualisierung fehlgeschlagen: ${error.message}`,'error');}finally{button.disabled=false;}});
-  $('resetCatalog').addEventListener('click',async()=>{if(await confirmAction({title:'Katalog-Cache zurücksetzen?',text:'Persönliche Daten bleiben erhalten.',accept:'Katalog neu laden',danger:false})){await clearCatalogCache();populateSelects();renderAll();toast('Eingebauter Katalog wurde neu geladen.');}});
+  $('resetCatalog').addEventListener('click',async()=>{
+    if(!await confirmAction({title:'Katalog-Cache zurücksetzen?',text:'Persönliche Daten bleiben erhalten. Folgenwissen und Cover werden anschließend sofort erneut geladen.',accept:'Katalog neu laden',danger:false})) return;
+    const button=$('resetCatalog'); button.disabled=true;
+    try {
+      await clearCatalogCache();
+      let metadataLoaded=false;
+      try {
+        const result=await refreshMetadata({force:true});
+        metadataLoaded=Boolean(result.updated||result.count);
+      } catch(error) {
+        console.warn('Folgenwissen konnte nach dem Katalog-Reload nicht sofort geladen werden.',error);
+      }
+      populateSelects(); renderAll();
+      toast(metadataLoaded?'Katalog, Folgenwissen und Cover wurden neu geladen.':'Katalog wurde neu geladen. Cover konnten gerade nicht online aktualisiert werden.',metadataLoaded?'info':'warning');
+    } finally {
+      button.disabled=false;
+    }
+  });
   $('restoreRecommendations').addEventListener('click',()=>{restoreHiddenRecommendations();toast('Ausgeblendete Empfehlungen wurden zurückgesetzt.');renderSettings();});
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
   $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});

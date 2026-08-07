@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.2.1';
+export const APP_VERSION = '1.2.2';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -24,7 +24,7 @@ export const RATING_VALUES = { minus: -1.7, neutral: 0, plus: 1, super: 2.15 };
 export const appState = {
   catalog: [], user: null, page: 'home', detailNr: null, recommendationNr: null,
   filter: 'all', authorFilter: 'all', eraFilter: 'all', yearFilter: 'all', sort: 'nr',
-  search: '', time: 'any', mood: 'any', ranking: 'rocky', playlistTab: 'essentials',
+  search: '', time: 'any', mood: 'any', recommendationAuthor: 'all', recommendationEra: 'all', ranking: 'rocky', playlistTab: 'essentials',
   episodeRenderLimit: 40, quickRateQueue: [], quickRateIndex: 0, quickRateHistory: [], importCandidate: null,
   metadataUpdatedAt: null, currentPlaylistId: null, smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], scrollPositions: {},
 };
@@ -209,11 +209,19 @@ export function episodeState(nr) {
   const key = Number(nr); if (!appState.user.episodes[key]) appState.user.episodes[key] = normalizeEpisodeState({});
   return appState.user.episodes[key];
 }
+function removeCompletedFromQueue(nr) {
+  const number=Number(nr);
+  const queue=appState.user?.settings?.queue;
+  if (!Array.isArray(queue)||!queue.includes(number)) return false;
+  appState.user.settings.queue=queue.filter((item)=>item!==number);
+  return true;
+}
 export function setHeard(nr, heard, { addHistory = true } = {}) {
   const status = episodeState(nr);
   if (heard) {
     const wasHeard = status.heard;
     const at = nowIso(); status.heard = true; status.heardAt = at;
+    removeCompletedFromQueue(nr);
     if (addHistory) appState.user.history.unshift({ id: uid('listen'), nr: Number(nr), at });
     status.listenCount = addHistory ? appState.user.history.filter((item) => item.nr === Number(nr)).length : Math.max(1,Number(status.listenCount)||0,wasHeard?1:0);
   } else {
@@ -224,13 +232,17 @@ export function setHeard(nr, heard, { addHistory = true } = {}) {
 }
 export function addListen(nr) {
   const status = episodeState(nr); const at = nowIso(); status.heard = true; status.heardAt = at;
+  removeCompletedFromQueue(nr);
   appState.user.history.unshift({ id: uid('listen'), nr: Number(nr), at }); status.listenCount = appState.user.history.filter((item) => item.nr === Number(nr)).length;
   status.updatedAt = at; saveUser(); return status;
 }
 export function setRating(nr, rating) {
   const status = episodeState(nr); const normalized = normalizeRating(rating);
   if (normalized && !status.heard) setHeard(nr,true);
-  status.rating = status.rating === normalized ? null : normalized; status.heard = status.heard || Boolean(status.rating); status.updatedAt = nowIso(); saveUser(); return status;
+  status.rating = status.rating === normalized ? null : normalized;
+  status.heard = status.heard || Boolean(status.rating);
+  if (status.heard) removeCompletedFromQueue(nr);
+  status.updatedAt = nowIso(); saveUser(); return status;
 }
 export function setNote(nr,note) { const status = episodeState(nr); status.note = String(note ?? '').slice(0,10000); status.updatedAt = nowIso(); saveUser(); return status; }
 export function togglePinned(nr) {
@@ -258,5 +270,8 @@ export function setStoredFilters() {
   const filters = appState.user?.settings?.filters || {}; appState.filter = filters.filter || 'all'; appState.authorFilter = filters.author || 'all'; appState.eraFilter = filters.era || 'all'; appState.yearFilter = filters.year || 'all'; appState.sort = filters.sort || 'nr';
 }
 export function resetRuntimeState() {
-  appState.detailNr = null; appState.recommendationNr = null; appState.search = ''; appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = []; appState.currentPlaylistId = null; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
+  appState.detailNr = null; appState.recommendationNr = null; appState.search = '';
+  appState.time='any'; appState.mood='any'; appState.recommendationAuthor='all'; appState.recommendationEra='all';
+  appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = [];
+  appState.currentPlaylistId = null; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
 }

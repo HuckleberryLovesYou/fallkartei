@@ -2,6 +2,28 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.2.2 – 2026-08-07
+
+### Empfehlungen
+
+- die Verfeinerung auf der Startseite enthält nun zusätzlich Ära und Autor
+- beide Auswahllisten werden dynamisch aus dem aktuellen Katalog erstellt
+- Kombinationen wie „Crimebusters-Ära + ungehörte Folge“ sind damit direkt möglich
+- beim Ändern eines Filters wird ein alter, nicht mehr passender Vorschlag ausgeblendet
+
+### Katalog und Cover
+
+- nach „Eingebauten Katalog neu laden“ werden Folgenwissen und Cover sofort erneut geladen
+- ein Neustart der App ist für die Coverdarstellung nicht mehr erforderlich
+- bei fehlender Internetverbindung bleibt der eingebaute Katalog nutzbar und die App zeigt einen ehrlichen Hinweis
+
+### Als Nächstes
+
+- als gehört markierte Folgen werden automatisch aus „Als Nächstes“ entfernt
+- das gilt auch für Bewertungen, da eine Bewertung die Folge als gehört markiert
+- weitere Hörvorgänge entfernen eventuell noch vorhandene alte Queue-Einträge ebenfalls
+- die Folge bleibt weiterhin im Hörverlauf und in gespeicherten Playlists erhalten
+
 ## 1.2.1 – 2026-08-07
 
 ### Smart Playlists
