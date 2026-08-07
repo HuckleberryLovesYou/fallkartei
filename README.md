@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.3.2" src="https://img.shields.io/badge/Version-1.3.2-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.3.3" src="https://img.shields.io/badge/Version-1.3.3-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -154,7 +154,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.3.2** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.3.3** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 
@@ -197,4 +197,12 @@ Teilen-Hintergrund gewechselt werden. Der Archivgold-Banner bleibt in beiden Var
 
 Pinch-Zoom, Doppeltipp-Zoom sowie die üblichen Browser-Zoomgesten werden in der App unterdrückt,
 damit schnelle Mehrfachtipps und Bediengesten keine unbeabsichtigte Vergrößerung auslösen.
+
+
+## Folgendetails in „Profil verbessern“
+
+Der Titel der aktuell vorgeschlagenen Folge ist antippbar. Dadurch kann die vollständige
+Folgendetailansicht direkt aus der Schnellbewertung geöffnet werden. Dort stehen unter anderem
+„Als Nächstes“ und die Playlistzuordnung zur Verfügung. Nach dem Schließen bleibt die
+Schnellbewertung an derselben Stelle geöffnet.
 

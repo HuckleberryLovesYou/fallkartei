@@ -2,6 +2,16 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.3 – 2026-08-07
+
+### Profil verbessern
+
+- der Titel der aktuell vorgeschlagenen Folge kann nun direkt angetippt werden
+- dadurch öffnet sich die vollständige Folgendetailansicht ohne Verlassen der Schnellbewertung
+- aus den Folgendetails kann die Folge sofort zu „Als Nächstes“ oder einer eigenen Playlist hinzugefügt werden
+- nach dem Schließen der Folgendetails bleibt die Schnellbewertung bei derselben Folge und demselben Fortschritt geöffnet
+- es wurde bewusst kein zusätzlicher sichtbarer Aktionsbutton ergänzt
+
 ## 1.3.2 – 2026-08-07
 
 ### Akte 100

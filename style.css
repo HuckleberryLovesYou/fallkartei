@@ -1064,3 +1064,36 @@ summary,
     animation:none;
   }
 }
+
+
+/* v1.3.3 – Folgendetails direkt aus „Profil verbessern“ öffnen */
+.quick-rate-title{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0 8px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:inherit;
+  text-align:center;
+  cursor:pointer;
+}
+.quick-rate-title h3{
+  margin:5px 0;
+}
+.quick-rate-title:focus-visible{
+  outline:2px solid #fff;
+  outline-offset:4px;
+}
+.quick-rate-title:active{
+  transform:scale(.985);
+}
+@media (hover:hover){
+  .quick-rate-title:hover h3{
+    color:#fff;
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:5px;
+  }
+}
