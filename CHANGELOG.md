@@ -2,6 +2,13 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.5 – 2026-08-07
+
+### Smart Playlist
+
+- der zusätzliche horizontale Trenner zwischen Zusammenfassung und Zusammenhangskarte wurde entfernt
+- der vorhandene Abstand bleibt erhalten, sodass die Vorschau ruhiger und weniger technisch wirkt
+
 ## 1.4.4 – 2026-08-07
 
 ### Navigation

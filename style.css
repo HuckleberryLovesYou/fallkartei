@@ -52,7 +52,7 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 .quick-rate-hint{display:block;color:#717984;font-size:11px;line-height:1.4}
 .quick-rate-card>.button.full+.button.full{margin-top:9px}
 
-.smart-preview-hero{padding-bottom:18px;border-bottom:1px solid var(--line)}
+.smart-preview-hero{padding-bottom:18px}
 .smart-preview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .smart-preview-stats>div{min-width:0;padding:12px 9px;border:1px solid var(--line);border-radius:13px;background:var(--surface);text-align:center}
 .smart-preview-stats strong,.smart-preview-stats span{display:block}
