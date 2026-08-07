@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.8 – 2026-08-07
+
+### Profilgrafik
+
+- redundante Statuszeilen in kosmetischen Profilauszeichnungen wurden entfernt
+- Badge-Titel und Beschreibungen nutzen den gewonnenen Platz ruhiger und ausgewogener
+- die Darstellung bleibt in der App und auf teilbaren Profilbildern konsistent
+- Debug-Vorschauen bleiben weiterhin eindeutig gekennzeichnet
+
 ## 1.3.7 – 2026-08-07
 
 ### Teilbares Hörprofil

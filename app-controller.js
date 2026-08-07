@@ -404,7 +404,7 @@ function archiveBadgeHtml(data) {
   const current=data.percent===100
     ?`${data.total} von ${data.total} Folgen · aktuell vollständig`
     :`Einmal vollständig abgeschlossen · aktuell ${data.heard} von ${data.total}`;
-  return `<button class="archive-profile-badge ${data.debugArchive?'is-debug':''}" data-action="archive-badge"><span class="archive-badge-mark">✓</span><span><small>${data.debugArchive?'DEBUG-VORSCHAU':'DAUERHAFT FREIGESCHALTET'}</small><strong>Vollständiges Archiv</strong><em>${esc(current)}</em></span><b>Archivgold</b></button>`;
+  return `<button class="archive-profile-badge ${data.debugArchive?'is-debug':''}" data-action="archive-badge"><span class="archive-badge-mark">✓</span><span>${data.debugArchive?'<small>DEBUG-VORSCHAU</small>':''}<strong>Vollständiges Archiv</strong><em>${esc(current)}</em></span><b>Archivgold</b></button>`;
 }
 function archiveShareStyleHtml(data) {
   if(!data.archiveUnlocked||!data.archiveGoldBackgroundUnlocked) return '';
@@ -412,7 +412,7 @@ function archiveShareStyleHtml(data) {
 }
 function fourthQuestionMarkBannerHtml(data) {
   if(!data.fourthQuestionMarkUnlocked) return '';
-  return `<button class="fourth-question-profile-banner ${data.debugArchive?'is-debug':''}" data-action="fourth-question-mark-banner"><span class="fourth-question-banner-symbol" aria-hidden="true">????</span><span><small>${data.debugArchive?'DEBUG-VORSCHAU':'VERBORGENE AUSZEICHNUNG'}</small><strong>Das vierte Fragezeichen</strong><em>Alle verborgenen Spuren gefunden</em></span><b>›</b></button>`;
+  return `<button class="fourth-question-profile-banner ${data.debugArchive?'is-debug':''}" data-action="fourth-question-mark-banner"><span class="fourth-question-banner-symbol" aria-hidden="true">????</span><span>${data.debugArchive?'<small>DEBUG-VORSCHAU</small>':''}<strong>Das vierte Fragezeichen</strong><em>Alle verborgenen Spuren gefunden</em></span><b>›</b></button>`;
 }
 function renderProfileProgress() {
   const progress=archiveDisplayProgress();
@@ -935,19 +935,13 @@ async function profileImageBlob() {
       ctx.fillText('100%',agX+62,badgeY+72);
       ctx.textAlign='left';
 
-      ctx.fillStyle='#a98f58';
-      ctx.font='850 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.letterSpacing='1.25px';
-      ctx.fillText('DAUERHAFT FREIGESCHALTET',agX+126,badgeY+30);
-      ctx.letterSpacing='0px';
-
       ctx.fillStyle='#f2d47a';
-      ctx.font='900 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('ARCHIVGOLD',agX+126,badgeY+64);
+      ctx.font='900 27px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('ARCHIVGOLD',agX+126,badgeY+57);
 
       ctx.fillStyle='#a99b79';
-      ctx.font='650 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('Vollständiges Archiv',agX+126,badgeY+89);
+      ctx.font='650 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('Vollständiges Archiv',agX+126,badgeY+86);
 
       // Viertes Fragezeichen – ein einziges, großes, ästhetisches Fragezeichen.
       const fqX=76+badgeW+badgeGap;
@@ -970,21 +964,15 @@ async function profileImageBlob() {
       ctx.fillText('?',fqX+62,badgeY+83);
       ctx.textAlign='left';
 
-      ctx.fillStyle='#8ea9cf';
-      ctx.font='850 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.letterSpacing='1.25px';
-      ctx.fillText('VERBORGENE AUSZEICHNUNG',fqX+126,badgeY+30);
-      ctx.letterSpacing='0px';
-
       ctx.fillStyle='#f2f6fc';
-      ctx.font='900 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('DAS VIERTE',fqX+126,badgeY+62);
-      ctx.fillText('FRAGEZEICHEN',fqX+126,badgeY+88);
+      ctx.font='900 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('DAS VIERTE',fqX+126,badgeY+51);
+      ctx.fillText('FRAGEZEICHEN',fqX+126,badgeY+79);
 
       ctx.fillStyle='#a9bad0';
-      ctx.font='650 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('Alle verborgenen Spuren',fqX+126,badgeY+114);
-      ctx.fillText('gefunden',fqX+126,badgeY+132);
+      ctx.font='650 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('Alle verborgenen Spuren',fqX+126,badgeY+107);
+      ctx.fillText('gefunden',fqX+126,badgeY+126);
     } else {
       // Nur eine Auszeichnung: volle Breite, damit keinerlei leerer Platz auf eine zweite hindeutet.
       const agX=76,agY=1063,agW=928,agH=128;
@@ -1001,19 +989,13 @@ async function profileImageBlob() {
       ctx.fillText('100%',agX+67,agY+73);
       ctx.textAlign='left';
 
-      ctx.fillStyle='#af945a';
-      ctx.font='850 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.letterSpacing='1.6px';
-      ctx.fillText('DAUERHAFT FREIGESCHALTET',agX+145,agY+38);
-      ctx.letterSpacing='0px';
-
       ctx.fillStyle='#f3d57d';
-      ctx.font='900 34px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('ARCHIVGOLD',agX+145,agY+78);
+      ctx.font='900 36px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('ARCHIVGOLD',agX+145,agY+62);
 
       ctx.fillStyle='#aa9a73';
-      ctx.font='650 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillText('Vollständiges Archiv',agX+145,agY+103);
+      ctx.font='650 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText('Vollständiges Archiv',agX+145,agY+91);
     }
   }
 
