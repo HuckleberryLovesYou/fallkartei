@@ -2,6 +2,39 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.0 – 2026-08-07
+
+### Startseitenempfehlung
+
+- neuer Hörstatusfilter mit „Nur ungehörte“, „Nur gehörte“ und „Gehörte und ungehörte“
+- keine unbemerkte Umschaltung von ungehörten auf gehörte Folgen mehr
+- dieselbe Folge kann nicht zweimal direkt hintereinander vorgeschlagen werden, solange eine Alternative existiert
+- bei genau zwei passenden Folgen wechseln sich beide zuverlässig ab
+- die letzten Vorschläge werden innerhalb der aktuellen Filtersitzung nach Möglichkeit gemieden
+- bei nur einer passenden Folge erscheint beim erneuten Suchen eine klare Meldung statt einer vorgetäuschten Neuauswahl
+- gehörte Vorschläge bevorzugen länger nicht gehörte Folgen
+- nach Filteränderungen beginnt die kurze Vorschlagshistorie neu
+- Nutzer mit vollständig gehörtem Katalog können die Startseite als Wiederhören-Funktion weiterverwenden
+
+### Vollständiges Archiv
+
+- erstmaliges Erreichen von 100 Prozent löst eine goldene Vollbildanimation mit Konfetti aus
+- dauerhaftes Profilabzeichen „Vollständiges Archiv“
+- Freischaltdatum und damaliger Katalogumfang werden lokal gespeichert
+- Abzeichen und kosmetische Belohnung bleiben erhalten, wenn später neue Folgen erscheinen
+- teilbare Profilbilder verwenden nach der Freischaltung automatisch den Hintergrund „Archivgold“
+- die Profilanzeige erhält einen goldenen Fortschrittsakzent
+- dreimaliges Antippen des Archivabzeichens öffnet das Easter Egg „Akte 100“
+- die geheime Akte zeigt unter anderem Hörzeit, Bewertungen und die meistgehörte Folge
+- aus der Belohnungsansicht kann direkt eine lange nicht gehörte Folge gesucht werden
+
+### Versteckte Archivprüfung
+
+- siebenmaliges Antippen der Versionskarte in den Einstellungen blendet einen versteckten Testbereich ein
+- der passwortgeschützte Test simuliert 100 Prozent ausschließlich für die aktuelle Sitzung
+- Bewertungen, Hörverlauf, Playlists und die echte Freischaltung werden dabei nicht verändert
+- Animation, Archivgold-Profil und „Akte 100“ können separat geprüft werden
+
 ## 1.2.4 – 2026-08-07
 
 ### Playlists

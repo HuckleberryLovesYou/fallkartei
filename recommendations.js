@@ -59,28 +59,93 @@ function isSuppressed(nr) {
   if (appState.user.settings.hiddenRecommendations.includes(Number(nr))) return true;
   const until = appState.user.settings.snoozedRecommendations?.[nr]; return Boolean(until && new Date(until) > new Date());
 }
+function lastListenAt(nr) {
+  const status=appState.user.episodes?.[nr];
+  const history=appState.user.history.filter((item)=>item.nr===Number(nr));
+  const dates=[status?.heardAt,...history.map((item)=>item.at)]
+    .filter(Boolean)
+    .map((value)=>new Date(value))
+    .filter((date)=>!Number.isNaN(date.getTime()));
+  if(!dates.length) return null;
+  return new Date(Math.max(...dates.map((date)=>date.getTime()))).toISOString();
+}
+function relistenBoost(episode) {
+  const at=lastListenAt(episode.nr);
+  if(!at) return .45;
+  const days=Math.max(0,(Date.now()-new Date(at).getTime())/86400000);
+  return clamp(Math.log2(days+2)/5.5,0,.95);
+}
 export function recommendationCandidates({
-  time='any',mood='any',author='all',era='all',includeHeard=false,timeMatcher,moodMatcher
+  time='any',mood='any',author='all',era='all',status='unheard',timeMatcher,moodMatcher
 } = {}) {
   const profile = buildTasteProfile();
   return appState.catalog.filter((episode) => availableEpisode(episode) && !isSuppressed(episode.nr))
-    .filter((episode) => includeHeard || !appState.user.episodes?.[episode.nr]?.heard)
+    .filter((episode) => {
+      const heard=Boolean(appState.user.episodes?.[episode.nr]?.heard);
+      if(status==='heard') return heard;
+      if(status==='all') return true;
+      return !heard;
+    })
     .filter((episode) => author==='all' || episode.author===author)
     .filter((episode) => era==='all' || episode.era===era)
     .filter((episode) => !timeMatcher || timeMatcher(episode,time))
     .filter((episode) => !moodMatcher || moodMatcher(episode,mood))
-    .map((episode) => ({ episode,score:recommendationScore(episode,profile) }))
+    .map((episode) => {
+      const score=recommendationScore(episode,profile);
+      const heard=Boolean(appState.user.episodes?.[episode.nr]?.heard);
+      const modeBoost=status==='heard'
+        ? relistenBoost(episode)
+        : status==='all'
+          ? heard?relistenBoost(episode)*.58:.32
+          : 0;
+      return {
+        episode,
+        score:{...score,total:score.total+modeBoost},
+        lastHeardAt:lastListenAt(episode.nr),
+        modeBoost,
+      };
+    })
     .sort((a,b) => b.score.total-a.score.total);
 }
 export function chooseRecommendation(options = {}) {
-  let candidates = recommendationCandidates(options); if (!candidates.length && !options.includeHeard) candidates = recommendationCandidates({ ...options,includeHeard:true });
-  if (!candidates.length) return null;
-  const pool = candidates.slice(0,Math.min(12,candidates.length));
-  const min = Math.min(...pool.map((entry) => entry.score.total)); const weights = pool.map((entry) => Math.max(.12,entry.score.total-min+.45));
-  let roll = Math.random() * weights.reduce((sum,value) => sum+value,0); let selected = pool[0];
-  for (let i=0;i<pool.length;i++) { roll -= weights[i]; if (roll <= 0) { selected = pool[i]; break; } }
-  const history = appState.user.settings.recommendationHistory.filter((nr) => nr !== selected.episode.nr); history.push(selected.episode.nr);
-  appState.user.settings.recommendationHistory = history.slice(-30); saveUser(); return { ...selected,profile:buildTasteProfile() };
+  const allCandidates=recommendationCandidates(options);
+  if(!allCandidates.length) return {state:'empty',candidateCount:0};
+
+  const currentNr=Number(options.currentNr);
+  let candidates=allCandidates;
+  if(Number.isFinite(currentNr)) {
+    const alternatives=allCandidates.filter((entry)=>entry.episode.nr!==currentNr);
+    if(!alternatives.length) {
+      return {state:'no-alternative',candidateCount:allCandidates.length,only:allCandidates[0]};
+    }
+    candidates=alternatives;
+  }
+
+  const recent=new Set((Array.isArray(options.recentNrs)?options.recentNrs:[])
+    .map(Number).filter(Number.isFinite).slice(-2));
+  const fresh=candidates.filter((entry)=>!recent.has(entry.episode.nr));
+  if(fresh.length) candidates=fresh;
+
+  const pool=candidates.slice(0,Math.min(12,candidates.length));
+  const min=Math.min(...pool.map((entry)=>entry.score.total));
+  const weights=pool.map((entry)=>Math.max(.12,entry.score.total-min+.45));
+  let roll=Math.random()*weights.reduce((sum,value)=>sum+value,0);
+  let selected=pool[0];
+  for(let index=0;index<pool.length;index++) {
+    roll-=weights[index];
+    if(roll<=0) {selected=pool[index];break;}
+  }
+
+  const history=appState.user.settings.recommendationHistory.filter((nr)=>nr!==selected.episode.nr);
+  history.push(selected.episode.nr);
+  appState.user.settings.recommendationHistory=history.slice(-30);
+  saveUser();
+  return {
+    state:'ok',
+    ...selected,
+    candidateCount:allCandidates.length,
+    profile:buildTasteProfile(),
+  };
 }
 export function matchPresentation(episode,profile = buildTasteProfile(),score = recommendationScore(episode,profile)) {
   const count = profile.ratingCount; let level = 'Allgemeiner Tipp'; let scoreValue = Math.round(clamp(52 + score.total * 13,38,91));

@@ -19,6 +19,8 @@ const $ = (id) => document.getElementById(id);
 const $$ = (selector,root=document) => [...root.querySelectorAll(selector)];
 const symbols = { minus:'−',neutral:'0',plus:'+',super:'★' };
 let toastTimer, confirmResolver, noteTimer, pendingWorker, reloadingForUpdate = false, smartPlaylistBusy = false, profileEditorReturn = 'profile';
+let achievementChecksEnabled=false,archiveCheckQueued=false,archiveBadgeTapCount=0,archiveBadgeTapTimer,settingsSecretTapCount=0,settingsSecretTimer;
+const ARCHIVE_DEBUG_PASSWORD='AKTE100';
 
 function toast(message,type='default') { const node=$('toast'); node.textContent=message; node.dataset.type=type; node.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>node.classList.add('hidden'),2700); }
 function resetSheetPosition(dialog) {
@@ -237,25 +239,183 @@ function coverCard(episode) {
   return `<article class="cover-card"><button class="cover-card-main" data-open-episode="${episode.nr}"><span class="cover-art"><span class="cover-placeholder"><b>${episode.nr>=10000?'✦':episode.nr}</b><small>Die drei ???</small></span>${cover}<span class="cover-status">${statusHtml}</span></span><span class="cover-card-copy"><small>${episode.nr>=10000?'Spezialfolge':`Folge ${episode.nr}`}</small><strong>${esc(episode.titel)}</strong><span>${esc(episode.author||'Autor unbekannt')}</span></span></button></article>`;
 }
 
+function actualArchiveProgress() {
+  const available=appState.catalog.filter(availableEpisode);
+  const heard=available.filter((episode)=>statusOf(episode.nr).heard).length;
+  return {heard,total:available.length,percent:available.length?Math.round(heard/available.length*100):0};
+}
+function archiveUnlocked() {
+  return Boolean(appState.user.settings.archiveUnlockedAt)||Boolean(appState.debugArchivePreview);
+}
+function archiveDisplayProgress() {
+  const actual=actualArchiveProgress();
+  if(appState.debugArchivePreview&&actual.total) return {...actual,heard:actual.total,percent:100,debug:true};
+  return {...actual,debug:false};
+}
+function archiveDate() {
+  return appState.debugArchivePreview?nowIso():appState.user.settings.archiveUnlockedAt;
+}
+function confettiHtml(count=44) {
+  const colors=['#f6d06f','#fff0b2','#c99932','#e9b949','#ffffff','#8e6b24'];
+  return Array.from({length:count},(_,index)=>{
+    const left=Math.round(Math.random()*100);
+    const delay=(Math.random()*.8).toFixed(2);
+    const duration=(2.2+Math.random()*1.8).toFixed(2);
+    const drift=Math.round(-90+Math.random()*180);
+    const rotate=Math.round(Math.random()*540);
+    return `<i style="--x:${left}%;--delay:${delay}s;--duration:${duration}s;--drift:${drift}px;--rotate:${rotate}deg;--confetti:${colors[index%colors.length]}"></i>`;
+  }).join('');
+}
+function archiveStats() {
+  const progress=archiveDisplayProgress();
+  const totalMinutes=appState.user.history.reduce((sum,item)=>sum+(getEpisode(item.nr)?.durationMin||0),0);
+  const listenCounts=new Map();
+  for(const item of appState.user.history) listenCounts.set(item.nr,(listenCounts.get(item.nr)||0)+1);
+  const mostListened=[...listenCounts.entries()].sort((a,b)=>b[1]-a[1])[0];
+  const mostEpisode=mostListened?getEpisode(mostListened[0]):null;
+  const ratings=Object.values(appState.user.episodes).filter((status)=>status.rating);
+  const ratingCounts={minus:0,neutral:0,plus:0,super:0};
+  ratings.forEach((status)=>{ratingCounts[status.rating]=(ratingCounts[status.rating]||0)+1;});
+  const commonRating=Object.entries(ratingCounts).sort((a,b)=>b[1]-a[1])[0];
+  return {
+    ...progress,
+    hours:Math.round(totalMinutes/60),
+    ratings:ratings.length,
+    reheard:[...listenCounts.values()].filter((count)=>count>1).length,
+    mostEpisode,
+    mostCount:mostListened?.[1]||0,
+    commonRating:commonRating?.[1]?RATING_LABELS[commonRating[0]]:'Noch offen',
+    unlockedAt:archiveDate(),
+  };
+}
+function showArchiveCelebration({debug=false}={}) {
+  const progress=debug
+    ?{...actualArchiveProgress(),heard:actualArchiveProgress().total,percent:100,debug:true}
+    :archiveDisplayProgress();
+  const content=$('archiveCelebrationContent');
+  content.innerHTML=`<div class="archive-confetti" aria-hidden="true">${confettiHtml()}</div><section class="archive-celebration-card"><div class="archive-file-animation" aria-hidden="true"><div class="archive-file-tab">DIE FALLKARTEI</div><div class="archive-file-sheet"><span>LETZTE AKTE</span><strong>✓</strong></div><div class="archive-seal">100 %</div></div><span class="eyebrow">${debug?'Debug-Vorschau':'Meilenstein erreicht'}</span><h2>Fallkartei vollständig</h2><p>Du hast jede aktuell verfügbare Folge gehört. Das vollständige Archiv gehört jetzt dir.</p><div class="archive-celebration-reward"><strong>Vollständiges Archiv</strong><span>Abzeichen und Profilhintergrund „Archivgold“ dauerhaft freigeschaltet</span></div><div class="archive-celebration-actions"><button class="button primary full" data-action="archive-relisten">Lange nicht gehörte Folge finden</button><button class="button secondary full" data-action="archive-open-profile">Archivprofil ansehen</button><button class="text-button" data-action="archive-open-dossier">Geheime Akte öffnen</button><button class="text-button muted-button" data-close-dialog="archiveCelebrationDialog">Schließen</button></div></section>`;
+  openDialog('archiveCelebrationDialog');
+  try {navigator.vibrate?.([24,45,24]);} catch {}
+}
+function renderArchiveDossier() {
+  const data=archiveStats();
+  $('archiveDossierContent').innerHTML=`<section class="archive-dossier ${data.debug?'is-debug':''}"><div class="archive-dossier-stamp">${data.debug?'TEST':'FREIGEGEBEN'}</div><div class="archive-dossier-heading"><span>AKTE 100</span><strong>Vollständiges Archiv</strong><small>${data.debug?'Temporäre Debug-Vorschau':`Erstmals vollständig am ${formatDate(data.unlockedAt)}`}</small></div><div class="archive-dossier-grid"><div><span>Status</span><strong>${data.percent===100?'Vollständig':`${data.heard}/${data.total}`}</strong></div><div><span>Hörzeit</span><strong>${data.hours} Std.</strong></div><div><span>Bewertungen</span><strong>${data.ratings}</strong></div><div><span>Mehrfach gehört</span><strong>${data.reheard}</strong></div></div><div class="archive-dossier-feature"><span>Meistgehörte Folge</span><strong>${data.mostEpisode?`${data.mostEpisode.nr}. ${esc(data.mostEpisode.titel)}`:'Noch keine'}</strong><small>${data.mostCount?`${data.mostCount} Hörvorgänge`:'Noch kein Verlauf vorhanden'}</small></div><div class="archive-dossier-feature"><span>Häufigste Bewertung</span><strong>${esc(data.commonRating)}</strong><small>Die Akte verändert keine persönlichen Daten.</small></div></section>`;
+  openDialog('archiveDossierDialog');
+}
+function scheduleArchiveAchievementCheck() {
+  if(!achievementChecksEnabled||archiveCheckQueued||appState.debugArchivePreview) return;
+  archiveCheckQueued=true;
+  queueMicrotask(async()=>{
+    archiveCheckQueued=false;
+    const progress=actualArchiveProgress();
+    if(!progress.total) return;
+    const settings=appState.user.settings;
+    if(progress.heard>=progress.total&&!settings.archiveUnlockedAt) {
+      settings.archiveUnlockedAt=nowIso();
+      settings.archiveUnlockTotal=progress.total;
+      settings.archiveCelebrationSeen=false;
+      await saveUser(true);
+    }
+    if(settings.archiveUnlockedAt&&!settings.archiveCelebrationSeen) {
+      settings.archiveCelebrationSeen=true;
+      await saveUser(true);
+      renderHome();
+      setTimeout(()=>showArchiveCelebration(),180);
+    }
+  });
+}
+function archiveBadgeHtml(data) {
+  if(!data.archiveUnlocked) return '';
+  const current=data.percent===100
+    ?`${data.total} von ${data.total} Folgen · aktuell vollständig`
+    :`Einmal vollständig abgeschlossen · aktuell ${data.heard} von ${data.total}`;
+  return `<button class="archive-profile-badge ${data.debugArchive?'is-debug':''}" data-action="archive-badge"><span class="archive-badge-mark">✓</span><span><small>${data.debugArchive?'DEBUG-VORSCHAU':'DAUERHAFT FREIGESCHALTET'}</small><strong>Vollständiges Archiv</strong><em>${esc(current)}</em></span><b>Archivgold</b></button>`;
+}
 function renderProfileProgress() {
-  const heard=Object.values(appState.user.episodes).filter((status)=>status.heard).length; const total=appState.catalog.filter(availableEpisode).length;
-  $('profileProgress').textContent=`${total?Math.round(heard/total*100):0} %`;
+  const progress=archiveDisplayProgress();
+  $('profileProgress').textContent=`${progress.percent} %`;
+  $('profileButton').classList.toggle('archive-unlocked',archiveUnlocked());
+  $('profileButton').classList.toggle('archive-complete',progress.percent===100);
+}
+function recommendationStatusLabel() {
+  return appState.recommendationStatus==='heard'
+    ?'gehörte'
+    :appState.recommendationStatus==='all'
+      ?'gehörte oder ungehörte'
+      :'ungehörte';
+}
+function setRecommendationNotice(message='',type='info') {
+  const node=$('recommendationNotice');
+  node.textContent=message;
+  node.dataset.type=type;
+  node.classList.toggle('hidden',!message);
+}
+function updateRecommendationIntro() {
+  const progress=actualArchiveProgress();
+  const intro=$('recommendationIntro');
+  if(appState.recommendationStatus==='heard') {
+    intro.textContent='Ein bekannter Fall, passend zu deinem Geschmack und möglichst lange nicht gehört.';
+  } else if(appState.recommendationStatus==='all') {
+    intro.textContent='Neue und bekannte Fälle dürfen gemeinsam vorgeschlagen werden.';
+  } else if(progress.total&&progress.heard>=progress.total) {
+    intro.textContent='Dein Archiv ist vollständig. Wähle „Nur gehörte“, um einen Fall wiederzuentdecken.';
+  } else {
+    intro.textContent='Persönlich, verfügbar und noch ungehört.';
+  }
 }
 function pickRecommendation() {
+  const previousNr=appState.recommendationNr;
   const result=chooseRecommendation({
     time:appState.time,
     mood:appState.mood,
+    status:appState.recommendationStatus,
     author:appState.recommendationAuthor,
     era:appState.recommendationEra,
+    currentNr:previousNr,
+    recentNrs:appState.recommendationSessionHistory,
     timeMatcher:timeMatches,
     moodMatcher:moodMatches,
   });
-  appState.recommendationNr=result?.episode.nr||null; renderRecommendation(); if (!result) toast('Für diese Auswahl wurde keine passende Folge gefunden.','warning');
+
+  if(result.state==='empty') {
+    const label=recommendationStatusLabel();
+    const message=appState.recommendationStatus==='unheard'
+      ?'Keine ungehörte Folge mit diesen Filtern gefunden. Wähle bei Hörstatus „Nur gehörte“ oder passe die Filter an.'
+      :`Keine ${label} Folge mit diesen Filtern gefunden. Passe die Auswahl an.`;
+    setRecommendationNotice(message,'warning');
+    if(!previousNr) appState.recommendationNr=null;
+    renderRecommendation();
+    toast(message,'warning');
+    return;
+  }
+
+  if(result.state==='no-alternative') {
+    const label=recommendationStatusLabel();
+    const message=`Keine weitere ${label} Folge mit diesen Filtern gefunden. Passe die Filter bei Bedarf an.`;
+    setRecommendationNotice(message,'warning');
+    renderRecommendation();
+    toast(message,'warning');
+    return;
+  }
+
+  appState.recommendationNr=result.episode.nr;
+  appState.recommendationSessionHistory=[
+    ...appState.recommendationSessionHistory.filter((nr)=>nr!==result.episode.nr),
+    result.episode.nr,
+  ].slice(-3);
+  setRecommendationNotice('');
+  renderRecommendation();
 }
 function renderRecommendation() {
-  const episode=getEpisode(appState.recommendationNr); $('recommendationResult').classList.toggle('hidden',!episode); if (!episode) return;
-  const profile=buildTasteProfile(),score=recommendationScore(episode,profile),match=matchPresentation(episode,profile,score),stream=preferredStreaming(episode);
-  $('recommendationCard').innerHTML=`<div class="recommendation-topline"><span class="match-level">${esc(match.level)}</span><span>Score ${match.scoreValue}</span></div><button class="recommendation-title" data-open-episode="${episode.nr}"><small>${episode.nr>=10000?'Spezialfolge':`Folge ${episode.nr}`}</small><strong>${esc(episode.titel)}</strong></button><p class="recommendation-description">${esc(episode.beschreibung?.slice(0,260)||'Ein starker Vorschlag aus deinem Katalog.')}${episode.beschreibung?.length>260?' …':''}</p><div class="reason-chips">${match.reasons.map((reason)=>`<span>${esc(reason)}</span>`).join('')}</div><div class="profile-confidence">Profilstärke: <strong>${match.strength}</strong> · ${match.ratingCount} Bewertung${match.ratingCount===1?'':'en'}</div>${stream?`<a class="button primary full" href="${esc(stream.url)}" target="_blank" rel="noopener">▶ In ${esc(stream.label)} anhören</a>`:`<button class="button primary full" data-open-episode="${episode.nr}">Details öffnen</button>`}<div class="recommendation-secondary"><button data-open-episode="${episode.nr}" class="text-button">Details</button><button data-action="queue" data-nr="${episode.nr}" class="text-button">${appState.user.settings.queue.includes(episode.nr)?'Aus Warteschlange':'Als Nächstes'}</button><button data-action="snooze" data-nr="${episode.nr}" class="text-button">Heute nicht</button><button data-action="hide-recommendation" data-nr="${episode.nr}" class="text-button">Ausblenden</button></div>`;
+  updateRecommendationIntro();
+  const episode=getEpisode(appState.recommendationNr);
+  $('recommendationResult').classList.toggle('hidden',!episode);
+  if(!episode) return;
+  const profile=buildTasteProfile(),score=recommendationScore(episode,profile),match=matchPresentation(episode,profile,score),stream=preferredStreaming(episode),status=statusOf(episode.nr);
+  const modeChip=status.heard
+    ?`<span>Zuletzt gehört: ${esc(formatRelativeDate(status.heardAt))}</span>`
+    :'<span>Noch ungehört</span>';
+  $('recommendationCard').innerHTML=`<div class="recommendation-topline"><span class="match-level">${esc(match.level)}</span><span>Score ${match.scoreValue}</span></div><button class="recommendation-title" data-open-episode="${episode.nr}"><small>${episode.nr>=10000?'Spezialfolge':`Folge ${episode.nr}`}</small><strong>${esc(episode.titel)}</strong></button><p class="recommendation-description">${esc(episode.beschreibung?.slice(0,260)||'Ein starker Vorschlag aus deinem Katalog.')}${episode.beschreibung?.length>260?' …':''}</p><div class="reason-chips">${modeChip}${match.reasons.map((reason)=>`<span>${esc(reason)}</span>`).join('')}</div><div class="profile-confidence">Profilstärke: <strong>${match.strength}</strong> · ${match.ratingCount} Bewertung${match.ratingCount===1?'':'en'}</div>${stream?`<a class="button primary full" href="${esc(stream.url)}" target="_blank" rel="noopener">▶ In ${esc(stream.label)} anhören</a>`:`<button class="button primary full" data-open-episode="${episode.nr}">Details öffnen</button>`}<div class="recommendation-secondary"><button data-open-episode="${episode.nr}" class="text-button">Details</button><button data-action="queue" data-nr="${episode.nr}" class="text-button">${appState.user.settings.queue.includes(episode.nr)?'Aus Warteschlange':'Als Nächstes'}</button><button data-action="snooze" data-nr="${episode.nr}" class="text-button">Heute nicht</button><button data-action="hide-recommendation" data-nr="${episode.nr}" class="text-button">Ausblenden</button></div>`;
 }
 function backupDue() {
   const current=activityCount(),last=Number(appState.user.settings.lastBackupActivityCount)||0,newActivity=current-last,lastDate=appState.user.settings.lastBackupAt?new Date(appState.user.settings.lastBackupAt):null;
@@ -269,6 +429,7 @@ function renderHome() {
   const seen=new Set(),history=[]; for (const item of appState.user.history) if (!seen.has(item.nr)&&getEpisode(item.nr)) { seen.add(item.nr); history.push(getEpisode(item.nr)); }
   $('homeHistory').innerHTML=history.length?history.slice(0,5).map((episode)=>miniRow(episode)).join(''):'<p class="muted">Noch kein Hörvorgang erfasst.</p>';
   const due=backupDue(); $('backupReminder').classList.toggle('hidden',!due); if (due) $('backupReminderText').textContent=`Seit dem letzten Backup sind ${Math.max(0,activityCount()-(appState.user.settings.lastBackupActivityCount||0))} neue Aktivitäten gespeichert.`;
+  scheduleArchiveAchievementCheck();
 }
 
 function filteredEpisodes() {
@@ -445,11 +606,21 @@ function resolvedProfileFavorites() {
 }
 function profileSnapshot() {
   const profile=buildTasteProfile(),insights=topProfileInsights(profile),available=appState.catalog.filter(availableEpisode);
-  const statuses=Object.values(appState.user.episodes),heard=statuses.filter((status)=>status.heard).length,ratings=statuses.filter((status)=>status.rating).length;
+  const statuses=Object.values(appState.user.episodes),actualHeard=available.filter((episode)=>statusOf(episode.nr).heard).length;
+  const heard=appState.debugArchivePreview?available.length:actualHeard;
+  const ratings=statuses.filter((status)=>status.rating).length;
   const hours=Math.round(appState.user.history.reduce((sum,item)=>sum+(getEpisode(item.nr)?.durationMin||0),0)/60);
   const ratingCounts={minus:0,neutral:0,plus:0,super:0}; for(const status of statuses)if(status.rating)ratingCounts[status.rating]=(ratingCounts[status.rating]||0)+1;
   const displayName=cleanProfileName(appState.user.settings.profileName),initials=profileInitials(displayName),favorites=resolvedProfileFavorites();
-  return {profile,insights,heard,total:available.length,percent:available.length?Math.round(heard/available.length*100):0,ratings,hours,ratingCounts,favorites,displayName,initials};
+  return {
+    profile,insights,heard,actualHeard,total:available.length,
+    percent:available.length?Math.round(heard/available.length*100):0,
+    ratings,hours,ratingCounts,favorites,displayName,initials,
+    archiveUnlocked:archiveUnlocked(),
+    archiveUnlockedAt:archiveDate(),
+    archiveUnlockTotal:appState.debugArchivePreview?available.length:appState.user.settings.archiveUnlockTotal,
+    debugArchive:appState.debugArchivePreview,
+  };
 }
 function roundedRect(ctx,x,y,width,height,radius,fill,stroke=null) {
   const r=Math.min(radius,width/2,height/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+width,y,x+width,y+height,r); ctx.arcTo(x+width,y+height,x,y+height,r); ctx.arcTo(x,y+height,x,y,r); ctx.arcTo(x,y,x+width,y,r); ctx.closePath();
@@ -463,21 +634,36 @@ function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=3) {
 }
 async function profileImageBlob() {
   const data=profileSnapshot(),canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1350; const ctx=canvas.getContext('2d'); if(!ctx)throw new Error('Canvas wird von diesem Browser nicht unterstützt.');
-  const background=ctx.createLinearGradient(0,0,1080,1350); background.addColorStop(0,'#171b24'); background.addColorStop(.5,'#090b10'); background.addColorStop(1,'#11151d'); ctx.fillStyle=background; ctx.fillRect(0,0,1080,1350);
-  const glow=ctx.createRadialGradient(870,110,0,870,110,500); glow.addColorStop(0,'rgba(41,128,255,.24)'); glow.addColorStop(1,'rgba(41,128,255,0)'); ctx.fillStyle=glow; ctx.fillRect(0,0,1080,620);
-  ctx.fillStyle='#aeb5c0';ctx.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.letterSpacing='4px';ctx.fillText(data.displayName?`HÖRPROFIL VON ${data.displayName.toLocaleUpperCase('de-DE')}`:'MEIN HÖRPROFIL',76,90);ctx.letterSpacing='0px';
-  ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle='#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,'rgba(31,38,51,.96)','#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
-  ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle='#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
-  const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,'rgba(25,29,38,.92)','#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle='#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
-  ctx.fillStyle='#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
+  const archive=data.archiveUnlocked;
+  const background=ctx.createLinearGradient(0,0,1080,1350);
+  if(archive){background.addColorStop(0,'#231b0d');background.addColorStop(.42,'#090a0d');background.addColorStop(1,'#171109');}
+  else{background.addColorStop(0,'#171b24');background.addColorStop(.5,'#090b10');background.addColorStop(1,'#11151d');}
+  ctx.fillStyle=background;ctx.fillRect(0,0,1080,1350);
+  const glow=ctx.createRadialGradient(870,110,0,870,110,520);
+  glow.addColorStop(0,archive?'rgba(231,183,73,.34)':'rgba(41,128,255,.24)');
+  glow.addColorStop(1,archive?'rgba(231,183,73,0)':'rgba(41,128,255,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,1080,650);
+  if(archive){
+    ctx.save();ctx.globalAlpha=.15;ctx.strokeStyle='#d5aa52';ctx.lineWidth=1;
+    for(let x=-200;x<1280;x+=54){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+520,1350);ctx.stroke();}
+    ctx.restore();
+    roundedRect(ctx,24,24,1032,1302,34,'rgba(0,0,0,0)','#b98a34');
+    roundedRect(ctx,38,38,1004,1274,28,'rgba(0,0,0,0)','rgba(238,203,118,.35)');
+  }
+  ctx.fillStyle=archive?'#e8c36d':'#aeb5c0';ctx.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.letterSpacing='4px';ctx.fillText(data.displayName?`HÖRPROFIL VON ${data.displayName.toLocaleUpperCase('de-DE')}`:'MEIN HÖRPROFIL',76,90);ctx.letterSpacing='0px';
+  ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle=archive?'#c9ae73':'#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,archive?'rgba(75,55,21,.96)':'rgba(31,38,51,.96)',archive?'#d8b55e':'#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
+  ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=archive?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
+  if(archive){roundedRect(ctx,720,258,284,102,28,'rgba(74,53,18,.92)','#e1bb60');ctx.fillStyle='#f2d486';ctx.font='800 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('VOLLSTÄNDIGES ARCHIV',746,294);ctx.fillStyle='#fff3ca';ctx.font='850 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('ARCHIVGOLD',746,334);}
+  const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,archive?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',archive?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=archive?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
+  ctx.fillStyle=archive?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
   const ratingData=[['Super',data.ratingCounts.super,'#f5c542'],['Plus',data.ratingCounts.plus,'#2980ff'],['Neutral',data.ratingCounts.neutral,'#727986'],['Minus',data.ratingCounts.minus,'#e0525b']],maxRating=Math.max(1,...ratingData.map((item)=>item[1]));
-  ratingData.forEach(([label,value,color],index)=>{const y=704+index*58;ctx.fillStyle='#aeb5c0';ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,76,y+25);roundedRect(ctx,230,y,676,30,15,'#202630');if(value)roundedRect(ctx,230,y,Math.max(28,676*value/maxRating),30,15,color);ctx.fillStyle='#f5f6f8';ctx.textAlign='right';ctx.fillText(String(value),1004,y+25);ctx.textAlign='left';});
-  ctx.fillStyle='#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEIN GESCHMACK',76,970);
+  ratingData.forEach(([label,value,color],index)=>{const y=704+index*58;ctx.fillStyle=archive?'#c6b386':'#aeb5c0';ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,76,y+25);roundedRect(ctx,230,y,676,30,15,archive?'#292318':'#202630');if(value)roundedRect(ctx,230,y,Math.max(28,676*value/maxRating),30,15,color);ctx.fillStyle='#f5f6f8';ctx.textAlign='right';ctx.fillText(String(value),1004,y+25);ctx.textAlign='left';});
+  ctx.fillStyle=archive?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEIN GESCHMACK',76,970);
   const taste=[['Thema',data.insights.tags[0]?.label||'Noch offen'],['Autor',data.insights.authors[0]?.label||'Noch offen'],['Figur',data.insights.characters[0]?.label||'Noch offen']];
-  taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,'rgba(20,24,32,.9)','#2d3440');ctx.fillStyle='#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
+  taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,archive?'rgba(31,26,17,.94)':'rgba(20,24,32,.9)',archive?'#6f5829':'#2d3440');ctx.fillStyle=archive?'#bba672':'#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
   const favoriteText=data.favorites.length?`Favoriten: ${data.favorites.map((episode)=>`${episode.nr}. ${episode.titel}`).join(' · ')}`:'Bewerte weitere Folgen, um deine Favoriten zu zeigen.';
-  ctx.fillStyle='#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
-  ctx.fillStyle='#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
+  ctx.fillStyle=archive?'#c8b58b':'#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
+  ctx.fillStyle=archive?'#8e794d':'#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
   return await new Promise((resolve,reject)=>canvas.toBlob((blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),'image/png',.95));
 }
 function dataNameForShare(){const name=cleanProfileName(appState.user.settings.profileName);return name?`Hörprofil von ${name} – Die Fallkartei`:'';}
@@ -522,7 +708,7 @@ function profileFavoritesHtml(data) {
 }
 function renderProfile() {
   const data=profileSnapshot(),{profile,insights,heard,hours,ratings}=data;
-  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div><p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>${data.displayName?`Erkennbar als Profil von ${esc(data.displayName)}`:'Zum Vergleichen mit Freunden'}</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
+  $('profileContent').innerHTML=`${profileIdentityHtml(data)}<div class="profile-stats"><div class="profile-stat"><strong>${heard}</strong><span>gehört</span></div><div class="profile-stat"><strong>${ratings}</strong><span>bewertet</span></div><div class="profile-stat"><strong>${hours}</strong><span>Hörstunden</span></div></div>${archiveBadgeHtml(data)}<p class="profile-summary">${esc(profileSummary(insights,profile.ratingCount))}</p><button class="profile-share-button ${data.archiveUnlocked?'archive-gold':''}" data-action="share-profile"><span class="share-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12.5v6A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-6"/></svg></span><span><strong>Statistik als Bild teilen</strong><small>${data.displayName?`Erkennbar als Profil von ${esc(data.displayName)}`:'Zum Vergleichen mit Freunden'}</small></span><b>›</b></button>${profileFavoritesHtml(data)}<div class="insight-block"><h3>Das magst du</h3><div class="chips">${[...insights.characters,...insights.tags,...insights.authors].slice(0,9).map((item)=>`<span>${esc(item.label)}</span>`).join('')||'<span>Noch zu wenig Daten</span>'}</div></div>${insights.negativeTags.length||insights.negativeAuthors.length?`<div class="insight-block"><h3>Passt eher nicht</h3><div class="chips">${[...insights.negativeTags,...insights.negativeAuthors].slice(0,6).map((item)=>`<span>${esc(item.label)}</span>`).join('')}</div></div>`:''}<div class="profile-actions"><div class="button-row"><button class="button primary" data-action="open-quick-rate">Schnell bewerten</button><button class="button secondary" data-action="open-my-ratings">Meine Bewertungen</button></div></div>`; openDialog('profileDialog');
 }
 function openProfileEntry() { if(!appState.user.settings.profileSetupSeen){openProfileEditor({returnTo:'profile',firstOpen:true});return;} renderProfile(); }
 function detailNeighbors(nr) { const available=appState.catalog.filter(availableEpisode); const index=available.findIndex((episode)=>episode.nr===Number(nr)); return {prev:available[index-1],next:available[index+1]}; }
@@ -673,6 +859,7 @@ function diagnosticsText() {
 function renderSettings() {
   $('streamingServiceSelect').value=appState.user.settings.preferredService; $$('[data-episode-view]').forEach((button)=>button.classList.toggle('active',button.dataset.episodeView===appState.user.settings.episodeView));
   $('diagnosticsCard').innerHTML=diagnosticsText().split('\n').map((line)=>{const [label,...rest]=line.split(': ');return`<div class="diagnostic"><span>${esc(label)}</span><strong>${esc(rest.join(': '))}</strong></div>`;}).join('');
+  $('stopArchiveDebug').classList.toggle('hidden',!appState.debugArchivePreview);
 }
 function populateSelects() {
   const authors=[...new Set(appState.catalog.map((episode)=>episode.author).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));
@@ -695,6 +882,7 @@ function populateSelects() {
 
   $('authorFilter').value=appState.authorFilter;
   $('eraFilter').value=appState.eraFilter;
+  $('recommendationStatus').value=['unheard','heard','all'].includes(appState.recommendationStatus)?appState.recommendationStatus:'unheard';
   $('recommendationAuthor').value=appState.recommendationAuthor;
   $('recommendationEra').value=appState.recommendationEra;
   $('yearFilter').value=years.map(String).includes(String(appState.yearFilter))?String(appState.yearFilter):'all';
@@ -787,6 +975,25 @@ function bindDelegatedEvents() {
       case'pin':toast(togglePinned(nr)?'Folge angeheftet.':'Anheftung entfernt.');refreshViews(nr);break;case'queue':toast(toggleQueue(nr)?'Zur Warteschlange hinzugefügt.':'Aus der Warteschlange entfernt.');refreshViews(nr);break;
       case'queue-up':moveQueueItem(nr,-1);renderPlaylists();renderHome();break;case'queue-down':moveQueueItem(nr,1);renderPlaylists();renderHome();break;case'queue-remove':removeFromQueue(nr);renderPlaylists();renderHome();break;
       case'snooze':snoozeRecommendation(nr);appState.recommendationNr=null;renderHome();toast('Die Folge wird sieben Tage nicht empfohlen.');break;case'hide-recommendation':hideRecommendation(nr);appState.recommendationNr=null;renderHome();toast('Die Folge wurde ausgeblendet.');break;
+      case'archive-badge':{
+        archiveBadgeTapCount+=1;
+        clearTimeout(archiveBadgeTapTimer);
+        action.classList.remove('tap-pulse');void action.offsetWidth;action.classList.add('tap-pulse');
+        archiveBadgeTapTimer=setTimeout(()=>{archiveBadgeTapCount=0;action.classList.remove('tap-pulse');},1500);
+        if(archiveBadgeTapCount>=3){archiveBadgeTapCount=0;clearTimeout(archiveBadgeTapTimer);renderArchiveDossier();}
+        break;
+      }
+      case'archive-open-dossier':closeDialog('archiveCelebrationDialog');renderArchiveDossier();break;
+      case'archive-open-profile':closeDialog('archiveCelebrationDialog');renderProfile();break;
+      case'archive-relisten':
+        closeDialog('archiveCelebrationDialog');
+        appState.recommendationStatus='heard';
+        appState.recommendationNr=null;
+        appState.recommendationSessionHistory=[];
+        $('recommendationStatus').value='heard';
+        navigate('home',{restore:false});
+        pickRecommendation();
+        break;
       case'share-profile':await shareProfileImage();break;case'edit-profile':closeDialog('profileDialog');openProfileEditor({returnTo:'profile'});break;case'open-quick-rate':closeDialog('profileDialog');openQuickRate();break;case'open-my-ratings':appState.ranking='mine';renderRanking();closeDialog('profileDialog');navigate('ranking',{restore:false});break;case'rate-focus':$('episodeDialogBody').querySelector('.rating-buttons')?.scrollIntoView({behavior:'smooth',block:'center'});break;case'new-playlist-with':openPlaylistEditor(null,nr);break;
       case'queue-playlist':{const playlist=getPlaylist(action.dataset.playlistId);if(playlist){addManyToQueue(playlist.episodes.map((episode)=>episode.nr));renderPlaylists();renderHome();toast(`${playlist.episodes.length} Folgen vorgemerkt.`);}break;}
       case'share-playlist':await sharePlaylist(action.dataset.playlistId);break;case'playlist-up':movePlaylistEpisode(action.dataset.playlistId,nr,-1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-down':movePlaylistEpisode(action.dataset.playlistId,nr,1);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-remove':removeEpisodeFromPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();break;case'playlist-add':addEpisodeToPlaylist(action.dataset.playlistId,nr);renderPlaylistDetail(action.dataset.playlistId);renderPlaylists();toast('Zur Playlist hinzugefügt.');break;
@@ -802,6 +1009,7 @@ function bindDelegatedEvents() {
 function bindStaticEvents() {
   bindDelegatedEvents(); $('profileButton').addEventListener('click',openProfileEntry); $('findRecommendation').addEventListener('click',pickRecommendation); $('anotherRecommendation').addEventListener('click',pickRecommendation); $('recommendationFeedback').addEventListener('click',renderFeedback); $('quickRateHome').addEventListener('click',openQuickRate);
   for (const [id,key] of [
+    ['recommendationStatus','recommendationStatus'],
     ['recommendationTime','time'],
     ['recommendationMood','mood'],
     ['recommendationAuthor','recommendationAuthor'],
@@ -810,6 +1018,8 @@ function bindStaticEvents() {
     $(id).addEventListener('change',(event)=>{
       appState[key]=event.target.value;
       appState.recommendationNr=null;
+      appState.recommendationSessionHistory=[];
+      setRecommendationNotice('');
       renderRecommendation();
     });
   }
@@ -873,6 +1083,55 @@ function bindStaticEvents() {
     }
   });
   $('restoreRecommendations').addEventListener('click',()=>{restoreHiddenRecommendations();toast('Ausgeblendete Empfehlungen wurden zurückgesetzt.');renderSettings();});
+  const revealDeveloperSettings=()=>{
+    $('developerSettings').classList.remove('hidden');
+    $('developerSettings').scrollIntoView({behavior:'smooth',block:'center'});
+    toast('Versteckte Archivprüfung freigeschaltet.');
+  };
+  const countSecretTap=()=>{
+    settingsSecretTapCount+=1;
+    clearTimeout(settingsSecretTimer);
+    settingsSecretTimer=setTimeout(()=>{settingsSecretTapCount=0;},3200);
+    if(settingsSecretTapCount>=7){settingsSecretTapCount=0;revealDeveloperSettings();}
+  };
+  $('aboutCard').addEventListener('click',countSecretTap);
+  $('aboutCard').addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();countSecretTap();}});
+  $('openArchiveDebug').addEventListener('click',()=>{
+    $('archiveDebugPassword').value='';
+    $('archiveDebugError').classList.add('hidden');
+    $('archiveDebugActions').classList.add('hidden');
+    openDialog('archiveDebugDialog');
+  });
+  $('archiveDebugForm').addEventListener('submit',(event)=>{
+    event.preventDefault();
+    const valid=$('archiveDebugPassword').value.trim().toLocaleUpperCase('de-DE')===ARCHIVE_DEBUG_PASSWORD;
+    $('archiveDebugError').classList.toggle('hidden',valid);
+    $('archiveDebugActions').classList.toggle('hidden',!valid);
+    if(valid) toast('Archivprüfung entsperrt.');
+  });
+  $('runArchiveDebug').addEventListener('click',()=>{
+    appState.debugArchivePreview=true;
+    closeDialog('archiveDebugDialog');
+    renderAll();
+    showArchiveCelebration({debug:true});
+  });
+  $('previewArchiveProfile').addEventListener('click',()=>{
+    appState.debugArchivePreview=true;
+    closeDialog('archiveDebugDialog');
+    renderAll();
+    renderProfile();
+  });
+  $('openArchiveDossierDebug').addEventListener('click',()=>{
+    appState.debugArchivePreview=true;
+    closeDialog('archiveDebugDialog');
+    renderAll();
+    renderArchiveDossier();
+  });
+  $('stopArchiveDebug').addEventListener('click',()=>{
+    appState.debugArchivePreview=false;
+    renderAll();
+    toast('Debug-Vorschau beendet.');
+  });
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
   $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
   $('streamingServiceSelect').addEventListener('change',(event)=>{appState.user.settings.preferredService=event.target.value;saveUser();renderSettings();renderHome();if(appState.detailNr&&$('episodeDialog').open)renderEpisodeDetail(appState.detailNr);}); document.addEventListener('click',(event)=>{const button=event.target.closest('[data-episode-view]');if(!button)return;appState.user.settings.episodeView=button.dataset.episodeView;saveUser();renderEpisodes();renderSettings();});
@@ -887,5 +1146,6 @@ function renderAll(){renderHome();renderEpisodes();renderRanking();renderPlaylis
 export async function startApp() {
   $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();bindStaticEvents();setupSheetInteractions();renderAll();
   const hash=location.hash.slice(1);navigate(['episodes','ranking','playlists','settings'].includes(hash)?hash:'home',{restore:false});$('loadingScreen').classList.add('hidden');setTimeout(()=>$('loadingScreen')?.remove(),500);
+  achievementChecksEnabled=true;scheduleArchiveAchievementCheck();
   const installedMode=window.FallkarteiInstallGuide?.isStandalone?.()??window.matchMedia?.('(display-mode: standalone)')?.matches??window.navigator.standalone===true;if(installedMode&&!appState.user.settings.tutorialCompleted)setTimeout(()=>renderTutorial(0),350);refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
 }

@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.2.4';
+export const APP_VERSION = '1.3.0';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -24,9 +24,9 @@ export const RATING_VALUES = { minus: -1.7, neutral: 0, plus: 1, super: 2.15 };
 export const appState = {
   catalog: [], user: null, page: 'home', detailNr: null, recommendationNr: null,
   filter: 'all', authorFilter: 'all', eraFilter: 'all', yearFilter: 'all', sort: 'nr',
-  search: '', time: 'any', mood: 'any', recommendationAuthor: 'all', recommendationEra: 'all', ranking: 'rocky', playlistTab: 'essentials',
+  search: '', time: 'any', mood: 'any', recommendationStatus: 'unheard', recommendationAuthor: 'all', recommendationEra: 'all', recommendationSessionHistory: [], ranking: 'rocky', playlistTab: 'essentials',
   episodeRenderLimit: 40, quickRateQueue: [], quickRateIndex: 0, quickRateHistory: [], importCandidate: null,
-  metadataUpdatedAt: null, currentPlaylistId: null, playlistSearch: '', smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], scrollPositions: {},
+  metadataUpdatedAt: null, currentPlaylistId: null, playlistSearch: '', smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], debugArchivePreview: false, scrollPositions: {},
 };
 
 export const nowIso = () => new Date().toISOString();
@@ -140,6 +140,7 @@ export function defaultUser() {
       filters: { filter:'all', author:'all', era:'all', year:'all', sort:'nr' },
       lastBackupAt: null, lastBackupActivityCount: 0, backupReminderDismissedAt: null, lastVersionSeen: APP_VERSION,
       profileName: '', profileFavoriteNrs: [], profileSetupSeen: false,
+      archiveUnlockedAt: null, archiveUnlockTotal: 0, archiveCelebrationSeen: false,
     }, updatedAt: null,
   };
 }
@@ -178,6 +179,10 @@ export function normalizeUser(raw = {}) {
       snoozedRecommendations: snoozed, hiddenRecommendations: [...new Set(hidden)], featureFeedback: feedback,
       queue: [...new Set(queue)], filters: { ...base.settings.filters, ...(rawSettings.filters || {}) },
       profileName, profileFavoriteNrs, profileSetupSeen: Boolean(rawSettings.profileSetupSeen || profileName || profileFavoriteNrs.length),
+      archiveUnlockedAt: rawSettings.archiveUnlockedAt && !Number.isNaN(new Date(rawSettings.archiveUnlockedAt).getTime())
+        ? new Date(rawSettings.archiveUnlockedAt).toISOString() : null,
+      archiveUnlockTotal: Math.max(0,Number(rawSettings.archiveUnlockTotal)||0),
+      archiveCelebrationSeen: Boolean(rawSettings.archiveCelebrationSeen),
     }, updatedAt: source.updatedAt || null,
   };
   for (const [nr,status] of Object.entries(user.episodes)) {
@@ -297,7 +302,7 @@ export function setStoredFilters() {
 }
 export function resetRuntimeState() {
   appState.detailNr = null; appState.recommendationNr = null; appState.search = '';
-  appState.time='any'; appState.mood='any'; appState.recommendationAuthor='all'; appState.recommendationEra='all';
+  appState.time='any'; appState.mood='any'; appState.recommendationStatus='unheard'; appState.recommendationAuthor='all'; appState.recommendationEra='all'; appState.recommendationSessionHistory=[];
   appState.quickRateQueue = []; appState.quickRateIndex = 0; appState.quickRateHistory = [];
-  appState.currentPlaylistId = null; appState.playlistSearch = ''; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = [];
+  appState.currentPlaylistId = null; appState.playlistSearch = ''; appState.smartPlaylistDraft = null; appState.smartPlaylistOptions = null; appState.smartPlaylistHistory = []; appState.debugArchivePreview=false;
 }
