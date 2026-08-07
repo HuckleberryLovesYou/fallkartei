@@ -2,6 +2,16 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.5 – 2026-08-07
+
+### Folgendetails
+
+- Statusänderungen innerhalb eines geöffneten Folgendetails behalten jetzt die aktuelle Scrollposition
+- Anheften, Gehört-Status, Bewertung, Als-Nächstes, Hörvorgänge und vergleichbare Aktualisierungen springen nicht mehr an den Seitenanfang
+- auch `Rückgängig` stellt den Zustand an derselben sichtbaren Stelle wieder her
+- interne Re-Renders eines bereits geöffneten Folgendetails öffnen oder fokussieren den Dialog nicht erneut
+- beim bewussten Wechsel auf eine andere Folge startet deren Detailansicht weiterhin oben
+
 ## 1.5.4 – 2026-08-07
 
 ### Rückgängig-Snackbar

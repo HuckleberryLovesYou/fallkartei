@@ -80,11 +80,33 @@ function reversibleUserAction(message,snapshot,{detailNr=null,playlistId=null}={
   toast(message,'default',{
     label:'Rückgängig',
     run:async()=>{
+      // Vor renderAll() sichern, solange der existierende Dialoginhalt noch
+      // unverändert im DOM steht.
+      const preserveDetail=Boolean(
+        detailNr
+        && $('episodeDialog')?.open
+        && Number(appState.detailNr)===Number(detailNr)
+      );
+      const detailScroll=preserveDetail
+        ?$('episodeDialogBody')?.scrollTop||0
+        :0;
+
       appState.user=snapshot;
       await saveUser(true);
       setStoredFilters();
       renderAll();
-      if(detailNr&&$('episodeDialog')?.open) renderEpisodeDetail(detailNr);
+
+      if(preserveDetail) {
+        // renderEpisodeDetail liest normalerweise selbst die aktuelle Position.
+        // Nach renderAll() setzen wir die vorher gesicherte Position deshalb
+        // kurz auf den bestehenden Scrollport zurück und rendern dann erhaltend.
+        const body=$('episodeDialogBody');
+        if(body) body.scrollTop=detailScroll;
+        renderEpisodeDetail(detailNr,{preserveScroll:true});
+      } else if(detailNr&&$('episodeDialog')?.open) {
+        renderEpisodeDetail(detailNr);
+      }
+
       if(playlistId&&$('playlistDialog')?.open&&getPlaylist(playlistId)) renderPlaylistDetail(playlistId);
       toast('Rückgängig gemacht.');
     },
@@ -1380,15 +1402,38 @@ function setupListenHistoryInteractions() {
     },{passive:true});
   });
 }
-function renderEpisodeDetail(nr) {
-  const episode=getEpisode(nr); if (!episode) return; appState.detailNr=episode.nr; const status=statusOf(episode.nr),pinned=appState.user.pinned.includes(episode.nr),queued=appState.user.settings.queue.includes(episode.nr),similar=similarEpisodes(episode),relationsHtml=relationSectionHtml(episode),listens=appState.user.history.filter((item)=>item.nr===episode.nr).sort((a,b)=>new Date(a.at)-new Date(b.at)),preferred=preferredStreaming(episode),neighbors=detailNeighbors(episode.nr);
+function renderEpisodeDetail(nr,{preserveScroll=false}={}) {
+  const episode=getEpisode(nr);
+  if (!episode) return;
+
+  const dialog=$('episodeDialog');
+  const detailBody=$('episodeDialogBody');
+  const sameOpenEpisode=Boolean(
+    dialog?.open
+    && Number(appState.detailNr)===Number(episode.nr)
+  );
+  const previousScroll=preserveScroll&&sameOpenEpisode
+    ?detailBody?.scrollTop||0
+    :0;
+
+  appState.detailNr=episode.nr;
+  const status=statusOf(episode.nr),pinned=appState.user.pinned.includes(episode.nr),queued=appState.user.settings.queue.includes(episode.nr),similar=similarEpisodes(episode),relationsHtml=relationSectionHtml(episode),listens=appState.user.history.filter((item)=>item.nr===episode.nr).sort((a,b)=>new Date(a.at)-new Date(b.at)),preferred=preferredStreaming(episode),neighbors=detailNeighbors(episode.nr);
   $('episodeDialogTitle').innerHTML=`<span class="eyebrow">${episodeTypeLabel(episode)}</span><h2>${esc(episode.titel)}</h2>`;
   $('episodeDialogBody').innerHTML=`${detailCoverMarkup(episode)}<section class="detail-hero">${episode.beschreibung?`<p>${esc(episode.beschreibung)}</p>`:''}<div class="episode-tags">${episode.tags.map((tag)=>`<span>${esc(tag)}</span>`).join('')}</div></section><section class="detail-section detail-section-primary status-section"><h3>Dein Status</h3>${ratingButtons(episode.nr,status.rating)}<div class="detail-action-grid"><button data-action="heard" data-nr="${episode.nr}" class="button secondary ${status.heard?'active':''}">${status.heard?'✓ Gehört':'Als gehört markieren'}</button><button data-action="queue" data-nr="${episode.nr}" class="button secondary ${queued?'active':''}">${queued?'✓ Als Nächstes':'＋ Als Nächstes'}</button><button data-action="pin" data-nr="${episode.nr}" class="button secondary ${pinned?'active':''}">${pinned?'📌 Angeheftet':'○ Anheften'}</button></div></section><div class="episode-link-action"><button data-action="share-episode-link" data-nr="${episode.nr}" class="text-button" aria-label="Direktlink zu ${esc(episode.titel)} teilen">↗ Folgenlink teilen</button></div><section class="detail-section detail-section-primary streaming-section"><h3>Streaming</h3>${streamingSectionHtml(episode)}</section><section class="detail-section detail-section-secondary"><h3>Folgenwissen</h3><div class="facts-grid"><div class="fact"><span>Autor</span><strong>${esc(episode.author||'—')}</strong></div><div class="fact"><span>Hörspielskript</span><strong>${esc(episode.scriptAuthor||'—')}</strong></div><div class="fact"><span>Veröffentlicht</span><strong>${formatDate(episode.releaseDate)}</strong></div><div class="fact"><span>Rocky-Beach</span><strong>${Number.isFinite(episode.rockyRanking)?episode.rockyRanking.toFixed(2):'—'}</strong></div></div>${episode.featuredCharacters.length?`<h4>Prägende Figuren</h4><div class="chips">${episode.featuredCharacters.map((name)=>`<span>${esc(name)}</span>`).join('')}</div>`:''}${episode.characters.length?`<h4>Figuren & Sprecherrollen</h4><div class="chips">${episode.characters.slice(0,30).map((name)=>`<span>${esc(name)}</span>`).join('')}</div>`:''}${episode.chapters.length?`<h4>Kapitel</h4><ol>${episode.chapters.map((chapter)=>`<li>${esc(chapter)}</li>`).join('')}</ol>`:''}</section><section class="detail-section detail-section-secondary"><h3>Hörverlauf</h3>${listens.length?`<div class="listen-history">${listens.slice(-20).map((item,index)=>`<div class="listen-history-item" data-listen-row="${esc(item.id)}"><button class="listen-history-delete" data-action="delete-listen" data-listen-id="${esc(item.id)}" data-nr="${episode.nr}" aria-label="${Math.max(0,listens.length-20)+index+1}. Hörvorgang löschen">×</button><div class="listen-history-content"><span>${Math.max(0,listens.length-20)+index+1}. Hören</span><strong>${formatDate(item.at)}</strong></div></div>`).join('')}</div><small class="listen-history-hint">Zum Löschen einen Eintrag nach links wischen.</small>`:'<p class="muted">Noch kein Hörvorgang erfasst.</p>'}<button data-action="add-listen" data-nr="${episode.nr}" class="text-button">Weiteren Hörvorgang hinzufügen</button></section><section class="detail-section detail-section-secondary"><h3>Persönliche Notiz</h3><textarea id="episodeNote" rows="6" placeholder="Was möchtest du dir merken?">${esc(status.note||'')}</textarea><small id="noteSaveState" class="muted"></small></section><section class="detail-section detail-section-secondary"><h3>Zu Playlists hinzufügen</h3><div class="playlist-check-list">${appState.user.playlists.length?appState.user.playlists.map((playlist)=>`<label><input type="checkbox" data-playlist-check="${esc(playlist.id)}" data-nr="${episode.nr}" ${playlist.episodeNrs.includes(episode.nr)?'checked':''}><span>${esc(playlist.name)}</span></label>`).join(''):'<p class="muted">Noch keine eigene Playlist vorhanden.</p>'}<button data-action="new-playlist-with" data-nr="${episode.nr}" class="text-button">＋ Neue Playlist mit dieser Folge</button></div></section>${relationsHtml}${similar.length?`<section class="detail-section detail-section-secondary"><h3>Ähnliche Folgen</h3><p class="detail-section-caption">Nach Inhalt, Geschmack und Metadaten – nicht zwingend Teil desselben Handlungsstrangs.</p><div class="mini-list">${similar.map((entry)=>miniRow(entry.episode)).join('')}</div></section>`:''}<div class="detail-nav"><button class="button secondary" data-action="detail-prev" ${neighbors.prev?'':'disabled'}>← Vorherige</button><button class="button secondary" data-action="detail-next" ${neighbors.next?'':'disabled'}>Nächste →</button></div>`;
   $('episodeStickyActions').innerHTML=`${preferred?`<a href="${esc(preferred.url)}" target="_blank" rel="noopener" class="button primary">▶ Anhören</a>`:''}<button data-action="heard" data-nr="${episode.nr}" class="button sticky-tertiary">${status.heard?'✓ Gehört':'Gehört'}</button><button data-action="rate-focus" class="button secondary sticky-secondary">Bewerten</button>`;
   setupListenHistoryInteractions();
-  const detailBody=$('episodeDialogBody');
-  if(detailBody) detailBody.scrollTop=0;
-  openDialog('episodeDialog');
+
+  const renderedBody=$('episodeDialogBody');
+  if(renderedBody) {
+    // Bei Statusänderungen innerhalb derselben Folge bleibt exakt die Stelle
+    // erhalten. Eine neu geöffnete/andere Folge beginnt weiterhin oben.
+    renderedBody.scrollTop=previousScroll;
+  }
+
+  // Ein bereits offenes Folgendetail muss für ein internes Re-Render nicht
+  // erneut fokussiert/geöffnet werden. Das verhindert zusätzliche WebKit-
+  // Scrollkorrekturen und hält die Ansicht visuell vollständig still.
+  if(!sameOpenEpisode) openDialog('episodeDialog');
 }
 
 
@@ -1534,7 +1579,16 @@ function navigate(page,{restore=true,topIfActive=false,updateUrl=true}={}) {
   });
   if(updateUrl) history.replaceState(null,'',page==='home'?'./':`#${page}`);
 }
-function refreshViews(detailNr=null) { renderHome(); renderEpisodes(); renderRanking(); renderPlaylists(); renderSettings(); if (detailNr&&$('episodeDialog').open) renderEpisodeDetail(detailNr); }
+function refreshViews(detailNr=null) {
+  renderHome();
+  renderEpisodes();
+  renderRanking();
+  renderPlaylists();
+  renderSettings();
+  if(detailNr&&$('episodeDialog').open) {
+    renderEpisodeDetail(detailNr,{preserveScroll:true});
+  }
+}
 async function toggleHeardAction(nr) {
   const status=statusOf(nr);
   if (status.heard&&status.rating) {
@@ -1827,7 +1881,7 @@ function bindStaticEvents() {
   });
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
   $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
-  $('streamingServiceSelect').addEventListener('change',(event)=>{appState.user.settings.preferredService=event.target.value;saveUser();renderSettings();renderHome();if(appState.detailNr&&$('episodeDialog').open)renderEpisodeDetail(appState.detailNr);}); document.addEventListener('click',(event)=>{const button=event.target.closest('[data-episode-view]');if(!button)return;appState.user.settings.episodeView=button.dataset.episodeView;saveUser();renderEpisodes();renderSettings();});
+  $('streamingServiceSelect').addEventListener('change',(event)=>{appState.user.settings.preferredService=event.target.value;saveUser();renderSettings();renderHome();if(appState.detailNr&&$('episodeDialog').open)renderEpisodeDetail(appState.detailNr,{preserveScroll:true});}); document.addEventListener('click',(event)=>{const button=event.target.closest('[data-episode-view]');if(!button)return;appState.user.settings.episodeView=button.dataset.episodeView;saveUser();renderEpisodes();renderSettings();});
   document.addEventListener('error',(event)=>{const image=event.target;if(image?.matches?.('[data-cover-image]'))image.classList.add('hidden');},true);
   $('confirmCancel').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('confirmAccept').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(true);confirmResolver=null;}); $('confirmDialog').addEventListener('cancel',(event)=>{event.preventDefault();closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('applyUpdate').addEventListener('click',()=>pendingWorker?.postMessage({type:'SKIP_WAITING'}));
 }
