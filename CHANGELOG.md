@@ -2,6 +2,15 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.8 – 2026-08-07
+
+### Navigation
+
+- die untere Tabbar wurde wieder etwas größer und luftiger gestaltet
+- ihre Grundhöhe liegt nun zwischen der ursprünglichen und der zuletzt sehr kompakten Variante
+- Icons und Beschriftungen wurden leicht vergrößert
+- die korrigierte iOS-Vollbildhöhe und Safe-Area-Behandlung aus 1.4.7 bleiben unverändert erhalten
+
 ## 1.4.7 – 2026-08-07
 
 ### iOS-PWA-Viewport
