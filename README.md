@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.3.5" src="https://img.shields.io/badge/Version-1.3.5-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.3.6" src="https://img.shields.io/badge/Version-1.3.6-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -154,7 +154,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.3.5** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.3.6** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 
@@ -167,29 +167,3 @@ Dies ist ein **inoffizielles, nicht-kommerzielles Fanprojekt** und steht in kein
 ## Lizenz
 
 Für dieses Repository wird derzeit keine Open-Source-Lizenz erteilt. Der Quellcode wird öffentlich zur technischen Bereitstellung und Nachvollziehbarkeit der App gehostet. Alle Rechte an den selbst erstellten Projektbestandteilen bleiben vorbehalten.
-
-## Vollständiges Archiv
-
-Beim erstmaligen Erreichen von 100 Prozent merkt sich die App diesen Meilenstein dauerhaft.
-Neue Folgen können den aktuellen Fortschritt später wieder senken, ohne den bereits erreichten
-Abschluss zu löschen. Einige Details rund um diesen Moment bleiben bewusst undokumentiert.
-
-## Interne Tests
-
-Interne Vorschauen arbeiten nicht persistent und verändern keine regulär gespeicherten
-Bewertungen, Hörvorgänge, Playlists oder Profileinstellungen.
-
-
-## Zoom-Sperre
-
-Pinch-Zoom, Doppeltipp-Zoom sowie die üblichen Browser-Zoomgesten werden in der App unterdrückt,
-damit schnelle Mehrfachtipps und Bediengesten keine unbeabsichtigte Vergrößerung auslösen.
-
-
-## Folgendetails in „Profil verbessern“
-
-Der Titel der aktuell vorgeschlagenen Folge ist antippbar. Dadurch kann die vollständige
-Folgendetailansicht direkt aus der Schnellbewertung geöffnet werden. Dort stehen unter anderem
-„Als Nächstes“ und die Playlistzuordnung zur Verfügung. Nach dem Schließen bleibt die
-Schnellbewertung an derselben Stelle geöffnet.
-

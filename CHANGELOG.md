@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.3.6 – 2026-08-07
+
+### Teilbares Hörprofil
+
+- die Profilgrafik wurde vollständig neu strukturiert
+- Kernstatistiken und persönliche Favoriten besitzen nun klar getrennte Bereiche
+- die Darstellung passt sich dynamisch an verfügbare Profilauszeichnungen an
+- seltene kosmetische Auszeichnungen erhalten mehr Raum und eine deutlichere visuelle Hierarchie
+- die Standardansicht bleibt auch ohne Auszeichnungen vollständig und ausgewogen
+- überlappende Elemente der vorherigen Banneranordnung wurden entfernt
+
 ## 1.3.5 – 2026-08-07
 
 ### Profilgrafik

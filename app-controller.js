@@ -704,13 +704,14 @@ function profileSnapshot() {
   const statuses=Object.values(appState.user.episodes),actualHeard=available.filter((episode)=>statusOf(episode.nr).heard).length;
   const heard=appState.debugArchivePreview?available.length:actualHeard;
   const ratings=statuses.filter((status)=>status.rating).length;
+  const listens=appState.user.history.length;
   const hours=Math.round(appState.user.history.reduce((sum,item)=>sum+(getEpisode(item.nr)?.durationMin||0),0)/60);
   const ratingCounts={minus:0,neutral:0,plus:0,super:0}; for(const status of statuses)if(status.rating)ratingCounts[status.rating]=(ratingCounts[status.rating]||0)+1;
   const displayName=cleanProfileName(appState.user.settings.profileName),initials=profileInitials(displayName),favorites=resolvedProfileFavorites();
   return {
     profile,insights,heard,actualHeard,total:available.length,
     percent:available.length?Math.round(heard/available.length*100):0,
-    ratings,hours,ratingCounts,favorites,displayName,initials,
+    ratings,listens,hours,ratingCounts,favorites,displayName,initials,
     archiveUnlocked:archiveUnlocked(),
     archiveUnlockedAt:archiveDate(),
     archiveUnlockTotal:appState.debugArchivePreview?available.length:appState.user.settings.archiveUnlockTotal,
@@ -733,91 +734,323 @@ function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=3) {
   lines.forEach((entry,index)=>ctx.fillText(entry,x,y+index*lineHeight)); return lines.length*lineHeight;
 }
 async function profileImageBlob() {
-  const data=profileSnapshot(),canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1350; const ctx=canvas.getContext('2d'); if(!ctx)throw new Error('Canvas wird von diesem Browser nicht unterstützt.');
-  const archive=data.archiveUnlocked,goldBackground=archive&&data.archiveGoldBackgroundUnlocked&&data.archiveShareStyle==='gold';
+  const data=profileSnapshot(),canvas=document.createElement('canvas');
+  canvas.width=1080; canvas.height=1350;
+  const ctx=canvas.getContext('2d');
+  if(!ctx) throw new Error('Canvas wird von diesem Browser nicht unterstützt.');
+
+  const archive=data.archiveUnlocked;
+  const goldBackground=archive&&data.archiveGoldBackgroundUnlocked&&data.archiveShareStyle==='gold';
+  const outerLine=goldBackground?'#b98a34':'#3d4858';
+  const innerLine=goldBackground?'rgba(238,203,118,.34)':'rgba(132,151,179,.16)';
+  const sectionColor=goldBackground?'#d1b570':'#aab5c4';
+  const cardFill=goldBackground?'rgba(31,27,18,.94)':'rgba(20,24,32,.93)';
+  const cardStroke=goldBackground?'#665126':'#2e3745';
+
+  // Hintergrund und hochwertiger Kartenrahmen.
   const background=ctx.createLinearGradient(0,0,1080,1350);
-  if(goldBackground){background.addColorStop(0,'#231b0d');background.addColorStop(.42,'#090a0d');background.addColorStop(1,'#171109');}
-  else{background.addColorStop(0,'#171b24');background.addColorStop(.5,'#090b10');background.addColorStop(1,'#11151d');}
-  ctx.fillStyle=background;ctx.fillRect(0,0,1080,1350);
-  const glow=ctx.createRadialGradient(870,110,0,870,110,520);
-  glow.addColorStop(0,goldBackground?'rgba(231,183,73,.34)':'rgba(41,128,255,.24)');
-  glow.addColorStop(1,goldBackground?'rgba(231,183,73,0)':'rgba(41,128,255,0)');
-  ctx.fillStyle=glow;ctx.fillRect(0,0,1080,650);
   if(goldBackground){
-    ctx.save();ctx.globalAlpha=.15;ctx.strokeStyle='#d5aa52';ctx.lineWidth=1;
-    for(let x=-200;x<1280;x+=54){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+520,1350);ctx.stroke();}
-    ctx.restore();
-    roundedRect(ctx,24,24,1032,1302,34,'rgba(0,0,0,0)','#b98a34');
-    roundedRect(ctx,38,38,1004,1274,28,'rgba(0,0,0,0)','rgba(238,203,118,.35)');
+    background.addColorStop(0,'#241c0e');
+    background.addColorStop(.44,'#090a0c');
+    background.addColorStop(1,'#161108');
+  } else {
+    background.addColorStop(0,'#151b25');
+    background.addColorStop(.48,'#080a0e');
+    background.addColorStop(1,'#10151d');
   }
-  ctx.fillStyle=goldBackground?'#e8c36d':'#aeb5c0';ctx.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.letterSpacing='4px';ctx.fillText(data.displayName?`HÖRPROFIL VON ${data.displayName.toLocaleUpperCase('de-DE')}`:'MEIN HÖRPROFIL',76,90);ctx.letterSpacing='0px';
-  ctx.fillStyle='#f7f8fa';ctx.font='850 54px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('DIE FALLKARTEI',76,168);ctx.fillStyle=goldBackground?'#c9ae73':'#9fa7b3';ctx.font='600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`Persönliches Hörprofil von ${data.displayName}`:'Persönliches Hörprofil für Die drei ???',78,208);if(data.initials){roundedRect(ctx,900,72,104,104,52,goldBackground?'rgba(75,55,21,.96)':'rgba(31,38,51,.96)',goldBackground?'#d8b55e':'#485469');ctx.fillStyle='#f7f8fa';ctx.font='850 38px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textAlign='center';ctx.fillText(data.initials,952,138);ctx.textAlign='left';}
-  ctx.fillStyle='#f7f8fa';ctx.font='850 118px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.percent} %`,76,330);ctx.fillStyle=goldBackground?'#ccb47c':'#9fa7b3';ctx.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,380);
-  if(archive){roundedRect(ctx,720,258,284,102,28,'rgba(74,53,18,.92)','#e1bb60');ctx.fillStyle='#f2d486';ctx.font='800 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('VOLLSTÄNDIGES ARCHIV',746,294);ctx.fillStyle='#fff3ca';ctx.font='850 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('ARCHIVGOLD',746,334);}
+  ctx.fillStyle=background;ctx.fillRect(0,0,1080,1350);
+
+  const topGlow=ctx.createRadialGradient(835,90,0,835,90,560);
+  topGlow.addColorStop(0,goldBackground?'rgba(222,174,65,.27)':'rgba(76,128,205,.20)');
+  topGlow.addColorStop(1,goldBackground?'rgba(222,174,65,0)':'rgba(76,128,205,0)');
+  ctx.fillStyle=topGlow;ctx.fillRect(0,0,1080,620);
+
+  if(goldBackground){
+    ctx.save();
+    ctx.globalAlpha=.10;
+    ctx.strokeStyle='#d5aa52';
+    ctx.lineWidth=1;
+    for(let x=-220;x<1280;x+=58){
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+520,1350);ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  roundedRect(ctx,24,24,1032,1302,38,'rgba(0,0,0,0)',outerLine);
+  roundedRect(ctx,38,38,1004,1274,31,'rgba(0,0,0,0)',innerLine);
+
+  // Kopfbereich.
+  ctx.fillStyle=sectionColor;
+  ctx.font='800 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.letterSpacing='4px';
+  ctx.fillText('MEIN HÖRPROFIL',76,86);
+  ctx.letterSpacing='0px';
+
+  ctx.fillStyle='#f6f7f9';
+  ctx.font='900 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.fillText('DIE FALLKARTEI',76,151);
+
+  const personLabel=data.displayName?data.displayName:'Persönliches Hörprofil';
+  ctx.fillStyle='#eef1f5';
+  ctx.font=`${data.displayName?'800 34px':'650 25px'} -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(personLabel,78,205);
+
+  if(data.displayName){
+    ctx.fillStyle=goldBackground?'#bda76f':'#8793a4';
+    ctx.font='600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Persönliches Hörprofil',80,235);
+  }
+
+  if(data.initials){
+    roundedRect(
+      ctx,890,76,112,112,56,
+      goldBackground?'rgba(69,51,21,.96)':'rgba(27,35,48,.96)',
+      goldBackground?'#d1aa4d':'#52647e'
+    );
+    ctx.fillStyle='#f8f9fb';
+    ctx.font='900 40px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(data.initials,946,146);
+    ctx.textAlign='left';
+  }
+
+  // Fortschritt – bewusst alleinstehend, damit spätere Auszeichnungen nichts überlagern.
+  ctx.fillStyle='#f7f8fa';
+  ctx.font='900 112px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.fillText(`${data.percent} %`,76,354);
+
+  ctx.fillStyle=goldBackground?'#cbb47d':'#9fa9b7';
+  ctx.font='600 27px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.fillText(`${data.heard} von ${data.total} verfügbaren Folgen gehört`,80,399);
+
+  // Kernstatistiken.
+  ctx.fillStyle=sectionColor;
+  ctx.font='850 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.letterSpacing='2.5px';
+  ctx.fillText('AUF EINEN BLICK',76,452);
+  ctx.letterSpacing='0px';
+
+  const statY=474,statW=288,statH=126,gap=30;
+  const statData=[
+    ['Hörstunden',data.hours],
+    ['Bewertet',data.ratings],
+    ['Hörvorgänge',data.listens],
+  ];
+  statData.forEach(([label,value],index)=>{
+    const x=76+index*(statW+gap);
+    roundedRect(ctx,x,statY,statW,statH,24,cardFill,cardStroke);
+    ctx.fillStyle='#f5f6f8';
+    ctx.font='900 45px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText(String(value),x+24,statY+57);
+    ctx.fillStyle=goldBackground?'#b9a678':'#909aa8';
+    ctx.font='700 17px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText(label.toUpperCase(),x+24,statY+94);
+  });
+
+  // Favoriten als eigener persönlicher Abschnitt.
+  ctx.fillStyle=sectionColor;
+  ctx.font='850 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.letterSpacing='2.5px';
+  ctx.fillText('MEINE FAVORITEN',76,660);
+  ctx.letterSpacing='0px';
+
+  const favoriteY=683,favoriteH=164;
+  if(data.favorites.length){
+    const count=Math.min(3,data.favorites.length);
+    const favoriteGap=18;
+    const favoriteW=(928-favoriteGap*(count-1))/count;
+    data.favorites.slice(0,3).forEach((episode,index)=>{
+      const x=76+index*(favoriteW+favoriteGap);
+      roundedRect(ctx,x,favoriteY,favoriteW,favoriteH,23,cardFill,cardStroke);
+
+      roundedRect(
+        ctx,x+18,favoriteY+18,74,30,15,
+        goldBackground?'rgba(89,66,24,.92)':'rgba(37,48,65,.96)',
+        goldBackground?'#8c6b2c':'#485a73'
+      );
+      ctx.fillStyle=goldBackground?'#e1c476':'#b8c8de';
+      ctx.font='850 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.fillText(episode.nr>=10000?'SPEZIAL':`FOLGE ${episode.nr}`,x+30,favoriteY+39);
+
+      ctx.fillStyle='#f3f5f8';
+      ctx.font='800 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      drawWrappedText(ctx,episode.titel,x+20,favoriteY+82,favoriteW-40,30,2);
+
+      ctx.fillStyle=goldBackground?'#9e8d64':'#778394';
+      ctx.font='700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.letterSpacing='1.2px';
+      ctx.fillText('FAVORIT',x+20,favoriteY+142);
+      ctx.letterSpacing='0px';
+    });
+  } else {
+    roundedRect(ctx,76,favoriteY,928,favoriteH,23,cardFill,cardStroke);
+    ctx.fillStyle='#f1f3f6';
+    ctx.font='800 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Noch keine Favoriten ausgewählt',104,favoriteY+70);
+    ctx.fillStyle=goldBackground?'#9d8c67':'#7f8997';
+    ctx.font='600 17px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Bewertete Folgen können später hier erscheinen.',104,favoriteY+106);
+  }
+
+  // Unterer Bereich passt sich an die erreichten Auszeichnungen an.
   if(data.fourthQuestionMarkUnlocked){
-    const fqX=650,fqY=362,fqW=354,fqH=104;
-    const fqGlow=ctx.createLinearGradient(fqX,fqY,fqX+fqW,fqY+fqH);
-    fqGlow.addColorStop(0,'rgba(21,31,48,.98)');
-    fqGlow.addColorStop(.52,'rgba(29,45,69,.98)');
-    fqGlow.addColorStop(1,'rgba(15,20,31,.98)');
-    roundedRect(ctx,fqX,fqY,fqW,fqH,25,fqGlow,'#a8c9f5');
+    ctx.fillStyle=sectionColor;
+    ctx.font='850 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='2.5px';
+    ctx.fillText('AUSZEICHNUNGEN',76,900);
+    ctx.letterSpacing='0px';
+
+    // Archivgold: edel, aber bewusst flacher als die höchste Stufe.
+    const agX=76,agY=922,agW=928,agH=94;
+    const agGradient=ctx.createLinearGradient(agX,agY,agX+agW,agY+agH);
+    agGradient.addColorStop(0,'rgba(58,42,15,.98)');
+    agGradient.addColorStop(.52,'rgba(33,27,16,.98)');
+    agGradient.addColorStop(1,'rgba(18,17,14,.98)');
+    roundedRect(ctx,agX,agY,agW,agH,24,agGradient,'#a77d2e');
+    roundedRect(ctx,agX+16,agY+14,68,66,18,'rgba(88,63,19,.92)','#c49a42');
+    ctx.textAlign='center';
+    ctx.fillStyle='#f1d277';
+    ctx.font='900 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('100%',agX+50,agY+55);
+    ctx.textAlign='left';
+    ctx.fillStyle='#ad955e';
+    ctx.font='850 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='1.6px';
+    ctx.fillText('DAUERHAFT FREIGESCHALTET',agX+106,agY+28);
+    ctx.letterSpacing='0px';
+    ctx.fillStyle='#f3d681';
+    ctx.font='900 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('ARCHIVGOLD',agX+106,agY+59);
+    ctx.fillStyle='#aa9a73';
+    ctx.font='650 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Vollständiges Archiv',agX+106,agY+80);
+
+    // Höchste Stufe: größer, eigener Charakter, aber innerhalb einer festen Bannerzone.
+    const fqX=76,fqY=1038,fqW=928,fqH=158;
+    const fqGradient=ctx.createLinearGradient(fqX,fqY,fqX+fqW,fqY+fqH);
+    fqGradient.addColorStop(0,'rgba(16,25,40,.99)');
+    fqGradient.addColorStop(.52,'rgba(26,43,67,.99)');
+    fqGradient.addColorStop(1,'rgba(11,17,28,.99)');
+    roundedRect(ctx,fqX,fqY,fqW,fqH,28,fqGradient,'#8eb7ed');
+
+    const fqGlow=ctx.createRadialGradient(fqX+103,fqY+79,4,fqX+103,fqY+79,126);
+    fqGlow.addColorStop(0,'rgba(152,199,255,.24)');
+    fqGlow.addColorStop(1,'rgba(152,199,255,0)');
+    ctx.fillStyle=fqGlow;
+    ctx.fillRect(fqX+2,fqY+2,228,fqH-4);
 
     ctx.save();
-    ctx.globalAlpha=.16;
-    ctx.strokeStyle='#b7d4ff';
+    ctx.globalAlpha=.12;
+    ctx.strokeStyle='#c5ddff';
     ctx.lineWidth=1;
-    for(let x=fqX+18;x<fqX+fqW-10;x+=28){
-      ctx.beginPath();
-      ctx.moveTo(x,fqY+12);
-      ctx.lineTo(x+44,fqY+fqH-12);
-      ctx.stroke();
+    for(let x=fqX+236;x<fqX+fqW-10;x+=33){
+      ctx.beginPath();ctx.moveTo(x,fqY+12);ctx.lineTo(x+54,fqY+fqH-12);ctx.stroke();
     }
     ctx.restore();
 
-    roundedRect(ctx,fqX+14,fqY+14,94,76,18,'rgba(8,15,26,.82)','#6f8fb9');
+    roundedRect(ctx,fqX+18,fqY+17,170,124,24,'rgba(7,14,24,.74)','#577ba9');
+    const qPositions=[
+      [fqX+61,fqY+65,'#7891b5',31],
+      [fqX+111,fqY+65,'#7891b5',31],
+      [fqX+61,fqY+113,'#7891b5',31],
+      [fqX+111,fqY+113,'#f1f7ff',42],
+    ];
     ctx.textAlign='center';
-    ctx.fillStyle='#f4f8ff';
-    ctx.font='950 31px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.letterSpacing='2px';
-    ctx.fillText('????',fqX+61,fqY+60);
-    ctx.letterSpacing='0px';
-
+    for(const [x,y,color,size] of qPositions){
+      ctx.fillStyle=color;
+      ctx.font=`950 ${size}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+      ctx.fillText('?',x,y);
+    }
     ctx.textAlign='left';
-    ctx.fillStyle='#93add1';
+
+    ctx.fillStyle='#91add3';
     ctx.font='900 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.letterSpacing='1.7px';
-    ctx.fillText('VERBORGENE AUSZEICHNUNG',fqX+126,fqY+30);
+    ctx.letterSpacing='1.9px';
+    ctx.fillText('VERBORGENE AUSZEICHNUNG',fqX+222,fqY+34);
     ctx.letterSpacing='0px';
 
-    ctx.fillStyle='#f5f8fc';
-    ctx.font='900 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillText('DAS VIERTE',fqX+126,fqY+58);
+    ctx.fillStyle='#f4f8ff';
+    ctx.font='900 36px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('DAS VIERTE FRAGEZEICHEN',fqX+222,fqY+79);
 
-    ctx.fillStyle='#d9e8ff';
-    ctx.font='900 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillText('FRAGEZEICHEN',fqX+126,fqY+81);
+    ctx.fillStyle='#b9cce7';
+    ctx.font='700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Alle verborgenen Spuren gefunden',fqX+222,fqY+108);
 
-    ctx.fillStyle='#91a4bf';
-    ctx.font='700 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.letterSpacing='.8px';
-    ctx.fillText('ALLE VERBORGENEN SPUREN GEFUNDEN',fqX+126,fqY+96);
+    ctx.strokeStyle='rgba(151,188,238,.38)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(fqX+222,fqY+123);ctx.lineTo(fqX+872,fqY+123);ctx.stroke();
+
+    ctx.fillStyle='#7187a6';
+    ctx.font='700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='1.4px';
+    ctx.fillText('HÖCHSTE ARCHIVSTUFE',fqX+222,fqY+143);
     ctx.letterSpacing='0px';
+  } else if(archive){
+    ctx.fillStyle=sectionColor;
+    ctx.font='850 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='2.5px';
+    ctx.fillText('AUSZEICHNUNG',76,950);
+    ctx.letterSpacing='0px';
+
+    const agX=76,agY=978,agW=928,agH=116;
+    const agGradient=ctx.createLinearGradient(agX,agY,agX+agW,agY+agH);
+    agGradient.addColorStop(0,'rgba(61,44,15,.98)');
+    agGradient.addColorStop(.52,'rgba(35,28,16,.98)');
+    agGradient.addColorStop(1,'rgba(17,16,13,.98)');
+    roundedRect(ctx,agX,agY,agW,agH,27,agGradient,'#b58a35');
+    roundedRect(ctx,agX+19,agY+18,86,80,22,'rgba(89,64,20,.92)','#cda24c');
+    ctx.textAlign='center';
+    ctx.fillStyle='#f3d67d';
+    ctx.font='900 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('100%',agX+62,agY+67);
+    ctx.textAlign='left';
+    ctx.fillStyle='#b69a60';
+    ctx.font='850 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='1.8px';
+    ctx.fillText('DAUERHAFT FREIGESCHALTET',agX+132,agY+35);
+    ctx.letterSpacing='0px';
+    ctx.fillStyle='#f4d77f';
+    ctx.font='900 37px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('ARCHIVGOLD',agX+132,agY+76);
+    ctx.fillStyle='#aa9a73';
+    ctx.font='650 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillText('Vollständiges Archiv',agX+132,agY+100);
+  } else {
+    // Ohne Auszeichnung nutzt die Standardkarte den freien Raum für einen kompakten Geschmacksauszug.
+    ctx.fillStyle=sectionColor;
+    ctx.font='850 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.letterSpacing='2.5px';
+    ctx.fillText('MEIN GESCHMACK',76,940);
+    ctx.letterSpacing='0px';
+
+    const taste=[
+      ['Thema',data.insights.tags[0]?.label||'Noch offen'],
+      ['Autor',data.insights.authors[0]?.label||'Noch offen'],
+      ['Figur',data.insights.characters[0]?.label||'Noch offen'],
+    ];
+    const tasteY=964,tasteH=122;
+    taste.forEach(([label,value],index)=>{
+      const x=76+index*(statW+gap);
+      roundedRect(ctx,x,tasteY,statW,tasteH,22,cardFill,cardStroke);
+      ctx.fillStyle=goldBackground?'#ad9869':'#7f8b9a';
+      ctx.font='800 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.letterSpacing='1.2px';
+      ctx.fillText(label.toUpperCase(),x+20,tasteY+31);
+      ctx.letterSpacing='0px';
+      ctx.fillStyle='#f0f3f7';
+      ctx.font='800 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      drawWrappedText(ctx,value,x+20,tasteY+66,statW-40,27,2);
+    });
   }
-  const statY=430,statW=288,gap=30;[['Bewertet',data.ratings],['Hörstunden',data.hours],['Wiedergehört',Object.values(appState.user.episodes).filter((status)=>(status.listenCount||0)>1).length]].forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,statY,statW,150,28,goldBackground?'rgba(32,27,17,.94)':'rgba(25,29,38,.92)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle='#f5f6f8';ctx.font='800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(String(value),x+28,statY+70);ctx.fillStyle=goldBackground?'#c2aa78':'#939ca9';ctx.font='650 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,x+28,statY+112);});
-  ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEINE BEWERTUNGEN',76,660);
-  const ratingData=[['Super',data.ratingCounts.super,'#f5c542'],['Plus',data.ratingCounts.plus,'#2980ff'],['Neutral',data.ratingCounts.neutral,'#727986'],['Minus',data.ratingCounts.minus,'#e0525b']],maxRating=Math.max(1,...ratingData.map((item)=>item[1]));
-  ratingData.forEach(([label,value,color],index)=>{const y=704+index*58;ctx.fillStyle=goldBackground?'#c6b386':'#aeb5c0';ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label,76,y+25);roundedRect(ctx,230,y,676,30,15,goldBackground?'#292318':'#202630');if(value)roundedRect(ctx,230,y,Math.max(28,676*value/maxRating),30,15,color);ctx.fillStyle='#f5f6f8';ctx.textAlign='right';ctx.fillText(String(value),1004,y+25);ctx.textAlign='left';});
-  ctx.fillStyle=goldBackground?'#e4c579':'#f1f3f6';ctx.font='800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('MEIN GESCHMACK',76,970);
-  const taste=[['Thema',data.insights.tags[0]?.label||'Noch offen'],['Autor',data.insights.authors[0]?.label||'Noch offen'],['Figur',data.insights.characters[0]?.label||'Noch offen']];
-  taste.forEach(([label,value],index)=>{const x=76+index*(statW+gap);roundedRect(ctx,x,1005,statW,132,24,goldBackground?'rgba(31,26,17,.94)':'rgba(20,24,32,.9)',goldBackground?'#6f5829':'#2d3440');ctx.fillStyle=goldBackground?'#bba672':'#8f98a5';ctx.font='700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(label.toUpperCase(),x+22,1042);ctx.fillStyle='#f3f4f6';ctx.font='750 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,value,x+22,1081,statW-44,30,2);});
-  const favoriteText=data.favorites.length?`Favoriten: ${data.favorites.map((episode)=>`${episode.nr}. ${episode.titel}`).join(' · ')}`:'Bewerte weitere Folgen, um deine Favoriten zu zeigen.';
-  ctx.fillStyle=goldBackground?'#c8b58b':'#adb4bf';ctx.font='500 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';drawWrappedText(ctx,favoriteText,76,1205,928,32,2);
+
+  // Debug-Vorschau bleibt unübersehbar markiert.
   if(data.debugArchive){
     ctx.save();
     ctx.translate(540,674);
     ctx.rotate(-.22);
-    ctx.globalAlpha=.88;
-    roundedRect(ctx,-390,-55,780,110,26,'rgba(27,18,4,.92)','#f0c75d');
+    ctx.globalAlpha=.9;
+    roundedRect(ctx,-390,-55,780,110,26,'rgba(27,18,4,.94)','#f0c75d');
     ctx.fillStyle='#ffe6a0';
     ctx.font='900 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
     ctx.textAlign='center';
@@ -826,8 +1059,20 @@ async function profileImageBlob() {
     ctx.fillText('NICHT FREIGESCHALTET · NICHT GESPEICHERT',0,37);
     ctx.restore();
   }
-  ctx.fillStyle=goldBackground?'#8e794d':'#69727f';ctx.font='500 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1294);ctx.textAlign='right';ctx.fillText('letsmagic.github.io/fallkartei',1004,1294);ctx.textAlign='left';
-  return await new Promise((resolve,reject)=>canvas.toBlob((blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),'image/png',.95));
+
+  // Footer.
+  ctx.fillStyle=goldBackground?'#89784f':'#657080';
+  ctx.font='600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.fillText(data.displayName?`${data.displayName} · Die Fallkartei`:'Die Fallkartei · inoffizielles Fanprojekt',76,1295);
+  ctx.textAlign='right';
+  ctx.fillText('letsmagic.github.io/fallkartei',1004,1295);
+  ctx.textAlign='left';
+
+  return await new Promise((resolve,reject)=>canvas.toBlob(
+    (blob)=>blob?resolve(blob):reject(new Error('Bild konnte nicht erzeugt werden.')),
+    'image/png',
+    .95
+  ));
 }
 function dataNameForShare(){const name=cleanProfileName(appState.user.settings.profileName);return name?`Hörprofil von ${name} – Die Fallkartei`:'';}
 async function shareProfileImage() {
