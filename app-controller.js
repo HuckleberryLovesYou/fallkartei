@@ -530,6 +530,28 @@ function renderActiveFilters() {
   const chips=[]; if (appState.filter!=='all') chips.push(['filter','Status']); if (appState.authorFilter!=='all') chips.push(['author',appState.authorFilter]); if (appState.eraFilter!=='all') chips.push(['era',appState.eraFilter]); if (appState.yearFilter!=='all') chips.push(['year',appState.yearFilter]); if (appState.search) chips.push(['search',`„${appState.search}“`]);
   $('activeFilters').classList.toggle('hidden',!chips.length); $('activeFilters').innerHTML=chips.map(([key,label])=>`<button data-clear-filter="${key}">${esc(label)} ×</button>`).join('')+(chips.length>1?'<button data-clear-filter="all">Alle zurücksetzen</button>':'');
 }
+function episodeCardMarkup(episode,view) {
+  return view==='detailed'?detailedCard(episode):view==='cover'?coverCard(episode):compactCard(episode);
+}
+function updateLoadMoreEpisodesButton(total,visibleCount=appState.episodeRenderLimit) {
+  $('loadMoreEpisodes').classList.toggle('hidden',visibleCount>=total);
+}
+function appendMoreEpisodes(count=40) {
+  if(archiveCodeSearchMatch()) return;
+  const episodes=filteredEpisodes();
+  const view=appState.user.settings.episodeView;
+  const start=Math.min(appState.episodeRenderLimit,episodes.length);
+  const nextLimit=Math.min(start+Math.max(1,Number(count)||40),episodes.length);
+  const nextEpisodes=episodes.slice(start,nextLimit);
+  if(nextEpisodes.length) {
+    $('episodeList').insertAdjacentHTML(
+      'beforeend',
+      nextEpisodes.map((episode)=>episodeCardMarkup(episode,view)).join('')
+    );
+  }
+  appState.episodeRenderLimit=nextLimit;
+  updateLoadMoreEpisodesButton(episodes.length,nextLimit);
+}
 function renderEpisodes() {
   const view=appState.user.settings.episodeView;
   if(archiveCodeSearchMatch()) {
@@ -544,8 +566,14 @@ function renderEpisodes() {
     return;
   }
   const episodes=filteredEpisodes(),visible=episodes.slice(0,appState.episodeRenderLimit);
-  $('episodeCount').textContent=`${episodes.length} Folge${episodes.length===1?'':'n'}`; $('episodeList').className=`episode-list ${view==='cover'?'cover-view':''}`; $('episodeList').innerHTML=visible.length?visible.map((episode)=>view==='detailed'?detailedCard(episode):view==='cover'?coverCard(episode):compactCard(episode)).join(''):'<div class="info-card">Keine passenden Folgen gefunden.</div>';
-  $('loadMoreEpisodes').classList.toggle('hidden',visible.length>=episodes.length); renderActiveFilters(); $('clearSearch').classList.toggle('hidden',!appState.search);
+  $('episodeCount').textContent=`${episodes.length} Folge${episodes.length===1?'':'n'}`;
+  $('episodeList').className=`episode-list ${view==='cover'?'cover-view':''}`;
+  $('episodeList').innerHTML=visible.length
+    ?visible.map((episode)=>episodeCardMarkup(episode,view)).join('')
+    :'<div class="info-card">Keine passenden Folgen gefunden.</div>';
+  updateLoadMoreEpisodesButton(episodes.length,visible.length);
+  renderActiveFilters();
+  $('clearSearch').classList.toggle('hidden',!appState.search);
   $$('#statusFilters [data-filter]').forEach((button)=>button.classList.toggle('active',button.dataset.filter===appState.filter));
   $$('[data-episode-view]').forEach((button)=>button.classList.toggle('active',button.dataset.episodeView===view));
 }
@@ -1275,10 +1303,25 @@ function renderTutorial(step=0) {
   $('tutorialContent').innerHTML=`<div class="quick-rate-card"><div class="tutorial-visual">${item.icon}</div><p>${esc(item.text)}</p><div class="tutorial-dots">${steps.map((_,index)=>`<span class="${index===step?'active':''}"></span>`).join('')}</div><button class="button primary full" data-tutorial-next="${step}">${step===steps.length-1?'App benutzen':'Weiter'}</button>${step<steps.length-1?'<button class="text-button" data-tutorial-skip>Überspringen</button>':''}</div>`; openDialog('tutorialDialog');
 }
 
-function navigate(page,{restore=true}={}) {
-  if (appState.page) appState.scrollPositions[appState.page]=window.scrollY; appState.page=page;
-  $$('.page').forEach((node)=>node.classList.toggle('active',node.dataset.page===page)); $$('.bottom-nav [data-go]').forEach((button)=>button.classList.toggle('active',button.dataset.go===page));
-  history.replaceState(null,'',page==='home'?'./':`#${page}`); requestAnimationFrame(()=>window.scrollTo(0,restore?(appState.scrollPositions[page]||0):0));
+function scrollPageTo(y,{smooth=false}={}) {
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  window.scrollTo({top:Math.max(0,Number(y)||0),left:0,behavior:smooth&&!reduced?'smooth':'auto'});
+}
+function navigate(page,{restore=true,topIfActive=false}={}) {
+  if(page===appState.page&&topIfActive) {
+    appState.scrollPositions[page]=0;
+    scrollPageTo(0,{smooth:true});
+    return;
+  }
+  if(page===appState.page) return;
+
+  if(appState.page) appState.scrollPositions[appState.page]=window.scrollY;
+  appState.page=page;
+  $$('.page').forEach((node)=>node.classList.toggle('active',node.dataset.page===page));
+  $$('.bottom-nav [data-go]').forEach((button)=>button.classList.toggle('active',button.dataset.go===page));
+  history.replaceState(null,'',page==='home'?'./':`#${page}`);
+  const target=restore?(appState.scrollPositions[page]||0):0;
+  requestAnimationFrame(()=>scrollPageTo(target));
 }
 function refreshViews(detailNr=null) { renderHome(); renderEpisodes(); renderRanking(); renderPlaylists(); renderSettings(); if (detailNr&&$('episodeDialog').open) renderEpisodeDetail(detailNr); }
 async function toggleHeardAction(nr) {
@@ -1309,7 +1352,7 @@ async function sharePlaylist(id) {
 function bindDelegatedEvents() {
   document.addEventListener('click',async(event)=>{
     const close=event.target.closest('[data-close-dialog]'); if(close){closeDialog(close.dataset.closeDialog);return;}
-    const go=event.target.closest('[data-go]'); if(go){const page=go.dataset.go; const closeId=go.dataset.closeDialog;if(closeId)closeDialog(closeId);navigate(page);return;}
+    const go=event.target.closest('[data-go]'); if(go){const page=go.dataset.go; const closeId=go.dataset.closeDialog;if(closeId)closeDialog(closeId);const isBottomTab=Boolean(go.closest('.bottom-nav'));navigate(page,{topIfActive:isBottomTab});return;}
     const openEpisode=event.target.closest('[data-open-episode]'); if(openEpisode){renderEpisodeDetail(Number(openEpisode.dataset.openEpisode));return;}
     const openPlaylist=event.target.closest('[data-open-playlist]'); if(openPlaylist){renderPlaylistDetail(openPlaylist.dataset.openPlaylist);return;}
     const clear=event.target.closest('[data-clear-filter]'); if(clear){const key=clear.dataset.clearFilter;if(key==='all'||key==='filter')appState.filter='all';if(key==='all'||key==='author')appState.authorFilter='all';if(key==='all'||key==='era')appState.eraFilter='all';if(key==='all'||key==='year')appState.yearFilter='all';if(key==='all'||key==='search'){appState.search='';$('episodeSearch').value='';}populateSelects();persistFilters();renderEpisodes();return;}
@@ -1434,7 +1477,7 @@ function bindStaticEvents() {
   $('episodeSearch').addEventListener('input',(event)=>{appState.search=event.target.value;appState.episodeRenderLimit=40;renderEpisodes();}); $('clearSearch').addEventListener('click',()=>{appState.search='';$('episodeSearch').value='';renderEpisodes();});
   $('statusFilters').addEventListener('click',(event)=>{const button=event.target.closest('[data-filter]');if(!button)return;appState.filter=button.dataset.filter;appState.episodeRenderLimit=40;persistFilters();renderEpisodes();});
   for(const [id,key] of [['authorFilter','authorFilter'],['eraFilter','eraFilter'],['yearFilter','yearFilter'],['episodeSort','sort']])$(id).addEventListener('change',(event)=>{appState[key]=event.target.value;appState.episodeRenderLimit=40;persistFilters();renderEpisodes();});
-  $('loadMoreEpisodes').addEventListener('click',()=>{appState.episodeRenderLimit+=40;renderEpisodes();});
+  $('loadMoreEpisodes').addEventListener('click',()=>appendMoreEpisodes(40));
   $('rankingMode').addEventListener('click',(event)=>{const button=event.target.closest('[data-ranking]');if(!button)return;appState.ranking=button.dataset.ranking;renderRanking();});
   $('playlistTabs').addEventListener('click',(event)=>{const button=event.target.closest('[data-playlist-tab]');if(!button)return;appState.playlistTab=button.dataset.playlistTab;appState.user.settings.playlistTab=appState.playlistTab;saveUser();renderPlaylists();});
   $('newPlaylistButton').addEventListener('click',()=>openPlaylistEditor());

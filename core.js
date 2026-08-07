@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.4.0';
+export const APP_VERSION = '1.4.1';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -392,7 +392,14 @@ export function moveQueueItem(nr,direction) {
 }
 export function getEpisode(nr) { return appState.catalog.find((episode) => episode.nr === Number(nr)) || null; }
 export function availableEpisode(episode) { if (!episode) return false; if (!episode.releaseDate) return true; const date = new Date(episode.releaseDate); return Number.isNaN(date.getTime()) || date <= new Date(); }
-export function completionEligibleEpisode(episode) { return availableEpisode(episode) && episode?.completionEligible !== false; }
+export function completionEligibleEpisode(episode) {
+  if(!episode||episode.completionEligible===false) return false;
+  if(episode.completionEligible===true) return availableEpisode(episode);
+  // Reguläre Platzhalter ohne bestätigtes Veröffentlichungsdatum bleiben im
+  // Katalog sichtbar, zählen aber noch nicht zum 100%-Fortschritt.
+  if(!episode.releaseDate) return false;
+  return availableEpisode(episode);
+}
 export function activityCount(user = appState.user) { return Object.values(user?.episodes || {}).filter((status) => status.heard || status.rating || status.note).length + (user?.playlists?.length || 0) + (user?.history?.length || 0); }
 export function profileRatingCount() { return Object.values(appState.user?.episodes || {}).filter((status) => status.rating).length; }
 export function persistFilters() {

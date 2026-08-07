@@ -2,6 +2,27 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.4.1 – 2026-08-07
+
+### Fortschritt
+
+- noch nicht veröffentlichte Folgen mit bestätigtem Zukunftsdatum zählen erst ab ihrem Veröffentlichungstag zum normalen 100%-Fortschritt
+- reine Katalog-Platzhalter ohne Veröffentlichungsdatum bleiben sichtbar, zählen aber nicht zum Fortschritt
+- ausdrücklich als Zusatzinhalt markierte Live-Fälle bleiben weiterhin außerhalb des normalen 100%-Zählers
+
+### Folgenkatalog
+
+- `Mehr laden` hängt nur noch die nächsten Folgen an die bestehende Liste an
+- bereits sichtbare Cover werden dadurch nicht mehr entfernt und erneut aufgebaut
+- der Abstand zwischen der letzten Folgenreihe und `Mehr laden` wurde vergrößert
+
+### Navigation
+
+- jeder Haupttab merkt sich seine zuletzt verlassene Scrollposition
+- beim ersten Öffnen eines Tabs beginnt die Ansicht oben
+- erneutes Antippen des bereits aktiven unteren Tabs scrollt weich zum Seitenanfang
+- die Scrollanimation respektiert die Systemeinstellung für reduzierte Bewegung
+
 ## 1.4.0 – 2026-08-07
 
 ### Smart Playlist – Zusammenhänge

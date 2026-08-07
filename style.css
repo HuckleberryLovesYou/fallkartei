@@ -1447,3 +1447,10 @@ summary,
   font-size:10px;
   line-height:1.45;
 }
+
+
+/* v1.4.1 – ruhiger Abschluss des Folgenkatalogs */
+#loadMoreEpisodes{
+  margin-top:24px;
+  margin-bottom:10px;
+}
