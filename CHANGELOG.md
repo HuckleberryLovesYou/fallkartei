@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.3 – 2026-08-07
+
+### Folgendetails auf iOS
+
+- der Folgendetail-Dialog besitzt jetzt einen expliziten, begrenzten Scrollbereich statt nur einer flexiblen Maximalhöhe
+- das Layout wurde auf vier feste Grid-Zeilen umgestellt: Griff, Kopf, scrollbarer Inhalt und Aktionsleiste
+- der dauerhafte `transform` des Bottom-Sheets wurde im Ruhezustand für Folgendetails entfernt, da er in WebKit verschachteltes Touch-Scrolling stören kann
+- der Swipe-down-Transform bleibt ausschließlich während einer tatsächlichen Griffbewegung aktiv
+- vertikale Gesten innerhalb horizontaler Zusammenhangsreihen werden nicht mehr über `touch-action: pan-x` eingeschränkt
+- beim Öffnen einer anderen Folge startet deren Detailinhalt wieder oben
+
 ## 1.5.2 – 2026-08-07
 
 ### Folgendetails
