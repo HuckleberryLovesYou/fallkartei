@@ -299,3 +299,9 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
     text-underline-offset:3px;
   }
 }
+
+
+/* v1.2.3 – einheitlicher Abstand im Playlist-Detailfenster */
+.playlist-detail-hero>.button-row{
+  margin-bottom:24px;
+}

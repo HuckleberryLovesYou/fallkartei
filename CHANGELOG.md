@@ -2,6 +2,14 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.2.3 – 2026-08-07
+
+### Feinschliff
+
+- im Playlist-Detailfenster wurde der Abstand unter „Alles als Nächstes“ und „Teilen“ vergrößert
+- die Buttonzeile berührt die anschließende Trennlinie nicht mehr
+- der vertikale Rhythmus entspricht nun dem bereits überarbeiteten Profilbereich
+
 ## 1.2.2 – 2026-08-07
 
 ### Empfehlungen
