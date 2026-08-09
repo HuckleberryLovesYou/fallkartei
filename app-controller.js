@@ -1892,10 +1892,18 @@ function bindStaticEvents() {
     toast('Versteckte Archivprüfung freigeschaltet.');
   };
   const countSecretTap=()=>{
-    settingsSecretTapCount+=1;
-    clearTimeout(settingsSecretTimer);
-    settingsSecretTimer=setTimeout(()=>{settingsSecretTapCount=0;},3200);
-    if(settingsSecretTapCount>=7){settingsSecretTapCount=0;revealDeveloperSettings();}
+    /* DEBUG-ENTRY DEAKTIVIERT (v1.5.9)
+
+       Der frühere 7-Tap-Einstieg bleibt bewusst im Quellcode erhalten,
+       wird aber nicht mehr ausgeführt:
+
+       settingsSecretTapCount+=1;
+       clearTimeout(settingsSecretTimer);
+       settingsSecretTimer=setTimeout(()=>{settingsSecretTapCount=0;},3200);
+       if(settingsSecretTapCount>=7){settingsSecretTapCount=0;revealDeveloperSettings();}
+
+       Für spätere interne Tests kann dieser Block einfach wieder aktiviert werden.
+    */
   };
   $('aboutCard').addEventListener('click',countSecretTap);
   $('aboutCard').addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();countSecretTap();}});
