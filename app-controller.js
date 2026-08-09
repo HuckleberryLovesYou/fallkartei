@@ -22,6 +22,17 @@ let toastTimer, toastActionToken=0, confirmResolver, noteTimer, pendingWorker, r
 let achievementChecksEnabled=false,archiveCheckQueued=false,archiveBadgeTapCount=0,archiveBadgeTapTimer,settingsSecretTapCount=0,settingsSecretTimer;
 const dialogStack=[];
 const ARCHIVE_DEBUG_PASSWORD='AKTE100';
+const RELEASE_NOTES={
+  '1.5.7':{
+    title:'Neu in Version 1.5.7',
+    intro:'Dieses Update macht die öffentliche Fallkartei transparenter und bereitet künftige Updates besser auf.',
+    items:[
+      ['Rechtliches direkt in der App','Impressum und Datenschutz sind jetzt unter Mehr → Rechtliches jederzeit erreichbar.'],
+      ['FAQ & Quellen schneller erreichbar','Häufige Fragen sowie Quellen- und Rechtehinweise sind direkt aus den Einstellungen verlinkt.'],
+      ['Was ist neu?','Bestehende Nutzer sehen künftig nach einem Versionswechsel einmal die wichtigsten Änderungen. Neue Installationen werden damit nicht unnötig begrüßt.'],
+    ],
+  },
+};
 
 function topOpenDialog() {
   for(let index=dialogStack.length-1;index>=0;index--){
@@ -1534,8 +1545,37 @@ function populateSelects() {
 function renderImportPreview(candidate) {
   appState.importCandidate=candidate; const preview=backupPreview(candidate); $('importPreview').innerHTML=`<p>Backup ${preview.exportedAt?`vom <strong>${formatDate(preview.exportedAt)}</strong>`:'ohne Datumsangabe'} · Version ${esc(preview.version)}</p><div class="import-summary"><div><strong>${preview.episodeStates}</strong><span>Folgenstände</span></div><div><strong>${preview.playlists}</strong><span>Playlists</span></div><div><strong>${preview.pinned}</strong><span>Anheftungen</span></div><div><strong>${preview.history}</strong><span>Verlaufseinträge</span></div></div><p class="muted">${preview.conflicts} Einträge unterscheiden sich vom aktuellen Stand.</p><div class="button-row"><button class="button primary" data-import-mode="merge">Zusammenführen</button><button class="button danger" data-import-mode="replace">Ersetzen</button></div><p class="muted">Beim Ersetzen wird vorher automatisch dein aktueller Stand heruntergeladen.</p>`; openDialog('importDialog');
 }
+function renderWhatsNew() {
+  const notes=RELEASE_NOTES[APP_VERSION];
+  if(!notes) return;
+  $('whatsNewTitle').textContent=notes.title;
+  $('whatsNewContent').innerHTML=`
+    <p>${esc(notes.intro)}</p>
+    <div class="release-note-list">
+      ${notes.items.map(([title,text])=>`<article class="release-note-item"><strong>${esc(title)}</strong><span>${esc(text)}</span></article>`).join('')}
+    </div>
+    <button class="button primary full" data-close-dialog="whatsNewDialog">Verstanden</button>
+    <button class="button ghost full" id="openFullChangelogFromUpdate">Changelog auf GitHub öffnen ↗</button>
+  `;
+  $('openFullChangelogFromUpdate')?.addEventListener('click',()=>{
+    window.open('https://github.com/LetsMAgic/fallkartei/blob/main/CHANGELOG.md','_blank','noopener,noreferrer');
+  });
+  openDialog('whatsNewDialog');
+}
+function showWhatsNew({markSeen=true}={}) {
+  if(!RELEASE_NOTES[APP_VERSION]) return;
+  renderWhatsNew();
+  if(markSeen&&appState.user?.settings?.lastVersionSeen!==APP_VERSION){
+    appState.user.settings.lastVersionSeen=APP_VERSION;
+    saveUser();
+  }
+}
+function openProjectPage(path) {
+  window.open(`https://github.com/LetsMAgic/fallkartei/blob/main/${path}`,'_blank','noopener,noreferrer');
+}
+
 function renderTutorial(step=0) {
-  const steps=[{icon:'ID',title:'Dein Profil',text:'Ein Anzeigename macht geteilte Hörprofile für Freunde sofort erkennbar. Er ist freiwillig und bleibt ausschließlich lokal auf deinem Gerät.'},{icon:'⌕',title:'Folge finden',text:'Auf der Startseite bekommst du sofort einen verfügbaren, normalerweise ungehörten Vorschlag. Laufzeit und Stimmung kannst du optional einschränken.'},{icon:'★',title:'Bewerten',text:'Minus, Neutral, Plus und Super verbessern dein Profil. Eine Bewertung markiert die Folge automatisch als gehört.'},{icon:'↓',title:'Daten sichern',text:'Alles bleibt lokal auf deinem Gerät. Exportiere regelmäßig ein JSON-Backup, besonders vor einem Gerätewechsel.'}]; const item=steps[step]; $('tutorialTitle').textContent=item.title;
+  const steps=[{icon:'ID',title:'Dein Profil',text:'Die Fallkartei funktioniert ohne Account und ohne echten Namen. Ein Anzeigename ist freiwillig, kann frei gewählt werden und bleibt ausschließlich lokal auf deinem Gerät.'},{icon:'⌕',title:'Folge finden',text:'Auf der Startseite bekommst du sofort einen verfügbaren, normalerweise ungehörten Vorschlag. Laufzeit und Stimmung kannst du optional einschränken.'},{icon:'★',title:'Bewerten',text:'Minus, Neutral, Plus und Super verbessern dein Profil. Eine Bewertung markiert die Folge automatisch als gehört.'},{icon:'↓',title:'Daten sichern',text:'Alles bleibt lokal auf deinem Gerät. Exportiere regelmäßig ein JSON-Backup, besonders vor einem Gerätewechsel.'}]; const item=steps[step]; $('tutorialTitle').textContent=item.title;
   if(step===0){const name=cleanProfileName(appState.user.settings.profileName);$('tutorialContent').innerHTML=`<div class="tutorial-profile-step"><div id="tutorialInitialsPreview" class="profile-editor-avatar ${name?'':'empty'}" aria-hidden="true">${esc(profileInitials(name)||'?')}</div><p>${esc(item.text)}</p><label><span>Anzeigename <small>optional</small></span><input id="tutorialProfileName" maxlength="24" autocomplete="nickname" value="${esc(name)}" placeholder="Zum Beispiel Niklas oder RockyFan"></label><small class="quick-rate-hint">Du kannst den Namen später jederzeit ändern oder vollständig entfernen.</small><div class="tutorial-dots">${steps.map((_,index)=>`<span class="${index===step?'active':''}"></span>`).join('')}</div><button class="button primary full" data-tutorial-profile-save>Speichern und weiter</button><button class="text-button" data-tutorial-profile-skip>Ohne Namen fortfahren</button></div>`;openDialog('tutorialDialog');return;}
   $('tutorialContent').innerHTML=`<div class="quick-rate-card"><div class="tutorial-visual">${item.icon}</div><p>${esc(item.text)}</p><div class="tutorial-dots">${steps.map((_,index)=>`<span class="${index===step?'active':''}"></span>`).join('')}</div><button class="button primary full" data-tutorial-next="${step}">${step===steps.length-1?'App benutzen':'Weiter'}</button>${step<steps.length-1?'<button class="text-button" data-tutorial-skip>Überspringen</button>':''}</div>`; openDialog('tutorialDialog');
 }
@@ -1880,7 +1920,7 @@ function bindStaticEvents() {
     toast('Debug-Vorschau beendet. Alle Teständerungen wurden verworfen.');
   });
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
-  $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
+  $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('openWhatsNew').addEventListener('click',()=>showWhatsNew({markSeen:true})); $('openFaq').addEventListener('click',()=>openProjectPage('FAQ.md')); $('openImprint').addEventListener('click',()=>openDialog('imprintDialog')); $('openPrivacy').addEventListener('click',()=>openDialog('privacyDialog')); $('openAttributions').addEventListener('click',()=>openProjectPage('ATTRIBUTIONS.md')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
   $('streamingServiceSelect').addEventListener('change',(event)=>{appState.user.settings.preferredService=event.target.value;saveUser();renderSettings();renderHome();if(appState.detailNr&&$('episodeDialog').open)renderEpisodeDetail(appState.detailNr,{preserveScroll:true});}); document.addEventListener('click',(event)=>{const button=event.target.closest('[data-episode-view]');if(!button)return;appState.user.settings.episodeView=button.dataset.episodeView;saveUser();renderEpisodes();renderSettings();});
   document.addEventListener('error',(event)=>{const image=event.target;if(image?.matches?.('[data-cover-image]'))image.classList.add('hidden');},true);
   $('confirmCancel').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('confirmAccept').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(true);confirmResolver=null;}); $('confirmDialog').addEventListener('cancel',(event)=>{event.preventDefault();closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('applyUpdate').addEventListener('click',()=>pendingWorker?.postMessage({type:'SKIP_WAITING'}));
@@ -1923,12 +1963,26 @@ function registerServiceWorker() {
 function renderAll(){renderHome();renderEpisodes();renderRanking();renderPlaylists();renderSettings();}
 export async function startApp() {
   setupAppViewportHeight();
-  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();setupZoomLock();bindStaticEvents();setupSheetInteractions();renderAll();
+  $('loadingText').textContent='Lade Folgenkatalog …';await loadCatalog();$('loadingText').textContent='Lade persönliche Daten …';await loadUser();
+  const shouldShowWhatsNew=Boolean(
+    appState.user?.settings?.lastVersionSeen
+    &&appState.user.settings.lastVersionSeen!==APP_VERSION
+    &&RELEASE_NOTES[APP_VERSION]
+  );
+  setStoredFilters();appState.playlistTab=appState.user.settings.playlistTab||'essentials';populateSelects();setupZoomLock();bindStaticEvents();setupSheetInteractions();renderAll();
   const deepEpisode=episodeFromHash();
   const hash=location.hash.slice(1);
   navigate(deepEpisode?'episodes':['episodes','ranking','playlists','settings'].includes(hash)?hash:'home',{restore:false,updateUrl:!deepEpisode});
   if(deepEpisode) requestAnimationFrame(()=>renderEpisodeDetail(deepEpisode.nr));
   $('loadingScreen').classList.add('hidden');setTimeout(()=>$('loadingScreen')?.remove(),500);
   achievementChecksEnabled=true;scheduleArchiveAchievementCheck();
-  const installedMode=window.FallkarteiInstallGuide?.isStandalone?.()??window.matchMedia?.('(display-mode: standalone)')?.matches??window.navigator.standalone===true;if(installedMode&&!appState.user.settings.tutorialCompleted)setTimeout(()=>renderTutorial(0),350);refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
+  const installedMode=window.FallkarteiInstallGuide?.isStandalone?.()??window.matchMedia?.('(display-mode: standalone)')?.matches??window.navigator.standalone===true;
+  if(installedMode&&!appState.user.settings.tutorialCompleted){
+    setTimeout(()=>renderTutorial(0),350);
+  } else if(shouldShowWhatsNew&&!deepEpisode){
+    // Neue Installationen besitzen bereits lastVersionSeen === APP_VERSION.
+    // Nur bestehende Nutzer sehen den Hinweis nach einem Versionswechsel.
+    setTimeout(()=>showWhatsNew({markSeen:true}),420);
+  }
+  refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
 }

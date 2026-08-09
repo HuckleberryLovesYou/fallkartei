@@ -2,6 +2,23 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.7 – 2026-08-09
+
+### Rechtliches & Transparenz
+
+- vollständige Anbieterkennzeichnung ergänzt
+- Datenschutzerklärung für Hosting, lokale Speicherung, Metadaten, Cover, externe Dienste und Kontaktwege erweitert
+- Impressum und Datenschutz direkt unter `Mehr → Rechtliches` in der App erreichbar
+- FAQ sowie Quellen- und Rechtehinweise aus der App verlinkt
+- Datenschutzhinweise unterscheiden nun ausdrücklich zwischen lokal gespeicherten Trackingdaten und technisch notwendigen Verbindungen zu externen Diensten
+
+### Update-Hinweise
+
+- neues `Was ist neu?`-System eingeführt
+- bestehende Nutzer sehen nach einem Versionswechsel einmal die wichtigsten Änderungen
+- neue Installationen werden nicht mit einem alten Update-Hinweis begrüßt
+- die Hinweise können unter `Mehr → Hilfe → Was ist neu?` erneut geöffnet werden
+
 ## 1.5.6 – 2026-08-09
 
 ### Verbindungsnetz & Smart Playlists

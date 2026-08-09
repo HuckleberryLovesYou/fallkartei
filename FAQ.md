@@ -96,9 +96,9 @@ Die App verwendet dafür hauptsächlich **IndexedDB**.
 
 ### Werden meine persönlichen Tracking-Daten an einen Server übertragen?
 
-Die Fallkartei besitzt kein eigenes Backend und überträgt deine persönlichen Bewertungen, Notizen, Playlists oder deinen Hörverlauf nicht an einen eigenen Server.
+Die Fallkartei besitzt kein eigenes Backend und überträgt deine persönlichen Bewertungen, Notizen, Playlists oder deinen Hörverlauf nicht an einen eigenen Fallkartei-Server.
 
-Für das Laden der App, externe Cover, Metadaten oder das Öffnen eines Streamingdienstes können jedoch Verbindungen zu externen Anbietern entstehen.
+Für das Hosting über GitHub Pages, Metadaten- und Coverabrufe sowie beim bewussten Öffnen externer Dienste entstehen jedoch technische Verbindungen zu Drittanbietern. Dabei können insbesondere IP-Adresse und übliche Verbindungsdaten verarbeitet werden.
 
 Weitere Informationen stehen in [PRIVACY.md](./PRIVACY.md).
 
@@ -409,6 +409,7 @@ Bei Änderungen an Katalogdaten oder Folgen-Zusammenhängen sind nachvollziehbar
 
 - [App öffnen](https://letsmagic.github.io/fallkartei/)
 - [README](./README.md)
+- [Impressum](./IMPRESSUM.md)
 - [Datenschutz](./PRIVACY.md)
 - [Quellen & Rechte](./ATTRIBUTIONS.md)
 - [Änderungen](./CHANGELOG.md)

@@ -2225,3 +2225,60 @@ html{
   z-index:1;
   touch-action:manipulation;
 }
+
+
+/* v1.5.7 – Rechtliches und Update-Hinweise */
+.legal-content,.release-notes-content{
+  line-height:1.62;
+}
+.legal-content h3,.release-notes-content h3{
+  margin:24px 0 8px;
+  font-size:14px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#d9dde4;
+}
+.legal-content p,.release-notes-content p{
+  margin:0 0 12px;
+  color:#b9c0ca;
+}
+.legal-content a{
+  color:#dbe7ff;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  overflow-wrap:anywhere;
+}
+.legal-lead{
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--surface);
+}
+.legal-note{
+  margin-top:24px!important;
+  padding:12px 14px;
+  border-radius:13px;
+  background:#0b0d11;
+  border:1px solid var(--line);
+  font-size:11px;
+}
+.release-note-list{
+  display:grid;
+  gap:10px;
+  margin:14px 0 20px;
+}
+.release-note-item{
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--surface);
+}
+.release-note-item strong,.release-note-item span{
+  display:block;
+}
+.release-note-item span{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}

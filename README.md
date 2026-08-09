@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.5.6" src="https://img.shields.io/badge/Version-1.5.6-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.5.7" src="https://img.shields.io/badge/Version-1.5.7-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -17,6 +17,8 @@
   <a href="https://letsmagic.github.io/fallkartei/"><strong>App öffnen</strong></a>
   ·
   <a href="./FAQ.md">FAQ</a>
+  ·
+  <a href="./IMPRESSUM.md">Impressum</a>
   ·
   <a href="./PRIVACY.md">Datenschutz</a>
   ·
@@ -116,7 +118,9 @@ Die Fallkartei verwendet:
 
 Bewertungen, Notizen, Playlists, Hörverlauf und Einstellungen werden lokal in IndexedDB gespeichert. Regelmäßige JSON-Backups werden empfohlen, insbesondere vor einem Gerätewechsel oder dem Löschen von Browserdaten.
 
-Ausführliche Informationen stehen in [PRIVACY.md](./PRIVACY.md).
+Beim Hosting sowie beim Abruf externer Metadaten, Cover oder Dienste können technisch notwendige Verbindungsdaten durch die jeweiligen Drittanbieter verarbeitet werden.
+
+Ausführliche Informationen stehen in [PRIVACY.md](./PRIVACY.md). Die Anbieterkennzeichnung steht in [IMPRESSUM.md](./IMPRESSUM.md).
 
 ## Cover, Metadaten und Quellen
 
@@ -156,7 +160,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.5.6** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.5.7** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wurde ursprünglich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt und wird inzwischen öffentlich als kostenloses Fanprojekt bereitgestellt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 
@@ -165,6 +169,10 @@ Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise könne
 Dies ist ein **inoffizielles, nicht-kommerzielles Fanprojekt** und steht in keiner Verbindung zu Sony Music Entertainment, EUROPA, dem KOSMOS Verlag oder weiteren beteiligten Rechteinhabern.
 
 „Die drei ???“, zugehörige Marken, Titel, Cover, Illustrationen und sonstige geschützte Inhalte gehören den jeweiligen Rechteinhabern. Die Fallkartei erhebt keinerlei Anspruch auf diese Inhalte.
+
+Für rechtliche Hinweise oder Anliegen von Rechteinhabern: **fallkartei@gmail.com**
+
+Vollständige Anbieterangaben: [IMPRESSUM.md](./IMPRESSUM.md)
 
 ## Lizenz
 
