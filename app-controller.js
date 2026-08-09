@@ -25,11 +25,11 @@ const ARCHIVE_DEBUG_PASSWORD='AKTE100';
 const RELEASE_NOTES={
   '1.5.7':{
     title:'Neu in Version 1.5.7',
-    intro:'Dieses Update macht die öffentliche Fallkartei transparenter und bereitet künftige Updates besser auf.',
+    intro:'Version 1.5.7 bündelt wichtige Informationen und Hilfebereiche direkt in der App.',
     items:[
-      ['Rechtliches direkt in der App','Impressum und Datenschutz sind jetzt unter Mehr → Rechtliches jederzeit erreichbar.'],
-      ['FAQ & Quellen schneller erreichbar','Häufige Fragen sowie Quellen- und Rechtehinweise sind direkt aus den Einstellungen verlinkt.'],
-      ['Was ist neu?','Bestehende Nutzer sehen künftig nach einem Versionswechsel einmal die wichtigsten Änderungen. Neue Installationen werden damit nicht unnötig begrüßt.'],
+      ['Impressum & Datenschutz','Beide Bereiche sind jetzt direkt unter Mehr → Rechtliches erreichbar.'],
+      ['FAQ & Quellen','Häufige Fragen sowie Quellen- und Rechtehinweise lassen sich direkt aus den Einstellungen öffnen.'],
+      ['Update-Hinweise','Wichtige Neuerungen werden nach relevanten Updates kompakt zusammengefasst und bleiben unter „Was ist neu?“ abrufbar.'],
     ],
   },
 };
@@ -1545,9 +1545,22 @@ function populateSelects() {
 function renderImportPreview(candidate) {
   appState.importCandidate=candidate; const preview=backupPreview(candidate); $('importPreview').innerHTML=`<p>Backup ${preview.exportedAt?`vom <strong>${formatDate(preview.exportedAt)}</strong>`:'ohne Datumsangabe'} · Version ${esc(preview.version)}</p><div class="import-summary"><div><strong>${preview.episodeStates}</strong><span>Folgenstände</span></div><div><strong>${preview.playlists}</strong><span>Playlists</span></div><div><strong>${preview.pinned}</strong><span>Anheftungen</span></div><div><strong>${preview.history}</strong><span>Verlaufseinträge</span></div></div><p class="muted">${preview.conflicts} Einträge unterscheiden sich vom aktuellen Stand.</p><div class="button-row"><button class="button primary" data-import-mode="merge">Zusammenführen</button><button class="button danger" data-import-mode="replace">Ersetzen</button></div><p class="muted">Beim Ersetzen wird vorher automatisch dein aktueller Stand heruntergeladen.</p>`; openDialog('importDialog');
 }
-function renderWhatsNew() {
-  const notes=RELEASE_NOTES[APP_VERSION];
-  if(!notes) return;
+function releaseVersionParts(version) {
+  return String(version||'').split('.').map((part)=>Number(part)||0);
+}
+function latestReleaseNoteVersion() {
+  return Object.keys(RELEASE_NOTES).sort((a,b)=>{
+    const av=releaseVersionParts(a),bv=releaseVersionParts(b);
+    for(let index=0;index<Math.max(av.length,bv.length);index++){
+      const diff=(bv[index]||0)-(av[index]||0);
+      if(diff) return diff;
+    }
+    return 0;
+  })[0]||null;
+}
+function renderWhatsNew(version=APP_VERSION) {
+  const notes=RELEASE_NOTES[version];
+  if(!notes) return false;
   $('whatsNewTitle').textContent=notes.title;
   $('whatsNewContent').innerHTML=`
     <p>${esc(notes.intro)}</p>
@@ -1561,14 +1574,20 @@ function renderWhatsNew() {
     window.open('https://github.com/LetsMAgic/fallkartei/blob/main/CHANGELOG.md','_blank','noopener,noreferrer');
   });
   openDialog('whatsNewDialog');
+  return true;
 }
-function showWhatsNew({markSeen=true}={}) {
-  if(!RELEASE_NOTES[APP_VERSION]) return;
-  renderWhatsNew();
-  if(markSeen&&appState.user?.settings?.lastVersionSeen!==APP_VERSION){
+function showWhatsNew({markSeen=true,version=APP_VERSION,allowPrevious=false}={}) {
+  let displayVersion=version;
+  if(!RELEASE_NOTES[displayVersion]&&allowPrevious) displayVersion=latestReleaseNoteVersion();
+  if(!displayVersion||!renderWhatsNew(displayVersion)) return false;
+
+  // Nur ein relevanter Release mit eigenem RELEASE_NOTES-Eintrag gilt als
+  // automatisch "gesehen". Minor-Patches ohne Eintrag bleiben vollständig still.
+  if(markSeen&&displayVersion===APP_VERSION&&appState.user?.settings?.lastVersionSeen!==APP_VERSION){
     appState.user.settings.lastVersionSeen=APP_VERSION;
     saveUser();
   }
+  return true;
 }
 function openProjectPage(path) {
   window.open(`https://github.com/LetsMAgic/fallkartei/blob/main/${path}`,'_blank','noopener,noreferrer');
@@ -1920,7 +1939,7 @@ function bindStaticEvents() {
     toast('Debug-Vorschau beendet. Alle Teständerungen wurden verworfen.');
   });
   $('resetPersonalData').addEventListener('click',async()=>{if(await confirmAction({title:'Alle persönlichen Daten löschen?',text:'Hörstatus, Bewertungen, Notizen, Playlists, Verlauf und Einstellungen werden dauerhaft entfernt.',accept:'Alles löschen'})){appState.user=emptyPersonalData();resetRuntimeState();await saveUser(true);setStoredFilters();populateSelects();renderAll();navigate('home',{restore:false});toast('Persönliche Daten wurden gelöscht.');}});
-  $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('openWhatsNew').addEventListener('click',()=>showWhatsNew({markSeen:true})); $('openFaq').addEventListener('click',()=>openProjectPage('FAQ.md')); $('openImprint').addEventListener('click',()=>openDialog('imprintDialog')); $('openPrivacy').addEventListener('click',()=>openDialog('privacyDialog')); $('openAttributions').addEventListener('click',()=>openProjectPage('ATTRIBUTIONS.md')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
+  $('startTutorial').addEventListener('click',()=>renderTutorial(0)); $('openHelp').addEventListener('click',()=>openDialog('helpDialog')); $('openWhatsNew').addEventListener('click',()=>showWhatsNew({markSeen:false,allowPrevious:true})); $('openFaq').addEventListener('click',()=>openProjectPage('FAQ.md')); $('openImprint').addEventListener('click',()=>openDialog('imprintDialog')); $('openPrivacy').addEventListener('click',()=>openDialog('privacyDialog')); $('openAttributions').addEventListener('click',()=>openProjectPage('ATTRIBUTIONS.md')); $('copyDiagnostics').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(diagnosticsText());toast('Diagnose kopiert.');}catch{toast('Kopieren nicht möglich.','error');}}); $('validateCatalog').addEventListener('click',()=>{const result=catalogValidation();if(result.ok)toast(`Katalogprüfung erfolgreich: ${result.count} Folgen.`);else{console.table(result.issues.map((issue)=>({issue})));toast(`${result.issues.length} Kataloghinweise gefunden.`,'warning');}});
   $('streamingServiceSelect').addEventListener('change',(event)=>{appState.user.settings.preferredService=event.target.value;saveUser();renderSettings();renderHome();if(appState.detailNr&&$('episodeDialog').open)renderEpisodeDetail(appState.detailNr,{preserveScroll:true});}); document.addEventListener('click',(event)=>{const button=event.target.closest('[data-episode-view]');if(!button)return;appState.user.settings.episodeView=button.dataset.episodeView;saveUser();renderEpisodes();renderSettings();});
   document.addEventListener('error',(event)=>{const image=event.target;if(image?.matches?.('[data-cover-image]'))image.classList.add('hidden');},true);
   $('confirmCancel').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('confirmAccept').addEventListener('click',()=>{closeDialog('confirmDialog');confirmResolver?.(true);confirmResolver=null;}); $('confirmDialog').addEventListener('cancel',(event)=>{event.preventDefault();closeDialog('confirmDialog');confirmResolver?.(false);confirmResolver=null;}); $('applyUpdate').addEventListener('click',()=>pendingWorker?.postMessage({type:'SKIP_WAITING'}));
@@ -1981,8 +2000,8 @@ export async function startApp() {
     setTimeout(()=>renderTutorial(0),350);
   } else if(shouldShowWhatsNew&&!deepEpisode){
     // Neue Installationen besitzen bereits lastVersionSeen === APP_VERSION.
-    // Nur bestehende Nutzer sehen den Hinweis nach einem Versionswechsel.
-    setTimeout(()=>showWhatsNew({markSeen:true}),420);
+    // Ein automatischer Hinweis erscheint nur für Versionen mit eigenem RELEASE_NOTES-Eintrag.
+    setTimeout(()=>showWhatsNew({markSeen:true,version:APP_VERSION}),420);
   }
   refreshMetadata().then((result)=>{if(result.updated){populateSelects();renderAll();}}).catch((error)=>console.warn('Metadaten konnten nicht aktualisiert werden.',error));registerServiceWorker();
 }

@@ -2,6 +2,14 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.8 – 2026-08-09
+
+### Feinschliff
+
+- Formulierungen der Update-Hinweise überarbeitet
+- `Was ist neu?` zeigt manuell weiterhin den letzten relevanten Release an
+- reine Minor-Patches ohne eigene Release Notes lösen keine neue automatische Update-Meldung aus
+
 ## 1.5.7 – 2026-08-09
 
 ### Rechtliches & Transparenz
