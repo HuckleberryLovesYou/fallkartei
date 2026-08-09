@@ -154,7 +154,7 @@ episodes.json           alternative Katalogquelle
 
 ## Projektstatus
 
-**Version 1.5.5** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
+**Version 1.5.6** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Die App wird hauptsächlich für den privaten Gebrauch und einen kleinen Freundeskreis entwickelt. Das Repository ist öffentlich, damit GitHub Pages die App bereitstellen kann und der technische Aufbau nachvollziehbar bleibt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 

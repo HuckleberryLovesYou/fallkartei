@@ -17,15 +17,45 @@ export const CURATED_PLAYLISTS = [
 ];
 export const STORY_RELATIONS = [
   { id:'brittany', title:'Hugenay & Brittany', type:'Direkte Fortsetzung', strength:100, ordered:true, numbers:[103,125], description:'Feuermond führt den in Das Erbe des Meisterdiebs begonnenen Hugenay- und Brittany-Strang direkt weiter.' },
-  { id:'clarissa', title:'Clarissa Franklin', type:'Fortlaufender Handlungsstrang', strength:96, ordered:true, numbers:[76,99,188,226], description:'Clarissa Franklin kehrt über mehrere Fälle als zentrale Gegenspielerin zurück und ihre Geschichte wird wieder aufgegriffen.' },
-  { id:'rubin', title:'Vom Fluch des Rubins zum Feurigen Auge', type:'Direkter Rückbezug', strength:95, ordered:true, numbers:[5,200], description:'Das Feurige Auge greift den Rubin und Motive aus dem frühen Fall Der Fluch des Rubins ausdrücklich wieder auf.' },
-  { id:'hugenay', title:'Victor Hugenay', type:'Handlungsstrang', strength:92, ordered:true, numbers:[1,12,73,103,125,237], description:'Victor Hugenay kehrt als Meisterdieb in mehreren Fällen wieder; spätere Begegnungen bauen teilweise auf früheren auf.' },
+
+  { id:'rubin', title:'August August & Sphinx', type:'Fortlaufender Rückbezug', strength:97, ordered:true, numbers:[5,100,200], description:'Der Fluch des Rubins, Toteninsel und Feuriges Auge sind über August August, das Feurige Auge und die Organisation Sphinx miteinander verbunden.' },
+  { id:'clarissa', title:'Clarissa Franklin', type:'Fortlaufender Handlungsstrang', strength:96, ordered:true, numbers:[76,99,188,226], description:'Clarissa Franklin kehrt über mehrere Fälle als zentrale Gegenspielerin zurück; Signale aus dem Jenseits verknüpft ihren Strang zusätzlich mit Laura Stryker.' },
+  { id:'hugenay', title:'Victor Hugenay', type:'Handlungsstrang', strength:92, ordered:true, numbers:[1,12,73,103,125,237], description:'Victor Hugenay kehrt als Meisterdieb über viele Jahre wieder; spätere Begegnungen greifen frühere Fälle, Brittany und seine Beziehung zu den drei ??? wieder auf.' },
+  { id:'europa-alexandra', title:'Europa-Reise & Alexandra', type:'Fortlaufende Reise', strength:91, ordered:true, numbers:[65,66,67,68], description:'Vier unmittelbar aufeinanderfolgende Europa-Fälle sind durch die gemeinsame Reise und Alexandra miteinander verbunden.' },
+  { id:'allie', title:'Allie Jamison & Patricia Osborne', type:'Fortlaufende Figurenverbindung', strength:90, ordered:true, numbers:[25,26,148,196,10103], description:'Allie Jamison und Patricia Osborne verbinden mehrere klassische und spätere Fälle bis hin zum eigenständigen Live-Fall Der dunkle Taipan.' },
+
   { id:'taipan-callbacks', title:'Der dunkle Taipan · klassische Rückbezüge', type:'Callback-Netz', strength:88, ordered:false, anchor:10103, numbers:[2,5,16,23,25,10103], description:'Der Live-Fall verbindet bewusst Figuren, Gegenstände und Motive aus mehreren klassischen Fällen.' },
-  { id:'allie', title:'Allie Jamison & Familie Osborne', type:'Wiederkehrende Figuren', strength:74, ordered:true, numbers:[25,26,148,196,10103], description:'Allie Jamison und ihr familiäres Umfeld tauchen in mehreren Fällen wieder auf und verbinden die Geschichten miteinander.' },
-  { id:'dick-perry', title:'Dick Perry', type:'Wiederkehrender Gegenspieler', strength:70, ordered:true, numbers:[104,124], description:'Dick Perry kehrt als Gegenspieler zurück; die spätere Folge knüpft an seine frühere Rolle an.' },
-  { id:'jelena', title:'Jelena Charkova', type:'Wiederkehrende Figur', strength:66, ordered:true, numbers:[84,95,100,121], description:'Jelena Charkova ist eine wiederkehrende Figur und verbindet mehrere Fälle aus Bobs Umfeld.' },
-  { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrende Figur', strength:62, ordered:true, numbers:[125,129,152,197,200,214,237,238], description:'Rubbish-George kehrt als Informant und bekannte Figur in mehreren späteren Fällen zurück.' },
-  { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:58, ordered:true, numbers:[9,13,17,23,100,117,130,149,157,180], description:'Skinny Norris taucht über viele Jahre immer wieder als Rivale der drei ??? auf.' },
+  { id:'laura-stryker', title:'Laura Stryker', type:'Direkte Figurenverbindung', strength:88, ordered:true, numbers:[97,188], description:'Laura Strykers Geschichte aus Insektenstachel wird in Signale aus dem Jenseits erneut wichtig und trifft dort auf den Clarissa-Franklin-Strang.' },
+  { id:'mr-grey', title:'Mr. Grey', type:'Fortlaufender Gegenspieler', strength:87, ordered:true, numbers:[154,170,203], description:'Mr. Grey verbindet Botschaft aus der Unterwelt, Straße des Grauens und Tauchgang ins Ungewisse als wiederkehrender Gegenspieler.' },
+  { id:'jason-carol', title:'Käpt’n Jason & Carol Ford', type:'Figurenkette', strength:86, ordered:true, numbers:[30,83,142], description:'Käpt’n Jason verbindet Das Riff der Haie mit Meuterei auf hoher See; Carol Ford führt die Figurenkette anschließend bis Tödliches Eis weiter.' },
+  { id:'hitfield-family', title:'Albert Hitfield & Justus’ Familie', type:'Familien-Handlungsstrang', strength:86, ordered:true, numbers:[31,78,208], description:'Albert Hitfield und Justus’ Familiengeschichte verbinden Das Narbengesicht, Das leere Grab und Kelch des Schicksals.' },
+  { id:'andy-alyssa', title:'Andy Carson & Alyssa', type:'Wiederkehrende Figuren', strength:85, ordered:true, numbers:[4,167,236], description:'Andy Carson und Alyssa schlagen eine Figurenverbindung von Die schwarze Katze über Das blaue Biest bis Im Bann des Barrakudas.' },
+  { id:'ian-carew', title:'Ian Carew', type:'Fortlaufender Figurenbezug', strength:84, ordered:true, optionalNumbers:[51], numbers:[28,51,224], description:'Der Doppelgänger und Die Yacht des Verrats sind über Ian Carew verbunden; Der riskante Ritt ist ein schwächerer Zwischenbezug, in dem er erwähnt wird.' },
+  { id:'steadman-museum', title:'Steadman-Museum & Dr. Brolin', type:'Wiederkehrender Schauplatz', strength:84, ordered:true, numbers:[86,110,126], description:'Das Steadman-Museum und Dr. Brolin verbinden Nacht in Angst, Panik im Park und Schrecken aus dem Moor.' },
+  { id:'jelena', title:'Jelena Charkowa', type:'Wiederkehrende Figur & Rückbezug', strength:83, ordered:true, optionalNumbers:[98], numbers:[84,95,98,121], description:'Jelena Charkowa verbindet Die Musik des Teufels, Botschaft von Geisterhand und Spur ins Nichts; Tal des Schreckens ist ein zusätzlicher Rückbezug in Spur ins Nichts.' },
+  { id:'rubbish-george-core', title:'Rubbish-George · Feuermond & SMS aus dem Grab', type:'Starker Figurenbezug', strength:83, ordered:true, optionalNumbers:[237], numbers:[125,129,237], description:'Rubbish-George verbindet Feuermond unmittelbar mit SMS aus dem Grab; Der rote Büffel ist als späterer stärkerer Auftritt ein optionaler Anschluss.' },
+  { id:'barbara-mathewson', title:'Barbara Mathewson', type:'Wiederkehrende Figur', strength:82, ordered:true, numbers:[160,178,232], description:'Barbara Mathewson verbindet Geheimnisvolle Botschaften, Der gefiederte Schrecken und Die Stadt aus Gold.' },
+  { id:'lesley-dimple', title:'Lesley Dimple', type:'Figuren- und Rückbezugskette', strength:82, ordered:true, optionalNumbers:[107,115], numbers:[96,107,115,201], description:'Der rote Rächer und Höhenangst sind über Lesley Dimple verbunden; Der Schatz der Mönche und Auf tödlichem Kurs sind schwächere Zwischenbezüge.' },
+  { id:'eudora-kretschmer', title:'Eudora Kretschmer', type:'Wiederkehrende Figur', strength:81, ordered:true, numbers:[161,169,218], description:'Eudora Kretschmer verbindet Die blutenden Bilder, Die Spur des Spielers und Im Netz der Lügen.' },
+  { id:'oryan-family', title:'Kenneth O’Ryan & Familie', type:'Familienbezug', strength:80, ordered:true, numbers:[14,225], description:'Der Puppenmacher greift Kenneth O’Ryan und seine Familie aus Das Bergmonster wieder auf.' },
+  { id:'monique-carrera', title:'Monique Carrera', type:'Wiederkehrende Figur', strength:80, ordered:true, numbers:[101,106], description:'Monique Carrera verbindet Das Hexenhandy und Der Mann ohne Kopf.' },
+  { id:'skinny-namenlos', title:'Skinny Norris → Der namenlose Gegner', type:'Vorgeschichte einer Figur', strength:80, ordered:false, anchor:149, numbers:[9,11,13,17,23,100,117,130,147,149], description:'Der namenlose Gegner wirkt stärker, wenn Skinny Norris aus einem oder mehreren früheren Auftritten bereits bekannt ist.' },
+  { id:'ben-peck', title:'Ben Peck', type:'Familienbezug', strength:79, ordered:true, numbers:[38,186], description:'Peters Großvater Ben Peck verbindet Der unsichtbare Gegner mit Insel des Vergessens.' },
+  { id:'bert-young', title:'Bert Young', type:'Wiederkehrende Figur', strength:78, ordered:true, numbers:[24,152], description:'Bert Young verbindet Die silberne Spinne mit Skateboardfieber.' },
+  { id:'vladimir-contreras', title:'Vladimir Contreras', type:'Wiederkehrende Figur', strength:78, ordered:true, numbers:[33,80], description:'Vladimir Contreras verbindet Die bedrohte Ranch mit Geheimakte UFO.' },
+  { id:'amanda-black', title:'Amanda Black', type:'Wiederkehrende Figur', strength:77, ordered:true, numbers:[62,75], description:'Amanda Black verbindet Spuk im Hotel und Die Spur des Raben.' },
+  { id:'calidae-althena', title:'Calidae / Althena', type:'Direkter Figurenbezug', strength:76, ordered:true, numbers:[111,135], description:'Die Höhle des Grauens und Fluch des Piraten sind über Calidae beziehungsweise Althena miteinander verbunden.' },
+  { id:'matthew', title:'Matthew', type:'Wiederkehrende Figur', strength:76, ordered:true, numbers:[156,182], description:'Matthew verbindet Im Netz des Drachen mit Im Haus des Henkers.' },
+  { id:'emily-mathilda', title:'Emily & Tante Mathilda', type:'Figurenbezug', strength:75, ordered:true, optionalNumbers:[76], numbers:[64,76,10011], description:'Geisterstadt und Böser die Glocken nie klingen sind über Mathildas Freundin Emily verbunden; Stimmen aus dem Nichts ist ein schwächerer Zwischenbezug.' },
+  { id:'dick-perry', title:'Dick Perry', type:'Wiederkehrender Gegenspieler', strength:74, ordered:true, numbers:[104,124], description:'Dick Perry verbindet Gift per E-Mail und Geister-Canyon. Ein weiterer Auftritt in und der dreiTag ist nicht Teil des aktuellen Fallkartei-Katalogs.' },
+  { id:'miss-bennett', title:'Miss Bennett', type:'Wiederkehrende Figur', strength:73, ordered:true, numbers:[128,132], description:'Miss Bennett verbindet Schatten über Hollywood und Spuk im Netz. Ein weiterer Bezug in und der dreiTag ist nicht Teil des aktuellen Fallkartei-Katalogs.' },
+  { id:'larry-conklin', title:'Larry Conklin', type:'Wiederkehrende Figur', strength:72, ordered:true, numbers:[32,212], description:'Larry Conklin verbindet Der Ameisenmensch mit Der weiße Leopard.' },
+
+  /* Lockere Wiederkehrer bleiben sichtbar und helfen beim Auffüllen,
+     erzwingen aber keine Smart-Playlist-Verbindung. */
+  { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrender Informant', strength:50, ordered:true, mandatory:false, numbers:[125,129,152,197,200,214,237,238], description:'Rubbish-George taucht in vielen späteren Fällen wieder auf, oft nur als Informant. Diese lockeren Auftritte gelten deshalb nicht als zwingender Handlungsstrang.' },
+  { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:48, ordered:true, mandatory:false, numbers:[9,11,13,17,23,100,117,130,147,149,157,180], description:'Skinny Norris kehrt über viele Jahre als Rivale zurück. Die breite Figurenreihe ist lockerer als die gezielte Vorgeschichte zu Der namenlose Gegner.' },
+
   { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012], description:'Eigenständige Advents- und Weihnachtsgeschichten mit gemeinsamem saisonalem Rahmen.' },
   { id:'jubilaeum', title:'Jubiläumsfolgen', type:'Formatreihe', strength:30, ordered:true, mandatory:false, numbers:[100,125,150,175,200,225], description:'Die großen Jubiläumsfolgen bilden eine Formatreihe; das ist kein durchgehender Handlungsstrang.' },
   { id:'live-format', title:'Eigenständige Live-Fälle', type:'Live-Specials', strength:26, ordered:true, mandatory:false, numbers:[10101,10102,10103], description:'Eigenständige Geschichten, die eigens für große Live-Produktionen entstanden sind.' },
@@ -122,14 +152,31 @@ function relationClusters(pool,target) {
       const others=eligible.filter((episode)=>episode.nr!==relation.anchor);
       for(const combo of smartCombinations(others,1,Math.min(3,others.length))) subsets.push([anchor,...combo]);
     } else if(relation.ordered) {
-      for(let length=2;length<=Math.min(4,eligible.length);length++){
-        for(let start=0;start<=eligible.length-length;start++) subsets.push(eligible.slice(start,start+length));
+      const optionalSet=new Set((relation.optionalNumbers||[]).map(Number));
+      const orderedSources=[eligible];
+      const coreEligible=eligible.filter((episode)=>!optionalSet.has(Number(episode.nr)));
+
+      // Eingeklammerte/optionale Zwischenfolgen dürfen in einem Vorschlag
+      // auftauchen, dürfen aber die eigentliche Kette nicht blockieren.
+      // Beispiel: 28 > (51) > 224 erzeugt zusätzlich auch 28 > 224.
+      if(optionalSet.size&&coreEligible.length>=2&&coreEligible.length!==eligible.length) {
+        orderedSources.push(coreEligible);
+      }
+
+      for(const source of orderedSources) {
+        for(let length=2;length<=Math.min(4,source.length);length++){
+          for(let start=0;start<=source.length-length;start++) subsets.push(source.slice(start,start+length));
+        }
       }
     } else {
       subsets=smartCombinations(eligible,2,4);
     }
 
+    const optionalSet=new Set((relation.optionalNumbers||[]).map(Number));
     for(const episodes of subsets) {
+      const coreCount=episodes.filter((episode)=>!optionalSet.has(Number(episode.nr))).length;
+      if(optionalSet.size&&coreCount===0) continue;
+
       const duration=episodes.reduce((sum,episode)=>sum+(Number(episode.durationMin)||55),0);
       if(duration>target+18) continue;
       const signature=`${relation.id}:${proposalSignature(episodes.map((episode)=>episode.nr))}`;
@@ -139,7 +186,12 @@ function relationClusters(pool,target) {
         relation,
         episodes,
         duration,
-        mandatory:relation.mandatory!==false&&relation.strength>=55,
+        // Ein optionaler Zwischenbezug allein soll "Zusammenhänge beachten"
+        // niemals erzwingen. Pflicht wird die Gruppe erst mit mindestens zwei
+        // Kernfolgen derselben Verbindung.
+        mandatory:relation.mandatory!==false
+          &&relation.strength>=55
+          &&(!optionalSet.size||coreCount>=2),
       });
     }
   }

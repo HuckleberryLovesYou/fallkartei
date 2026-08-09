@@ -40,3 +40,4 @@ Der Name **Die Fallkartei**, das App-Interface, der selbst erstellte Quellcode u
 - Bei Specials ohne vorhandenes Cover kann die App das Artwork zur Laufzeit über die öffentliche Apple-iTunes-Lookup-Schnittstelle aus dem bereits hinterlegten Apple-Music-Eintrag auflösen.
 - Die App speichert diese externen Cover nicht im Repository, sondern nur als lokale URL-Zuordnung im Browser-Cache.
 - Die Verbindungsdaten der Smart Playlist beschreiben redaktionell hinterlegte Handlungsstränge, wiederkehrende Figuren und dokumentierte Rückbezüge. Sie sind keine automatische Inhaltsanalyse.
+- Das Verbindungsnetz wurde in Version 1.5.6 anhand einer Community-Zusammenstellung von u/MoreScarletSongs auf r/dreifragezeichen erweitert und anschließend manuell auf den Fallkartei-Katalog abgebildet. Beschreibungen und Gewichtungen wurden für die App eigenständig formuliert.

@@ -2,6 +2,18 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.6 – 2026-08-09
+
+### Verbindungsnetz & Smart Playlists
+
+- das redaktionelle Folgen-Verbindungsnetz wurde deutlich erweitert
+- neue Verbindungen berücksichtigen unter anderem Andy Carson & Alyssa, August August & Sphinx, Kenneth O’Ryan, Bert Young, Ian Carew, Käpt’n Jason & Carol Ford, Albert Hitfield, Larry Conklin, Vladimir Contreras, Ben Peck, Amanda Black, die Europa-Reise, Laura Stryker, das Steadman-Museum, Lesley Dimple, Monique Carrera, Calidae/Althena, Miss Bennett, Mr. Grey, Matthew, Barbara Mathewson und Eudora Kretschmer
+- der Clarissa-Franklin-Strang bleibt eigenständig; Laura Stryker bildet über `Signale aus dem Jenseits` eine zusätzliche Verbindung
+- der Jelena-Charkowa-Strang verwendet jetzt korrekt `Tal des Schreckens` als schwächeren Rückbezug
+- optionale Zwischenbezüge können für Smart Playlists verwendet werden, blockieren aber nicht mehr die stärkere Kernverbindung
+- lockere Rubbish-George- und Skinny-Norris-Auftritte erzwingen keine zusammenhängende Smart Playlist mehr; stärkere Teilverbindungen werden separat gewichtet
+- nicht im Fallkartei-Katalog vorhandene Geschichten werden nicht künstlich als Platzhalter ergänzt
+
 ## 1.5.5 – 2026-08-07
 
 ### Folgendetails
