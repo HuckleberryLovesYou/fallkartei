@@ -6,9 +6,7 @@ Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumenti
 
 ### Wartung
 
-- versteckter 7-Tap-Einstieg in den internen Debug-/100-%-Testmodus deaktiviert
-- Debug- und Vorschau-Logik bleibt für spätere interne Tests im Quellcode erhalten
-- keine Änderung an normalen Nutzerfunktionen
+- kleine bug fixes
 
 ## 1.5.8 – 2026-08-09
 
