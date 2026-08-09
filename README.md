@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.5.5" src="https://img.shields.io/badge/Version-1.5.5-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.5.6" src="https://img.shields.io/badge/Version-1.5.6-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -15,6 +15,8 @@
 
 <p align="center">
   <a href="https://letsmagic.github.io/fallkartei/"><strong>App öffnen</strong></a>
+  ·
+  <a href="./FAQ.md">FAQ</a>
   ·
   <a href="./PRIVACY.md">Datenschutz</a>
   ·
