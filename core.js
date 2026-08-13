@@ -18,7 +18,7 @@ export const STREAMING_SERVICES = [
 ];
 export const DEFAULT_STREAMING_SERVICE = 'spotify';
 export const RATING_ORDER = ['super','plus','neutral','minus'];
-export const RATING_LABELS = { minus: 'Minus', neutral: 'Neutral', plus: 'Plus', super: 'Super' };
+export const RATING_LABELS = { minus: '1 Stern', neutral: '2 Sterne', plus: '3 Sterne', super: '4 Sterne' };
 export const RATING_VALUES = { minus: -1.7, neutral: 0, plus: 1, super: 2.15 };
 
 export const appState = {
