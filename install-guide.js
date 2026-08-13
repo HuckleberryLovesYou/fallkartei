@@ -100,8 +100,7 @@
         <div class="install-device-pill">${deviceName()} erkannt</div>
         <h1 id="installGuideTitle">Die Fallkartei als App installieren</h1>
         <p class="install-guide-copy">
-          Du wirst passend zu deinem Gerät Schritt für Schritt durch die Installation geführt.
-          Danach öffnet sich Die Fallkartei wie eine normale App vom Home-Bildschirm.
+          Wenn du Die Fallkartei installierst kannst du die Webseite wie eine App vom Home-Bildschirm starten.
         </p>
       </div>
       ${isIOS && !isIOSSafari ? `

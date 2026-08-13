@@ -640,8 +640,9 @@ function setRecommendationNotice(message='',type='info') {
   node.classList.toggle('hidden',!message);
 }
 function updateRecommendationIntro() {
-  const progress=actualArchiveProgress();
   const intro=$('recommendationIntro');
+  if(!intro) return;
+  const progress=actualArchiveProgress();
   if(appState.recommendationStatus==='heard') {
     intro.textContent='Ein bekannter Fall, passend zu deinem Geschmack und möglichst lange nicht gehört.';
   } else if(appState.recommendationStatus==='all') {
