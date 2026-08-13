@@ -89,7 +89,6 @@
 
   const shell = (inner) => `
     <div class="install-guide-inner">
-      <div class="install-guide-label">Installationshilfe</div>
       ${inner}
     </div>`;
 
@@ -117,10 +116,6 @@
         <button class="install-guide-button secondary" data-install-action="browser">
           Vorerst im Browser ansehen
         </button>
-      </div>
-      <div class="install-guide-note">
-        Die Installation ist freiwillig. Deine Bewertungen, Listen und Einstellungen
-        bleiben lokal auf deinem Gerät.
       </div>
     `);
     openGuide();
