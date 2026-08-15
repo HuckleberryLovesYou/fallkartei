@@ -19,6 +19,9 @@
     window.matchMedia?.("(display-mode: standalone)")?.matches ||
     window.navigator.standalone === true;
 
+  const STORAGE_KEY = "fallkartei_install_guide_seen";
+  const hasSeenGuide = () => { try { return localStorage.getItem(STORAGE_KEY) === "true"; } catch { return false; } };
+  const setGuideSeen = () => { try { localStorage.setItem(STORAGE_KEY, "true"); } catch {} };
   let deferredPrompt = null;
   let iosToolbarPosition = "bottom";
   let currentPlatform = isIOS ? "ios" : isAndroid ? "android" : "desktop";
@@ -69,6 +72,7 @@
   };
 
   const closeGuide = () => {
+    setGuideSeen();
     guide.setAttribute("aria-hidden", "true");
     document.documentElement.classList.remove("install-guide-open");
     document.body.classList.remove("install-guide-pending");
@@ -89,38 +93,23 @@
 
   const shell = (inner) => `
     <div class="install-guide-inner">
-      <div class="install-guide-label">Installationshilfe</div>
       ${inner}
     </div>`;
 
   function showLanding() {
+    setGuideSeen();
     clearEdgeHint();
     content.innerHTML = shell(`
       <div class="install-guide-hero">
         <img class="install-guide-logo" src="icon-192.png" alt="Logo von Die Fallkartei">
         <div class="install-device-pill">${deviceName()} erkannt</div>
         <h1 id="installGuideTitle">Die Fallkartei als App installieren</h1>
-        <p class="install-guide-copy">
-          Du wirst passend zu deinem Gerät Schritt für Schritt durch die Installation geführt.
-          Danach öffnet sich Die Fallkartei wie eine normale App vom Home-Bildschirm.
-        </p>
+        <p class="install-guide-copy">Installiere Die Fallkartei, um sie wie eine App direkt vom Home-Bildschirm zu starten.</p>
       </div>
-      ${isIOS && !isIOSSafari ? `
-        <div class="install-browser-warning">
-          Auf dem iPhone funktioniert die Installation am zuverlässigsten in <strong>Safari</strong>.
-          Öffne diese Seite deshalb bitte zunächst in Safari.
-        </div>` : ""}
+      ${isIOS && !isIOSSafari ? `<div class="install-browser-warning">Auf dem iPhone funktioniert die Installation am zuverlässigsten in <strong>Safari</strong>. Öffne diese Seite deshalb bitte zunächst in Safari.</div>` : ""}
       <div class="install-guide-actions">
-        <button class="install-guide-button primary" data-install-action="start">
-          ${deferredPrompt && !isIOS ? "App jetzt installieren" : "Installation starten"}
-        </button>
-        <button class="install-guide-button secondary" data-install-action="browser">
-          Vorerst im Browser ansehen
-        </button>
-      </div>
-      <div class="install-guide-note">
-        Die Installation ist freiwillig. Deine Bewertungen, Listen und Einstellungen
-        bleiben lokal auf deinem Gerät.
+        <button class="install-guide-button primary" data-install-action="start">${deferredPrompt && !isIOS ? "App jetzt installieren" : "Installation starten"}</button>
+        <button class="install-guide-button secondary" data-install-action="browser">Im Browser fortfahren</button>
       </div>
     `);
     openGuide();
@@ -294,7 +283,7 @@
       </div>
       <div class="install-guide-actions">
         <button class="install-guide-button secondary" data-install-action="ios-next" data-step="1">Anleitung erneut ansehen</button>
-        <button class="install-guide-button ghost" data-install-action="browser">Im Browser weiter ansehen</button>
+        <button class="install-guide-button ghost" data-install-action="browser">Im Browser fortfahren</button>
       </div>
     `);
     openGuide();
@@ -393,7 +382,7 @@
       <div class="install-guide-actions">
         ${deferredPrompt ? `
           <button class="install-guide-button primary" data-install-action="native-install">Installationsfenster öffnen</button>` : ""}
-        <button class="install-guide-button secondary" data-install-action="browser">Im Browser ansehen</button>
+        <button class="install-guide-button secondary" data-install-action="browser">Im Browser fortfahren</button>
         <button class="install-guide-button ghost" data-install-action="landing">Zurück</button>
       </div>
     `);
@@ -432,7 +421,7 @@
           </div>
           <div class="install-guide-actions">
             <button class="install-guide-button primary" data-install-action="copy-url">Adresse kopieren</button>
-            <button class="install-guide-button secondary" data-install-action="browser">Trotzdem im Browser ansehen</button>
+            <button class="install-guide-button secondary" data-install-action="browser">Im Browser fortfahren</button>
             <button class="install-guide-button ghost" data-install-action="landing">Zurück</button>
           </div>
         `);
@@ -521,6 +510,12 @@
     reopen.classList.add("hidden");
     document.body.classList.remove("install-guide-pending");
   } else {
-    showLanding();
+    if(!hasSeenGuide()&&navigator.serviceWorker?.controller) setGuideSeen();
+    if(hasSeenGuide()) {
+      guide.setAttribute("aria-hidden", "true");
+      reopen.classList.remove("hidden");
+      document.documentElement.classList.remove("install-guide-open");
+      document.body.classList.remove("install-guide-pending");
+    } else showLanding();
   }
 })();

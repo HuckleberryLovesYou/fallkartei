@@ -2,11 +2,26 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
-## 1.5.9 – 2026-08-09
+## 1.5.10 – 2026-08-15
 
-### Wartung
+### Oberfläche
 
-- kleine bug fixes
+- Hauptansichten aufgeräumt und wiederholte Erklärungstexte entfernt
+- `Mehr` in `Einstellungen` umbenannt und Navigation mit neuem Zahnrad-Icon versehen
+- Pin-Anzeige in Folgenlisten und Folgendetails vereinheitlicht
+- Community- und Empfehlungsrankings um klare Spaltenüberschriften ergänzt
+- Community-Ranking in der Navigation kompakter benannt
+
+### Bewertungen
+
+- bestehendes Bewertungssystem mit `Minus`, `Neutral`, `Plus` und `Super` unverändert beibehalten
+- Bedeutung der vier Bewertungsstufen in der Einführung verständlicher erklärt
+- neuer Filter `Bewertet` ergänzt; einzelne Bewertungsfilter bleiben weiterhin verfügbar
+
+### Installation & Stabilität
+
+- Installationshilfe wird im Browser automatisch nur noch beim ersten Besuch eingeblendet und bleibt jederzeit manuell aufrufbar
+- mehrere kleinere Fehler behoben und die Stabilität der App verbessert
 
 ## 1.5.8 – 2026-08-09
 
@@ -22,7 +37,7 @@ Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumenti
 
 - vollständige Anbieterkennzeichnung ergänzt
 - Datenschutzerklärung für Hosting, lokale Speicherung, Metadaten, Cover, externe Dienste und Kontaktwege erweitert
-- Impressum und Datenschutz direkt unter `Mehr → Rechtliches` in der App erreichbar
+- Impressum und Datenschutz direkt unter `Einstellungen → Rechtliches` in der App erreichbar
 - FAQ sowie Quellen- und Rechtehinweise aus der App verlinkt
 - Datenschutzhinweise unterscheiden nun ausdrücklich zwischen lokal gespeicherten Trackingdaten und technisch notwendigen Verbindungen zu externen Diensten
 
@@ -31,7 +46,7 @@ Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumenti
 - neues `Was ist neu?`-System eingeführt
 - bestehende Nutzer sehen nach einem Versionswechsel einmal die wichtigsten Änderungen
 - neue Installationen werden nicht mit einem alten Update-Hinweis begrüßt
-- die Hinweise können unter `Mehr → Hilfe → Was ist neu?` erneut geöffnet werden
+- die Hinweise können unter `Einstellungen → Hilfe → Was ist neu?` erneut geöffnet werden
 
 ## 1.5.6 – 2026-08-09
 
