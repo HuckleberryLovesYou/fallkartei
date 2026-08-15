@@ -3,7 +3,7 @@ import { appState, asArray, availableEpisode, CATALOG_KEY, dbDelete, dbGet, dbSe
 const META_URL = 'https://dreimetadaten.de/data/Serie.json';
 const META_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const SPECIAL_ARTWORK_KEY = 'fallkarteiSpecialArtworkV1';
-const ROCKY_RANKINGS_URL = './data/rocky-rankings.json';
+const ROCKY_RANKINGS_URL = './rocky-rankings.json';
 const TAG_RULES = [
   ['Grusel',['geist','gespenst','spuk','grusel','schreck','dämon','vampir','werwolf','fluch','toten','monster','moor','nebel']],
   ['Mystery',['rätsel','geheimnis','mysteri','phantom','unsichtbar','vision','botschaft','zeichen','legende']],

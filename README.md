@@ -156,8 +156,8 @@ sw.js                   Offline-Cache und Updates
 manifest.json           PWA-Konfiguration
 episodes-seed.js        eingebetteter Offline-Katalog
 episodes.json           alternative Katalogquelle
-data/rocky-rankings.json automatisch gepflegter Community-Datenstand
-scripts/update-rocky-rankings.mjs  geprüfter Rocky-Beach-Abgleich
+rocky-rankings.json      automatisch gepflegter Community-Datenstand
+update-rocky-rankings.mjs geprüfter Rocky-Beach-Abgleich
 .github/workflows/update-rocky-rankings.yml  regelmäßige Aktualisierung
 ```
 
