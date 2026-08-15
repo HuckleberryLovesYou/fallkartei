@@ -144,48 +144,109 @@ function buildFormRequest(form, baseUrl) {
   };
 }
 
-async function fetchHtml(url, options = {}, cookie = '') {
+class CookieJar {
+  constructor() {
+    this.cookies = new Map();
+  }
+
+  absorb(headers) {
+    let values = [];
+    if (typeof headers?.getSetCookie === 'function') {
+      values = headers.getSetCookie();
+    } else {
+      const raw = headers?.get?.('set-cookie') || '';
+      // Fallback for runtimes without getSetCookie(). Do not split inside an Expires date.
+      values = raw ? raw.split(/,(?=\s*[^;,\s]+=)/g) : [];
+    }
+
+    for (const value of values) {
+      const firstPart = String(value || '').split(';', 1)[0].trim();
+      const eq = firstPart.indexOf('=');
+      if (eq <= 0) continue;
+      const name = firstPart.slice(0, eq).trim();
+      const cookieValue = firstPart.slice(eq + 1).trim();
+      if (!cookieValue) this.cookies.delete(name);
+      else this.cookies.set(name, cookieValue);
+    }
+  }
+
+  header() {
+    return [...this.cookies.entries()].map(([name, value]) => `${name}=${value}`).join('; ');
+  }
+}
+
+async function fetchHtml(url, options = {}, jar = new CookieJar()) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let currentUrl = new URL(url).href;
+  let currentOptions = { ...options };
+
   try {
-    const headers = new Headers(options.headers || {});
-    headers.set('user-agent', USER_AGENT);
-    headers.set('accept', 'text/html,application/xhtml+xml');
-    headers.set('accept-language', 'de-DE,de;q=0.9,en;q=0.5');
-    if (cookie) headers.set('cookie', cookie);
-    const response = await fetch(url, { ...options, headers, signal: controller.signal, redirect: 'follow' });
-    if (!response.ok) throw new Error(`Rocky Beach antwortete mit HTTP ${response.status}.`);
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    const contentType = response.headers.get('content-type') || '';
-    const headAscii = Buffer.from(bytes.slice(0, 4096)).toString('latin1');
-    const charset = contentType.match(/charset\s*=\s*['"]?([^;\s'"]+)/i)?.[1]
-      || headAscii.match(/charset\s*=\s*['"]?([^;\s'">]+)/i)?.[1]
-      || 'utf-8';
-    let html;
-    try { html = new TextDecoder(charset).decode(bytes); }
-    catch { html = new TextDecoder('utf-8').decode(bytes); }
-    return { html, headers: response.headers, url: response.url };
+    for (let redirectCount = 0; redirectCount <= 8; redirectCount += 1) {
+      const headers = new Headers(currentOptions.headers || {});
+      headers.set('user-agent', USER_AGENT);
+      headers.set('accept', 'text/html,application/xhtml+xml');
+      headers.set('accept-language', 'de-DE,de;q=0.9,en;q=0.5');
+      const cookie = jar.header();
+      if (cookie) headers.set('cookie', cookie);
+
+      const response = await fetch(currentUrl, {
+        ...currentOptions,
+        headers,
+        signal: controller.signal,
+        redirect: 'manual',
+      });
+
+      // Node's built-in fetch does not provide a browser-style cookie jar.
+      // Capture every Set-Cookie ourselves, including cookies set on redirects.
+      jar.absorb(response.headers);
+
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get('location');
+        if (!location) throw new Error(`Rocky Beach antwortete mit Redirect ${response.status} ohne Ziel.`);
+        if (redirectCount >= 8) throw new Error('Zu viele Weiterleitungen bei Rocky Beach.');
+
+        const previousMethod = String(currentOptions.method || 'GET').toUpperCase();
+        const switchToGet = response.status === 303
+          || ((response.status === 301 || response.status === 302) && !['GET', 'HEAD'].includes(previousMethod));
+
+        currentUrl = new URL(location, currentUrl).href;
+        currentOptions = switchToGet
+          ? { method: 'GET' }
+          : { ...currentOptions };
+        continue;
+      }
+
+      if (!response.ok) throw new Error(`Rocky Beach antwortete mit HTTP ${response.status}.`);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const contentType = response.headers.get('content-type') || '';
+      const headAscii = Buffer.from(bytes.slice(0, 4096)).toString('latin1');
+      const charset = contentType.match(/charset\s*=\s*['"]?([^;\s'"]+)/i)?.[1]
+        || headAscii.match(/charset\s*=\s*['"]?([^;\s'">]+)/i)?.[1]
+        || 'utf-8';
+      let html;
+      try { html = new TextDecoder(charset).decode(bytes); }
+      catch { html = new TextDecoder('utf-8').decode(bytes); }
+      return { html, headers: response.headers, url: currentUrl, jar };
+    }
+    throw new Error('Zu viele Weiterleitungen bei Rocky Beach.');
   } finally {
     clearTimeout(timer);
   }
 }
 
-function responseCookie(headers) {
-  if (typeof headers.getSetCookie === 'function') {
-    return headers.getSetCookie().map((item) => item.split(';', 1)[0]).join('; ');
-  }
-  const raw = headers.get('set-cookie');
-  return raw ? raw.split(',').map((item) => item.trim().split(';', 1)[0]).join('; ') : '';
-}
-
 async function fetchHoerspielRatingPage() {
-  const first = await fetchHtml(SOURCE_URL);
+  const jar = new CookieJar();
+  const first = await fetchHtml(SOURCE_URL, {}, jar);
   const form = findRatingForm(first.html);
   const request = buildFormRequest(form, first.url || SOURCE_URL);
-  const second = await fetchHtml(request.url, request.options, responseCookie(first.headers));
+
+  console.log(`Rocky Beach: wähle Hörspielansicht über ${form.seriesControl.name}=${form.seriesOption.value}.`);
+  const second = await fetchHtml(request.url, request.options, jar);
   const pageText = normalizeText(stripTags(second.html));
   if (!pageText.includes('folgenbewertungen der die drei horspielserie') && !pageText.includes('folgenbewertungen der die drei fragezeichen horspielserie')) {
-    const heading = stripTags(second.html).match(/Folgenbewertungen[^\n]{0,120}/i)?.[0] || 'unbekannte Ansicht';
+    const headingMatch = stripTags(second.html).match(/Folgenbewertungen der Die drei[^+<]{0,100}/i);
+    const heading = headingMatch?.[0]?.trim() || `Ansicht unter ${second.url}`;
     throw new Error(`Rocky Beach lieferte nicht die Hörspielserie (${heading}). Die Daten werden aus Sicherheitsgründen nicht übernommen.`);
   }
   if (pageText.includes('folgenbewertungen der die drei fragezeichen buchserie')) {
