@@ -3,6 +3,7 @@ import { appState, asArray, availableEpisode, CATALOG_KEY, dbDelete, dbGet, dbSe
 const META_URL = 'https://dreimetadaten.de/data/Serie.json';
 const META_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const SPECIAL_ARTWORK_KEY = 'fallkarteiSpecialArtworkV1';
+const ROCKY_RANKINGS_URL = './data/rocky-rankings.json';
 const TAG_RULES = [
   ['Grusel',['geist','gespenst','spuk','grusel','schreck','dämon','vampir','werwolf','fluch','toten','monster','moor','nebel']],
   ['Mystery',['rätsel','geheimnis','mysteri','phantom','unsichtbar','vision','botschaft','zeichen','legende']],
@@ -48,6 +49,7 @@ export function normalizeEpisode(raw = {}) {
     ...raw, nr, titel: text(raw.titel ?? raw.title ?? raw.name) || `Folge ${nr}`,
     beschreibung: text(raw.beschreibung ?? raw.gesamtbeschreibung ?? raw.description ?? raw.summary),
     rockyRanking: number(raw.rockyRanking ?? raw.rockyBeach ?? raw.rating),
+    rockyRank: raw.rockyRank == null ? null : number(raw.rockyRank), rockyVotes: raw.rockyVotes == null ? null : number(raw.rockyVotes),
     collection: text(raw.collection ?? raw.type) || (nr >= 10000 ? 'special' : 'main'),
     author: text(raw.author ?? raw.autor), scriptAuthor: text(raw.scriptAuthor ?? raw['hörspielskriptautor'] ?? raw.hoerspielskript ?? raw.script),
     era: text(raw.era ?? raw.aera), releaseDate, durationMin: raw.gesamtdauer ? Math.round(Number(raw.gesamtdauer) / 60000) : number(raw.durationMin ?? raw.duration ?? raw.laufzeit),
@@ -108,7 +110,7 @@ function mergeEpisode(base,extra) {
     featuredCharacters: base.featuredCharacters?.length ? base.featuredCharacters : extra.featuredCharacters,
     searchKeywords: unique([base.searchKeywords,extra.searchKeywords]),
     titel: base.titel,
-    rockyRanking: base.rockyRanking,
+    rockyRanking: base.rockyRanking, rockyRank: base.rockyRank, rockyVotes: base.rockyVotes,
     collection: base.collection,
     era: base.era || extra.era,
   });
@@ -157,7 +159,6 @@ export async function refreshSpecialArtwork({force=false}={}) {
   if(Object.keys(cachedCovers).length) {
     appState.catalog=applySpecialArtwork(appState.catalog,cachedCovers);
   }
-
   const candidates=appState.catalog.filter((episode)=>
     episode.collection!=='main'
     && episode.appleMusicUrl
@@ -169,7 +170,6 @@ export async function refreshSpecialArtwork({force=false}={}) {
     .map((episode)=>({episode,id:appleLookupId(episode.appleMusicUrl)}))
     .filter((entry)=>Number.isFinite(entry.id));
   if(!lookupEntries.length) return {updated:false,count:0};
-
   const ids=[...new Set(lookupEntries.map((entry)=>entry.id))];
   const raw=await fetchWithTimeout(
     `https://itunes.apple.com/lookup?id=${ids.join(',')}&country=DE`,
@@ -186,7 +186,6 @@ export async function refreshSpecialArtwork({force=false}={}) {
       if(Number.isFinite(id)&&!byId.has(id)) byId.set(id,artwork);
     }
   }
-
   const covers={...cachedCovers};
   let count=0;
   for(const {episode,id} of lookupEntries) {
@@ -196,10 +195,42 @@ export async function refreshSpecialArtwork({force=false}={}) {
     covers[episode.nr]=artwork;
   }
   if(!count&&!force) return {updated:false,count:0};
-
   appState.catalog=applySpecialArtwork(appState.catalog,covers);
   await dbSet(SPECIAL_ARTWORK_KEY,{updatedAt:new Date().toISOString(),covers});
   return {updated:count>0,count};
+}
+function rockyTitleKey(value) {
+  return normalizeText(value).replace(/^die drei fragezeichen\s+/,'').replace(/^die drei\s+/,'').replace(/^und\s+/,'').replace(/\s+/g,'').trim();
+}
+function rockyEntries(raw) {
+  if (!raw || raw.schemaVersion !== 1 || raw.source !== 'rocky-beach.com' || !raw.episodes || typeof raw.episodes !== 'object') return [];
+  return Object.entries(raw.episodes).map(([nr,value]) => ({ nr:Number(nr), ...(value || {}) }));
+}
+export async function refreshRockyRankings() {
+  const raw = await fetchWithTimeout(ROCKY_RANKINGS_URL,4500);
+  const entries = rockyEntries(raw);
+  if (!entries.length) { appState.rockyUpdatedAt = null; return { updated:false,count:0 }; }
+  if (entries.length < 150) throw new Error(`Rocky-Beach-Datenstand unvollständig (${entries.length} Einträge).`);
+  const map = new Map(entries.filter((entry)=>Number.isFinite(entry.nr)).map((entry)=>[entry.nr,entry]));
+  const catalogByNumber = new Map(appState.catalog.filter((episode)=>episode.collection==='main').map((episode)=>[episode.nr,episode]));
+  for (const live of entries) {
+    const episode = catalogByNumber.get(live.nr);
+    if (!episode) continue;
+    if (rockyTitleKey(live.title) !== rockyTitleKey(episode.titel)) throw new Error(`Rocky-Beach-Zuordnung für Folge ${live.nr} stimmt nicht mit dem lokalen Katalog überein.`);
+    const rating = number(live.rating), rank = number(live.rank), votes = number(live.votes);
+    if (!Number.isFinite(rating) || rating < 1 || rating > 6 || !Number.isFinite(rank) || rank < 1 || !Number.isFinite(votes) || votes < 0) throw new Error(`Rocky-Beach-Werte für Folge ${live.nr} sind ungültig.`);
+  }
+  let applied = 0;
+  const candidate = appState.catalog.map((episode) => {
+    const live = map.get(episode.nr);
+    if (!live || episode.collection!=='main') return episode;
+    applied += 1;
+    return normalizeEpisode({ ...episode, rockyRanking:number(live.rating), rockyRank:number(live.rank), rockyVotes:number(live.votes) });
+  });
+  if (applied < 150) throw new Error(`Rocky-Beach-Daten konnten nur ${applied} Folgen sicher zugeordnet werden.`);
+  appState.catalog = candidate;
+  appState.rockyUpdatedAt = raw.updatedAt && !Number.isNaN(new Date(raw.updatedAt).getTime()) ? new Date(raw.updatedAt).toISOString() : null;
+  return { updated:true,count:applied,updatedAt:appState.rockyUpdatedAt };
 }
 export async function loadCatalog() {
   let seed = asArray(window.DDF_EPISODES_SEED);
@@ -220,7 +251,6 @@ export async function refreshMetadata({ force = false } = {}) {
   const age = cached?.updatedAt ? Date.now() - new Date(cached.updatedAt).getTime() : Infinity;
   let metadataUpdated=false;
   let metadataError=null;
-
   if (force || age >= META_MAX_AGE) {
     try {
       const raw = await fetchWithTimeout(META_URL,7000);
@@ -236,14 +266,12 @@ export async function refreshMetadata({ force = false } = {}) {
       metadataError=error;
     }
   }
-
   let artwork={updated:false,count:0};
   try {
     artwork=await refreshSpecialArtwork({force});
   } catch(error) {
     console.warn('Cover von Specials konnten nicht aktualisiert werden.',error);
   }
-
   if(metadataError&&!metadataUpdated&&!artwork.updated) throw metadataError;
   return {
     updated:metadataUpdated||artwork.updated,
@@ -270,7 +298,6 @@ export function searchScore(episode,query) {
   const weights=[['title',150],['featured',130],['keywords',122],['characters',108],['chapters',92],['tags',78],['description',72],['people',60]];
   let score=0;
   for(const [key,weight] of weights) if(fields[key].includes(q)) score=Math.max(score,weight);
-
   // Zusammengeschriebene Titel bleiben auch bei eingegebenen Leerzeichen auffindbar:
   // „Feuer mond“ -> „Feuermond“.
   const compact=q.replace(/\s+/g,'');
@@ -280,7 +307,6 @@ export function searchScore(episode,query) {
       if(compactField.includes(compact)) score=Math.max(score,weight-4);
     }
   }
-
   const tokens=q.split(' ').filter(Boolean);
   let matched=0,fuzzyMatched=0;
   const words=episode.searchText.split(' ').filter(Boolean);
@@ -296,7 +322,6 @@ export function searchScore(episode,query) {
     const ratio=(matched+fuzzyMatched*.72)/tokens.length;
     score=Math.max(score,35+ratio*55);
   }
-
   if(!score&&q.length>=4) {
     const important=fields.title.split(' ').concat(fields.featured.split(' ')).filter((word)=>word.length>=4);
     const distance=Math.min(...important.map((word)=>levenshtein(q,word)),99);
@@ -304,6 +329,7 @@ export function searchScore(episode,query) {
   }
   return score;
 }
+
 export function timeMatches(episode,time) {
   if (time === 'any') return true; const d = Number(episode.durationMin); if (!Number.isFinite(d)) return false;
   if (time === 'short') return d <= 50; if (time === 'medium') return d > 50 && d <= 75; if (time === 'long') return d > 75; return true;

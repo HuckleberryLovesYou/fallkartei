@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.5.10" src="https://img.shields.io/badge/Version-1.5.10-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
+  <img alt="Version 1.5.11" src="https://img.shields.io/badge/Version-1.5.11-f2f3f5?style=flat-square&labelColor=11141a&color=f2f3f5">
   <img alt="Progressive Web App" src="https://img.shields.io/badge/PWA-installierbar-2980ff?style=flat-square&labelColor=11141a">
   <img alt="Offline-first" src="https://img.shields.io/badge/Offline-first-38a169?style=flat-square&labelColor=11141a">
   <img alt="Kein Backend" src="https://img.shields.io/badge/Backend-keins-e53935?style=flat-square&labelColor=11141a">
@@ -126,7 +126,7 @@ Ausführliche Informationen stehen in [PRIVACY.md](./PRIVACY.md). Die Anbieterke
 
 Coverdateien werden nicht als Teil des Katalogs im Repository gespeichert. Die App verwendet externe Bild- und Metadatenlinks und zeigt bei nicht erreichbaren Bildern einen neutralen Platzhalter.
 
-Ergänzende Informationen wie Beschreibungen, Laufzeiten, Kapitel, Sprecherrollen sowie Cover- und Streaminglinks werden aus öffentlich verfügbaren Metadatenquellen ergänzt. Community-Wertungen stammen aus den im Projekt gepflegten Rocky-Beach-Daten.
+Ergänzende Informationen wie Beschreibungen, Laufzeiten, Kapitel, Sprecherrollen sowie Cover- und Streaminglinks werden aus öffentlich verfügbaren Metadatenquellen ergänzt. Community-Wertungen werden regelmäßig automatisiert aus der öffentlich zugänglichen Rocky-Beach-Hörspielbewertung übernommen. Vor einer Veröffentlichung werden Folgennummern und Titel gegen den lokalen Katalog geprüft; die App selbst ruft Rocky Beach dabei nicht direkt auf jedem Nutzergerät ab.
 
 Details und rechtliche Hinweise stehen in [ATTRIBUTIONS.md](./ATTRIBUTIONS.md).
 
@@ -156,11 +156,14 @@ sw.js                   Offline-Cache und Updates
 manifest.json           PWA-Konfiguration
 episodes-seed.js        eingebetteter Offline-Katalog
 episodes.json           alternative Katalogquelle
+data/rocky-rankings.json automatisch gepflegter Community-Datenstand
+scripts/update-rocky-rankings.mjs  geprüfter Rocky-Beach-Abgleich
+.github/workflows/update-rocky-rankings.yml  regelmäßige Aktualisierung
 ```
 
 ## Projektstatus
 
-**Version 1.5.10** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Der Quellcode ist im Repository einsehbar; die App wird über GitHub Pages bereitgestellt.
+**Version 1.5.11** ist der aktuelle stabile Release. **Version 1.0.0** war der erste konsolidierte Release unter dem Namen **Die Fallkartei**. Der Quellcode ist im Repository einsehbar; die App wird über GitHub Pages bereitgestellt.
 
 Metadaten können unvollständig, veraltet oder fehlerhaft sein. Hinweise können über GitHub Issues gemeldet werden, sofern sie für das Repository aktiviert sind.
 

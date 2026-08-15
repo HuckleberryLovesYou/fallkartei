@@ -2,6 +2,21 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.11 – 2026-08-15
+
+### Community-Ranking
+
+- Rocky-Beach-Hörspielwertungen können jetzt regelmäßig automatisiert aktualisiert werden, ohne dafür eine neue App-Version veröffentlichen zu müssen
+- Bewertung, originaler Rang und Stimmenzahl werden getrennt vom Folgenkatalog gepflegt
+- Folgennummer und Titel werden vor jeder automatischen Übernahme abgeglichen; unerwartete oder unvollständige Quelldaten werden nicht veröffentlicht
+- bei fehlender Verbindung oder einem fehlgeschlagenen Quellenupdate bleibt der zuletzt gültige beziehungsweise eingebaute Datenstand nutzbar
+- das Community-Ranking verwendet vorhandene Original-Rangplätze von Rocky Beach und berücksichtigt damit auch Gleichstände
+- der aktuelle Datenstand wird im Community-Ranking dezent angezeigt
+
+### Oberfläche
+
+- Zahnrad-Symbol im Tab `Einstellungen` minimal verkleinert und optisch an die übrigen Navigationssymbole angeglichen
+
 ## 1.5.10 – 2026-08-15
 
 ### Oberfläche

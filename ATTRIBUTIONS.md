@@ -15,7 +15,9 @@ Die Fallkartei nutzt diese Bezeichnungen ausschließlich beschreibend, um die ve
 Ergänzende Folgeninformationen werden aus öffentlich verfügbaren Quellen zusammengeführt. Dazu gehören insbesondere:
 
 - [dreimetadaten.de](https://dreimetadaten.de/) für ergänzende Metadaten, Rollen, Kapitel sowie Cover- und Streaminglinks
-- [rocky-beach.com](https://www.rocky-beach.com/) für Community-Wertungen, soweit diese im Projektkatalog hinterlegt sind
+- [rocky-beach.com](https://www.rocky-beach.com/) für Community-Wertungen der Hörspielserie. Der Projekt-Workflow ruft den öffentlichen Bewertungsstand regelmäßig automatisiert ab und veröffentlicht ihn erst nach einem Abgleich von Folgennummer und Titel mit dem lokalen Katalog.
+
+Die installierte Fallkartei fragt rocky-beach.com für diesen Ranking-Abgleich nicht direkt auf dem Nutzergerät ab. Die App lädt den zuvor geprüften Datenstand aus der eigenen GitHub-Pages-Bereitstellung. Bei einem fehlgeschlagenen Quellenabruf bleibt der zuletzt gültige beziehungsweise eingebaute Datenstand erhalten.
 
 Die Daten können unvollständig, veraltet oder fehlerhaft sein. Die Fallkartei garantiert keine dauerhafte Verfügbarkeit oder Richtigkeit externer Informationen.
 
@@ -32,7 +34,6 @@ Markennamen und Links zu Spotify, Apple Music, BookBeat, Amazon Music, YouTube M
 ## Eigenes Projektmaterial
 
 Der Name **Die Fallkartei**, das App-Interface, der selbst erstellte Quellcode und das für dieses Projekt erstellte App-Icon sind eigenständige Projektbestandteile. Für den Quellcode wird derzeit keine Open-Source-Lizenz erteilt.
-
 
 ## Ergänzungen ab 1.4.0
 

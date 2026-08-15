@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.5.10';
+export const APP_VERSION = '1.5.11';
 // Der bisherige Datenbankname bleibt absichtlich erhalten, damit vorhandene lokale Daten übernommen werden.
 export const DB_NAME = 'ddf-tracker';
 export const DB_VERSION = 1;
@@ -26,7 +26,7 @@ export const appState = {
   filter: 'all', authorFilter: 'all', eraFilter: 'all', yearFilter: 'all', sort: 'nr',
   search: '', time: 'any', mood: 'any', recommendationStatus: 'unheard', recommendationAuthor: 'all', recommendationEra: 'all', recommendationSessionHistory: [], ranking: 'rocky', playlistTab: 'essentials',
   episodeRenderLimit: 40, quickRateQueue: [], quickRateIndex: 0, quickRateHistory: [], importCandidate: null,
-  metadataUpdatedAt: null, currentPlaylistId: null, playlistSearch: '', smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], debugArchivePreview: false, scrollPositions: {},
+  metadataUpdatedAt: null, rockyUpdatedAt: null, currentPlaylistId: null, playlistSearch: '', smartPlaylistDraft: null, smartPlaylistOptions: null, smartPlaylistHistory: [], debugArchivePreview: false, scrollPositions: {},
 };
 
 export const nowIso = () => new Date().toISOString();

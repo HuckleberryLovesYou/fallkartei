@@ -165,6 +165,14 @@ Nein.
 
 Die Empfehlungen werden nicht von einem generativen KI-Modell erzeugt. Die App verwendet einen lokal ausgeführten, regel- und gewichtungsbasierten Empfehlungsalgorithmus.
 
+### Woher kommen die Community-Wertungen im Ranking?
+
+Die angezeigten Community-Wertungen stammen aus der öffentlich zugänglichen **Rocky-Beach-Hörspielbewertung**. Der Datenstand wird regelmäßig automatisiert geprüft und innerhalb des Projekts aktualisiert.
+
+Dabei werden Folgennummer und Titel vor der Übernahme gegeneinander geprüft. Liefert die Quelle eine unerwartete Ansicht oder passen Zuordnungen nicht, wird der neue Stand nicht veröffentlicht und Die Fallkartei verwendet weiterhin den zuletzt gültigen Datenstand.
+
+Die installierte App fragt Rocky Beach nicht bei jedem Öffnen direkt ab. Sie lädt den geprüften Datenstand über die eigene GitHub-Pages-Bereitstellung und kann bei fehlender Verbindung auf bereits vorhandene Werte zurückfallen.
+
 ### Welche Filter gibt es für Empfehlungen?
 
 Empfehlungen können unter anderem nach folgenden Kriterien eingeschränkt werden:
