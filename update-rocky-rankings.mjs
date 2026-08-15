@@ -244,13 +244,20 @@ async function fetchHoerspielRatingPage() {
   console.log(`Rocky Beach: wähle Hörspielansicht über ${form.seriesControl.name}=${form.seriesOption.value}.`);
   const second = await fetchHtml(request.url, request.options, jar);
   const pageText = normalizeText(stripTags(second.html));
-  if (!pageText.includes('folgenbewertungen der die drei horspielserie') && !pageText.includes('folgenbewertungen der die drei fragezeichen horspielserie')) {
+  const isHoerspielPage = [
+    'folgenbewertungen der die drei horspiele',
+    'folgenbewertungen der die drei fragezeichen horspiele',
+    'folgenbewertungen der die drei horspielserie',
+    'folgenbewertungen der die drei fragezeichen horspielserie',
+  ].some((marker) => pageText.includes(marker));
+
+  if (pageText.includes('folgenbewertungen der die drei buchserie') || pageText.includes('folgenbewertungen der die drei fragezeichen buchserie')) {
+    throw new Error('Rocky Beach lieferte die Buchserie. Die Daten werden nicht übernommen.');
+  }
+  if (!isHoerspielPage) {
     const headingMatch = stripTags(second.html).match(/Folgenbewertungen der Die drei[^+<]{0,100}/i);
     const heading = headingMatch?.[0]?.trim() || `Ansicht unter ${second.url}`;
-    throw new Error(`Rocky Beach lieferte nicht die Hörspielserie (${heading}). Die Daten werden aus Sicherheitsgründen nicht übernommen.`);
-  }
-  if (pageText.includes('folgenbewertungen der die drei fragezeichen buchserie')) {
-    throw new Error('Rocky Beach lieferte die Buchserie. Die Daten werden nicht übernommen.');
+    throw new Error(`Rocky Beach lieferte keine eindeutig erkennbare Hörspielansicht (${heading}). Die Daten werden aus Sicherheitsgründen nicht übernommen.`);
   }
   return second.html;
 }
