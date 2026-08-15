@@ -23,6 +23,22 @@
   let iosToolbarPosition = "bottom";
   let currentPlatform = isIOS ? "ios" : isAndroid ? "android" : "desktop";
 
+  const STORAGE_KEY = "fallkartei_install_guide_seen";
+  const hasSeenGuide = () => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  };
+  const setGuideSeen = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, "true");
+    } catch {
+      // ignore
+    }
+  };
+
   window.FallkarteiInstallGuide = {
     isStandalone,
     platform: currentPlatform,
@@ -69,6 +85,7 @@
   };
 
   const closeGuide = () => {
+    setGuideSeen();
     guide.setAttribute("aria-hidden", "true");
     document.documentElement.classList.remove("install-guide-open");
     document.body.classList.remove("install-guide-pending");
@@ -93,6 +110,7 @@
     </div>`;
 
   function showLanding() {
+    setGuideSeen();
     clearEdgeHint();
     content.innerHTML = shell(`
       <div class="install-guide-hero">
@@ -113,7 +131,7 @@
           ${deferredPrompt && !isIOS ? "App jetzt installieren" : "Installation starten"}
         </button>
         <button class="install-guide-button secondary" data-install-action="browser">
-          Vorerst im Browser ansehen
+          Im Browser fortfahren
         </button>
       </div>
     `);
@@ -513,6 +531,10 @@
   if (isStandalone()) {
     guide.setAttribute("aria-hidden", "true");
     reopen.classList.add("hidden");
+    document.body.classList.remove("install-guide-pending");
+  } else if (hasSeenGuide()) {
+    guide.setAttribute("aria-hidden", "true");
+    reopen.classList.remove("hidden");
     document.body.classList.remove("install-guide-pending");
   } else {
     showLanding();

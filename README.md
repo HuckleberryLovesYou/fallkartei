@@ -105,7 +105,7 @@ In unterstützten Chromium-Browsern erscheint ein eigener Button, der direkt den
 
 ### Nach der Installation
 
-Beim Start über das App-Symbol wird die Installationshilfe übersprungen und stattdessen die kurze Einführung der eigentlichen App geöffnet. Die Installation bleibt freiwillig; über **Vorerst im Browser ansehen** kann Die Fallkartei auch ohne Installation verwendet werden.
+Beim Start über das App-Symbol wird die Installationshilfe übersprungen und stattdessen die kurze Einführung der eigentlichen App geöffnet. Die Installation bleibt freiwillig; über **Im Browser fortfahren** kann Die Fallkartei auch ohne Installation verwendet werden.
 
 ## Daten und Datenschutz
 
