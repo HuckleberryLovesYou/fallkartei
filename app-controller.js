@@ -27,7 +27,7 @@ const RELEASE_NOTES={
     title:'Neu in Version 1.5.7',
     intro:'Version 1.5.7 bündelt wichtige Informationen und Hilfebereiche direkt in der App.',
     items:[
-      ['Impressum & Datenschutz','Beide Bereiche sind jetzt direkt unter Mehr → Rechtliches erreichbar.'],
+      ['Impressum & Datenschutz','Beide Bereiche sind jetzt direkt unter Einstellungen → Rechtliches erreichbar.'],
       ['FAQ & Quellen','Häufige Fragen sowie Quellen- und Rechtehinweise lassen sich direkt aus den Einstellungen öffnen.'],
       ['Update-Hinweise','Wichtige Neuerungen werden nach relevanten Updates kompakt zusammengefasst und bleiben unter „Was ist neu?“ abrufbar.'],
     ],
