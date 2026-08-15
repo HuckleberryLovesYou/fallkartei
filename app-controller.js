@@ -206,9 +206,24 @@ function setupSheetInteractions() {
     });
 
     const handle=dialog.querySelector('.dialog-handle');
-    if (!handle) return;
+    const header=dialog.querySelector('header');
 
     let dragType=null,dragId=null,startY=0,lastY=0,startTime=0;
+    let touchTrackId=null,touchStartX=0,touchStartY=0,touchStartTime=0;
+    let touchStartAtTop=false,touchLocked='none',touchTarget=null;
+
+    const isDialogScrolledToTop = (target) => {
+      let el = target;
+      while (el && el !== dialog && el !== document.body) {
+        if (el.scrollTop > 1) return false;
+        el = el.parentElement;
+      }
+      const scrollables = dialog.querySelectorAll('.dialog-body');
+      for (const scrollable of scrollables) {
+        if (scrollable.scrollTop > 1) return false;
+      }
+      return true;
+    };
 
     const beginDrag=(type,id,clientY)=>{
       if (!dialog.open||dragType!==null||!Number.isFinite(clientY)) return false;
@@ -252,56 +267,137 @@ function setupSheetInteractions() {
       window.setTimeout(()=>resetSheetPosition(dialog),190);
     };
 
-    /* Maus und Stift: Pointer Events */
-    handle.addEventListener('pointerdown',(event)=>{
+    /* Maus und Stift: Pointer Events auf Handle und Header */
+    const isInteractive = (target) => Boolean(target?.closest('button, a, input, select, textarea, [role="button"]'));
+
+    const onPointerDown = (event) => {
       if (event.pointerType==='touch'||(event.pointerType==='mouse'&&event.button!==0)) return;
+      if (isInteractive(event.target)) return;
       if (!beginDrag('pointer',event.pointerId,event.clientY)) return;
-      handle.setPointerCapture?.(event.pointerId);
+      (handle || dialog).setPointerCapture?.(event.pointerId);
       event.preventDefault();
-    });
-    handle.addEventListener('pointermove',(event)=>{
+    };
+
+    if (handle) handle.addEventListener('pointerdown',onPointerDown);
+    if (header) header.addEventListener('pointerdown',onPointerDown);
+
+    const onPointerMove = (event) => {
       if (dragType!=='pointer'||dragId!==event.pointerId) return;
       moveDrag(event.clientY);
       event.preventDefault();
-    });
-    handle.addEventListener('pointerup',(event)=>{
+    };
+    const onPointerUp = (event) => {
       if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(event.clientY);
-    });
-    handle.addEventListener('pointercancel',(event)=>{
+    };
+    const onPointerCancel = (event) => {
       if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(event.clientY,true);
-    });
-    handle.addEventListener('lostpointercapture',(event)=>{
-      if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(lastY,true);
-    });
+    };
 
-    /* iPhone, iPad und Android: explizite Touch Events */
-    handle.addEventListener('touchstart',(event)=>{
-      if (event.touches.length!==1) return;
+    if (handle) {
+      handle.addEventListener('pointermove',onPointerMove);
+      handle.addEventListener('pointerup',onPointerUp);
+      handle.addEventListener('pointercancel',onPointerCancel);
+      handle.addEventListener('lostpointercapture',(event)=>{
+        if (dragType==='pointer'&&dragId===event.pointerId) finishDrag(lastY,true);
+      });
+    }
+    if (header) {
+      header.addEventListener('pointermove',onPointerMove);
+      header.addEventListener('pointerup',onPointerUp);
+      header.addEventListener('pointercancel',onPointerCancel);
+    }
+
+    /* iPhone, iPad und Android: Touch Events auf dem gesamten Sheet */
+    dialog.addEventListener('touchstart',(event)=>{
+      if (event.touches.length!==1) {
+        touchTrackId=null;
+        touchLocked='none';
+        return;
+      }
       const touch=event.touches[0];
-      if (!beginDrag('touch',touch.identifier,touch.clientY)) return;
-      event.preventDefault();
-    },{passive:false});
+      const target=event.target;
 
-    handle.addEventListener('touchmove',(event)=>{
-      if (dragType!=='touch') return;
-      const touch=Array.from(event.touches).find((item)=>item.identifier===dragId);
+      if (target===dialog && isOutsideSheet(touch.clientX,touch.clientY)) {
+        touchTrackId=null;
+        touchLocked='none';
+        return;
+      }
+
+      touchTrackId=touch.identifier;
+      touchStartX=touch.clientX;
+      touchStartY=touch.clientY;
+      touchStartTime=performance.now();
+      touchTarget=target;
+      touchLocked='none';
+      touchStartAtTop=isDialogScrolledToTop(target);
+
+      const isHandle = Boolean(target.closest('.dialog-handle'));
+      if (isHandle) {
+        beginDrag('touch',touch.identifier,touch.clientY);
+      }
+    },{passive:true});
+
+    dialog.addEventListener('touchmove',(event)=>{
+      if (dragType==='touch') {
+        const touch=Array.from(event.touches).find((item)=>item.identifier===dragId);
+        if (!touch) return;
+        moveDrag(touch.clientY);
+        if (event.cancelable) event.preventDefault();
+        return;
+      }
+
+      if (touchTrackId===null || touchLocked==='scroll') return;
+
+      const touch=Array.from(event.touches).find((item)=>item.identifier===touchTrackId);
       if (!touch) return;
-      moveDrag(touch.clientY);
-      event.preventDefault();
+
+      const deltaX=touch.clientX-touchStartX;
+      const deltaY=touch.clientY-touchStartY;
+      const absX=Math.abs(deltaX);
+      const absY=Math.abs(deltaY);
+
+      if (absX < 7 && absY < 7) return;
+
+      if (absX > absY || deltaY <= 0) {
+        touchLocked='scroll';
+        return;
+      }
+
+      const isHandle = Boolean(touchTarget?.closest('.dialog-handle'));
+      const isHeader = Boolean(touchTarget?.closest('header')) && !touchTarget?.closest('button, a, input, select, textarea');
+      const canDrag = isHandle || isHeader || (touchStartAtTop && isDialogScrolledToTop(touchTarget));
+
+      if (canDrag) {
+        touchLocked='drag';
+        if (beginDrag('touch',touch.identifier,touchStartY)) {
+          moveDrag(touch.clientY);
+          if (event.cancelable) event.preventDefault();
+        }
+      } else {
+        touchLocked='scroll';
+      }
     },{passive:false});
 
-    handle.addEventListener('touchend',(event)=>{
-      if (dragType!=='touch') return;
-      const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
-      finishDrag(touch?.clientY??lastY);
-      event.preventDefault();
+    dialog.addEventListener('touchend',(event)=>{
+      if (dragType==='touch') {
+        const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
+        finishDrag(touch?.clientY??lastY);
+        if (event.cancelable) event.preventDefault();
+      }
+      touchTrackId=null;
+      touchLocked='none';
+      touchTarget=null;
     },{passive:false});
 
-    handle.addEventListener('touchcancel',(event)=>{
-      if (dragType!=='touch') return;
-      const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
-      finishDrag(touch?.clientY??lastY,true);
-    },{passive:false});
+    dialog.addEventListener('touchcancel',(event)=>{
+      if (dragType==='touch') {
+        const touch=Array.from(event.changedTouches).find((item)=>item.identifier===dragId);
+        finishDrag(touch?.clientY??lastY,true);
+      }
+      touchTrackId=null;
+      touchLocked='none';
+      touchTarget=null;
+    },{passive:true});
   });
 }
 function confirmAction({title,text,accept='Bestätigen',danger=true,eyebrow='Bestätigen'}) {
