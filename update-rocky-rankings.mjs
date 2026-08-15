@@ -30,6 +30,19 @@ function canonicalTitle(value) {
     .trim();
 }
 
+const ROCKY_TITLE_ALIASES = new Map([
+  [80, new Set(['geheimakteufo', 'geheimsacheufo'])],
+  [84, new Set(['diemusikdesteufels', 'musikdesteufels'])],
+]);
+
+function titlesMatch(number, localTitle, rockyTitle) {
+  const local = canonicalTitle(localTitle);
+  const rocky = canonicalTitle(rockyTitle);
+  if (local === rocky) return true;
+  const aliases = ROCKY_TITLE_ALIASES.get(Number(number));
+  return Boolean(aliases?.has(local) && aliases?.has(rocky));
+}
+
 function decodeHtml(value) {
   const named = {
     amp: '&', apos: "'", quot: '"', lt: '<', gt: '>', nbsp: ' ',
@@ -304,7 +317,7 @@ function validateAndMap(rows, catalog) {
 
     const local = catalogByNumber.get(row.number);
     if (!local) continue;
-    if (canonicalTitle(local.titel ?? local.title) !== canonicalTitle(row.title)) {
+    if (!titlesMatch(row.number, local.titel ?? local.title, row.title)) {
       mismatches.push(`#${row.number}: lokal „${local.titel ?? local.title}“ / Rocky Beach „${row.title}“`);
       continue;
     }
