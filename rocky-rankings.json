@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-07T11:01:54.249Z",
+  "updatedAt": "2026-11-08T11:15:53.678Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -745,7 +745,7 @@
     "124": {
       "title": "Geister-Canyon",
       "rating": 2.5961,
-      "rank": 107,
+      "rank": 106,
       "votes": 609
     },
     "125": {
