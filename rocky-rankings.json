@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-08T11:15:53.678Z",
+  "updatedAt": "2026-11-09T12:50:08.114Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -72,45 +72,45 @@
     },
     "12": {
       "title": "Der seltsame Wecker",
-      "rating": 1.9233,
+      "rating": 1.9234,
       "rank": 24,
-      "votes": 1304
+      "votes": 1305
     },
     "13": {
       "title": "Der lachende Schatten",
-      "rating": 2.399,
+      "rating": 2.3986,
       "rank": 84,
-      "votes": 1163
+      "votes": 1164
     },
     "14": {
       "title": "Das Bergmonster",
-      "rating": 2.5201,
+      "rating": 2.5205,
       "rank": 99,
-      "votes": 1171
+      "votes": 1172
     },
     "15": {
       "title": "Der rasende Löwe",
-      "rating": 2.5991,
-      "rank": 109,
-      "votes": 1165
+      "rating": 2.5995,
+      "rank": 110,
+      "votes": 1166
     },
     "16": {
       "title": "Der Zauberspiegel",
-      "rating": 2.0506,
+      "rating": 2.0497,
       "rank": 34,
-      "votes": 1185
+      "votes": 1186
     },
     "17": {
       "title": "Die gefährliche Erbschaft",
-      "rating": 1.7614,
+      "rating": 1.7616,
       "rank": 13,
-      "votes": 1211
+      "votes": 1212
     },
     "18": {
       "title": "Die Geisterinsel",
-      "rating": 1.981,
+      "rating": 1.9819,
       "rank": 30,
-      "votes": 1157
+      "votes": 1158
     },
     "19": {
       "title": "Der Teufelsberg",
@@ -222,15 +222,15 @@
     },
     "37": {
       "title": "Der heimliche Hehler",
-      "rating": 2.4224,
+      "rating": 2.4219,
       "rank": 90,
-      "votes": 966
+      "votes": 967
     },
     "38": {
       "title": "Der unsichtbare Gegner",
-      "rating": 2.2701,
+      "rating": 2.2699,
       "rank": 61,
-      "votes": 981
+      "votes": 982
     },
     "39": {
       "title": "Die Perlenvögel",
@@ -504,27 +504,27 @@
     },
     "84": {
       "title": "Die Musik des Teufels",
-      "rating": 2.1051,
+      "rating": 2.104,
       "rank": 37,
-      "votes": 999
+      "votes": 1000
     },
     "85": {
       "title": "Feuerturm",
-      "rating": 2.4071,
+      "rating": 2.4088,
       "rank": 88,
-      "votes": 931
+      "votes": 932
     },
     "86": {
       "title": "Nacht in Angst",
-      "rating": 1.5821,
+      "rating": 1.5816,
       "rank": 5,
-      "votes": 1139
+      "votes": 1140
     },
     "87": {
       "title": "Wolfsgesicht",
-      "rating": 2.1855,
+      "rating": 2.1843,
       "rank": 47,
-      "votes": 927
+      "votes": 928
     },
     "88": {
       "title": "Vampir im Internet",
@@ -1129,7 +1129,7 @@
     "188": {
       "title": "Signale aus dem Jenseits",
       "rating": 2.5992,
-      "rank": 110,
+      "rank": 109,
       "votes": 252
     },
     "189": {
