@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-10T12:37:09.042Z",
+  "updatedAt": "2026-11-11T11:51:37.267Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -133,7 +133,7 @@
     "22": {
       "title": "Der verschwundene Schatz",
       "rating": 2.3967,
-      "rank": 83,
+      "rank": 82,
       "votes": 1079
     },
     "23": {
@@ -240,15 +240,15 @@
     },
     "40": {
       "title": "Der Automarder",
-      "rating": 2.8845,
+      "rating": 2.8836,
       "rank": 156,
-      "votes": 961
+      "votes": 962
     },
     "41": {
       "title": "Das Volk der Winde",
-      "rating": 2.7773,
+      "rating": 2.7775,
       "rank": 139,
-      "votes": 934
+      "votes": 935
     },
     "42": {
       "title": "Der weinende Sarg",
@@ -582,21 +582,21 @@
     },
     "97": {
       "title": "Insektenstachel",
-      "rating": 2.6431,
+      "rating": 2.6445,
       "rank": 119,
-      "votes": 978
+      "votes": 979
     },
     "98": {
       "title": "Tal des Schreckens",
-      "rating": 2.3956,
-      "rank": 82,
-      "votes": 958
+      "rating": 2.3983,
+      "rank": 83,
+      "votes": 959
     },
     "99": {
       "title": "Rufmord",
-      "rating": 2.2729,
+      "rating": 2.2746,
       "rank": 62,
-      "votes": 1015
+      "votes": 1016
     },
     "100": {
       "title": "Toteninsel",
@@ -637,7 +637,7 @@
     "106": {
       "title": "Der Mann ohne Kopf",
       "rating": 3.4891,
-      "rank": 238,
+      "rank": 239,
       "votes": 1012
     },
     "107": {
@@ -690,9 +690,9 @@
     },
     "115": {
       "title": "Auf tödlichem Kurs",
-      "rating": 2.6929,
+      "rating": 2.6933,
       "rank": 126,
-      "votes": 876
+      "votes": 877
     },
     "116": {
       "title": "Codename: Cobra",
@@ -822,15 +822,15 @@
     },
     "137": {
       "title": "Pfad der Angst",
-      "rating": 3.0093,
+      "rating": 3.0069,
       "rank": 174,
-      "votes": 432
+      "votes": 433
     },
     "138": {
       "title": "Die geheime Treppe",
-      "rating": 2.8578,
+      "rating": 2.8581,
       "rank": 152,
-      "votes": 429
+      "votes": 430
     },
     "139": {
       "title": "Das Geheimnis der Diva",
@@ -865,14 +865,14 @@
     "144": {
       "title": "Zwillinge der Finsternis",
       "rating": 3.3509,
-      "rank": 220,
+      "rank": 221,
       "votes": 379
     },
     "145": {
       "title": "Die Rache der Samurai",
-      "rating": 3.3223,
+      "rating": 3.324,
       "rank": 219,
-      "votes": 391
+      "votes": 392
     },
     "146": {
       "title": "Der Biss der Bestie",
@@ -1056,9 +1056,9 @@
     },
     "176": {
       "title": "Der gestohlene Sieg",
-      "rating": 3.4892,
-      "rank": 239,
-      "votes": 231
+      "rating": 3.4871,
+      "rank": 238,
+      "votes": 232
     },
     "177": {
       "title": "Der Geist des Goldgräbers",
@@ -1434,21 +1434,21 @@
     },
     "239": {
       "title": "Das Geheimnis der sieben Palmen",
-      "rating": 3.3538,
-      "rank": 221,
-      "votes": 65
+      "rating": 3.3333,
+      "rank": 220,
+      "votes": 66
     },
     "240": {
       "title": "Die schwarze Rose",
-      "rating": 3.0426,
+      "rating": 3.0417,
       "rank": 180,
-      "votes": 47
+      "votes": 48
     },
     "241": {
       "title": "Meister des Lichts",
-      "rating": 4.0968,
+      "rating": 4.0938,
       "rank": 253,
-      "votes": 31
+      "votes": 32
     }
   }
 }
