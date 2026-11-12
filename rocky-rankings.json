@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-11T11:51:37.267Z",
+  "updatedAt": "2026-11-12T12:40:58.245Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -252,15 +252,15 @@
     },
     "42": {
       "title": "Der weinende Sarg",
-      "rating": 2.717,
-      "rank": 130,
-      "votes": 940
+      "rating": 2.7163,
+      "rank": 129,
+      "votes": 941
     },
     "43": {
       "title": "Der höllische Werwolf",
-      "rating": 3.2924,
+      "rating": 3.2921,
       "rank": 216,
-      "votes": 913
+      "votes": 914
     },
     "44": {
       "title": "Der gestohlene Preis",
@@ -385,7 +385,7 @@
     "64": {
       "title": "Geisterstadt",
       "rating": 2.7167,
-      "rank": 129,
+      "rank": 130,
       "votes": 879
     },
     "65": {
@@ -534,15 +534,15 @@
     },
     "89": {
       "title": "Tödliche Spur",
-      "rating": 1.9273,
+      "rating": 1.9263,
       "rank": 25,
-      "votes": 963
+      "votes": 964
     },
     "90": {
       "title": "Der Feuerteufel",
-      "rating": 2.3175,
-      "rank": 70,
-      "votes": 926
+      "rating": 2.3182,
+      "rank": 71,
+      "votes": 927
     },
     "91": {
       "title": "Labyrinth der Götter",
@@ -600,9 +600,9 @@
     },
     "100": {
       "title": "Toteninsel",
-      "rating": 1.605,
+      "rating": 1.607,
       "rank": 6,
-      "votes": 1195
+      "votes": 1196
     },
     "101": {
       "title": "Das Hexenhandy",
@@ -763,7 +763,7 @@
     "127": {
       "title": "Schwarze Madonna",
       "rating": 2.6186,
-      "rank": 112,
+      "rank": 113,
       "votes": 569
     },
     "128": {
@@ -1033,7 +1033,7 @@
     "172": {
       "title": "Der Eisenmann",
       "rating": 2.6201,
-      "rank": 113,
+      "rank": 114,
       "votes": 308
     },
     "173": {
@@ -1315,7 +1315,7 @@
     "219": {
       "title": "Die Teufelsklippe",
       "rating": 2.3179,
-      "rank": 71,
+      "rank": 70,
       "votes": 173
     },
     "220": {
