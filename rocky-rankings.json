@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-12T12:40:58.245Z",
+  "updatedAt": "2026-11-13T10:39:43.606Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -186,7 +186,7 @@
     },
     "31": {
       "title": "Das Narbengesicht",
-      "rating": 2.233,
+      "rating": 2.234,
       "rank": 56,
       "votes": 1000
     },
@@ -264,9 +264,9 @@
     },
     "44": {
       "title": "Der gestohlene Preis",
-      "rating": 3.2072,
+      "rating": 3.207,
       "rank": 205,
-      "votes": 912
+      "votes": 913
     },
     "45": {
       "title": "Das Gold der Wikinger",
@@ -276,7 +276,7 @@
     },
     "46": {
       "title": "Der schrullige Millionär",
-      "rating": 2.8186,
+      "rating": 2.8175,
       "rank": 147,
       "votes": 970
     },
@@ -546,9 +546,9 @@
     },
     "91": {
       "title": "Labyrinth der Götter",
-      "rating": 1.9038,
+      "rating": 1.9039,
       "rank": 22,
-      "votes": 1092
+      "votes": 1093
     },
     "92": {
       "title": "Todesflug",
