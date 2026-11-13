@@ -42,3 +42,8 @@ Der Name **Die Fallkartei**, das App-Interface, der selbst erstellte Quellcode u
 - Die App speichert diese externen Cover nicht im Repository, sondern nur als lokale URL-Zuordnung im Browser-Cache.
 - Die Verbindungsdaten der Smart Playlist beschreiben redaktionell hinterlegte Handlungsstränge, wiederkehrende Figuren und dokumentierte Rückbezüge. Sie sind keine automatische Inhaltsanalyse.
 - Das Verbindungsnetz wurde in Version 1.5.6 anhand einer Community-Zusammenstellung von u/MoreScarletSongs auf r/dreifragezeichen erweitert und anschließend manuell auf den Fallkartei-Katalog abgebildet. Beschreibungen und Gewichtungen wurden für die App eigenständig formuliert.
+
+## Ergänzung 1.5.13 – O Geisterbaum
+
+Für das am 13.11.2026 veröffentlichte Adventskalender-Hörspiel `O Geisterbaum` wurden die statischen Fallback-Metadaten aus öffentlich zugänglichen Produkt- und Plattformangaben abgeglichen. Maßgeblich waren insbesondere die offizielle EUROPA-Produktseite für Cover, Sprecher und Produktionsangaben, die KOSMOS-Buchseite für die Vorlage sowie veröffentlichte Plattform- und Tonträgerdaten für Datum, Laufzeit, Kapitel und Streamingziele. Sobald Dreimetadaten einen vollständigen Datensatz bereitstellt, kann die bestehende Online-Metadatenfunktion präzisere beziehungsweise direkte Anbieterlinks übernehmen.
+

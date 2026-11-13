@@ -2,6 +2,19 @@
 
 Alle wesentlichen Änderungen an Die Fallkartei werden in dieser Datei dokumentiert.
 
+## 1.5.13 – 2026-11-13
+
+### Adventskalender-Special – O Geisterbaum
+
+- neues Adventskalender-Hörspiel als `Spezial 13` in den Katalog aufgenommen
+- Veröffentlichung 13.11.2026, Buchvorlage von Hendrik Buchna und Hörspielbearbeitung von André Minninger hinterlegt
+- Laufzeit mit 200 Minuten, 24 Kapitel und vollständige Sprecherrollen ergänzt
+- offizielles EUROPA-Cover eingebunden
+- direkte Links zu Spotify, Apple Music, BookBeat und Amazon Music ergänzt
+- für YouTube Music, Deezer und Amazon funktionieren bis zur Verfügbarkeit eindeutig verifizierter kanonischer Produkt-IDs plattformeigene Suchlinks; spätere Dreimetadaten-Einträge können diese automatisch überschreiben
+- `O Geisterbaum` in die kuratierte Playlist `Advent & Weihnachten` und die redaktionelle Weihnachtsspecial-Verknüpfung aufgenommen
+- Fortschrittslogik selbst unverändert gelassen: das Special verhält sich damit wie die bereits vorhandenen Adventskalender-Specials 7–12
+
 ## 1.5.12 – 2026-09-23
 
 ### Folge 241 – Meister des Lichts

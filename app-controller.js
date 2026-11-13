@@ -23,6 +23,15 @@ let achievementChecksEnabled=false,archiveCheckQueued=false,archiveBadgeTapCount
 const dialogStack=[];
 const ARCHIVE_DEBUG_PASSWORD='AKTE100';
 const RELEASE_NOTES={
+  '1.5.13':{
+    title:'Neu in Version 1.5.13',
+    intro:'Das Adventskalender-Hörspiel „O Geisterbaum“ ist jetzt vollständig in der Fallkartei verfügbar.',
+    items:[
+      ['O Geisterbaum','Das neue Adventskalender-Special ist mit Autor, Hörspielskript, Laufzeit, Sprecherrollen und allen 24 Kapiteln hinterlegt.'],
+      ['Cover & Streaming','Das offizielle EUROPA-Cover sowie Spotify, Apple Music, BookBeat und Amazon Music sind direkt verknüpft; weitere Dienste besitzen funktionierende Suchlinks als Fallback.'],
+      ['Advent-Reihe','Das Special ergänzt die bestehende Playlist und den Zusammenhang „Advent & Weihnachten“.'],
+    ],
+  },
   '1.5.12':{
     title:'Neu in Version 1.5.12',
     intro:'Folge 241 „Meister des Lichts“ ist jetzt vollständig in der Fallkartei verfügbar.',

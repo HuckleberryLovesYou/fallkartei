@@ -8,7 +8,7 @@ export const CURATED_PLAYLISTS = [
   { id:'live-originals', icon:'◉', title:'Eigenständige Live-Fälle', description:'Geschichten, die eigens für die Bühne entstanden sind.', category:'essentials', type:'numbers', numbers:[10101,10102,10103], sequence:true },
   { id:'jubilaeum', icon:'★', title:'Die großen Jubiläen', description:'Die langen Jubiläumsfälle in Reihenfolge.', category:'essentials', type:'numbers', numbers:[100,125,150,175,200,225], sequence:true },
   { id:'halloween', icon:'☾', title:'Halloween in Rocky Beach', description:'Düstere und atmosphärische Fälle.', category:'essentials', type:'mood', mood:'grusel', max:14 },
-  { id:'winter', icon:'❄', title:'Advent & Weihnachten', description:'Winterliche Hauptfolgen und Adventsspecials.', category:'essentials', type:'numbers', numbers:[77,142,202,10007,10008,10009,10010,10011,10012] },
+  { id:'winter', icon:'❄', title:'Advent & Weihnachten', description:'Winterliche Hauptfolgen und Adventsspecials.', category:'essentials', type:'numbers', numbers:[77,142,202,10007,10008,10009,10010,10011,10012,10013] },
   { id:'andre-marx', icon:'✎', title:'André Marx', description:'Fälle eines der prägendsten modernen Autoren.', category:'themes', type:'author', author:'André Marx', max:24 },
   { id:'summer', icon:'≈', title:'Sommer, Meer & Inseln', description:'Küste, Schiffe, Tauchen und Inseln.', category:'themes', type:'mood', mood:'meer', max:18 },
   { id:'skinny', icon:'⚡', title:'Skinny Norris', description:'Folgen mit dem ewigen Rivalen.', category:'themes', type:'mood', mood:'skinny', max:18 },
@@ -56,7 +56,7 @@ export const STORY_RELATIONS = [
   { id:'rubbish-george', title:'Rubbish-George', type:'Wiederkehrender Informant', strength:50, ordered:true, mandatory:false, numbers:[125,129,152,197,200,214,237,238], description:'Rubbish-George taucht in vielen späteren Fällen wieder auf, oft nur als Informant. Diese lockeren Auftritte gelten deshalb nicht als zwingender Handlungsstrang.' },
   { id:'skinny', title:'Skinny Norris', type:'Wiederkehrender Rivale', strength:48, ordered:true, mandatory:false, numbers:[9,11,13,17,23,100,117,130,147,149,157,180], description:'Skinny Norris kehrt über viele Jahre als Rivale zurück. Die breite Figurenreihe ist lockerer als die gezielte Vorgeschichte zu Der namenlose Gegner.' },
 
-  { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012], description:'Eigenständige Advents- und Weihnachtsgeschichten mit gemeinsamem saisonalem Rahmen.' },
+  { id:'weihnachten', title:'Weihnachtsspecials', type:'Themenreihe', strength:44, ordered:true, mandatory:false, numbers:[10007,10008,10009,10010,10011,10012,10013], description:'Eigenständige Advents- und Weihnachtsgeschichten mit gemeinsamem saisonalem Rahmen.' },
   { id:'jubilaeum', title:'Jubiläumsfolgen', type:'Formatreihe', strength:30, ordered:true, mandatory:false, numbers:[100,125,150,175,200,225], description:'Die großen Jubiläumsfolgen bilden eine Formatreihe; das ist kein durchgehender Handlungsstrang.' },
   { id:'live-format', title:'Eigenständige Live-Fälle', type:'Live-Specials', strength:26, ordered:true, mandatory:false, numbers:[10101,10102,10103], description:'Eigenständige Geschichten, die eigens für große Live-Produktionen entstanden sind.' },
 ];
