@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-13T10:39:43.606Z",
+  "updatedAt": "2026-11-14T11:26:44.082Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -270,15 +270,15 @@
     },
     "45": {
       "title": "Das Gold der Wikinger",
-      "rating": 2.6928,
+      "rating": 2.6931,
       "rank": 125,
-      "votes": 918
+      "votes": 919
     },
     "46": {
       "title": "Der schrullige Millionär",
-      "rating": 2.8175,
+      "rating": 2.8177,
       "rank": 147,
-      "votes": 970
+      "votes": 971
     },
     "47": {
       "title": "Der giftige Gockel",
@@ -462,9 +462,9 @@
     },
     "77": {
       "title": "Pistenteufel",
-      "rating": 2.9558,
+      "rating": 2.957,
       "rank": 164,
-      "votes": 906
+      "votes": 907
     },
     "78": {
       "title": "Das leere Grab",
@@ -553,7 +553,7 @@
     "92": {
       "title": "Todesflug",
       "rating": 4.089,
-      "rank": 252,
+      "rank": 253,
       "votes": 1034
     },
     "93": {
@@ -1404,7 +1404,7 @@
     },
     "234": {
       "title": "Der lebende Tresor",
-      "rating": 3.6552,
+      "rating": 3.6724,
       "rank": 244,
       "votes": 116
     },
@@ -1446,9 +1446,9 @@
     },
     "241": {
       "title": "Meister des Lichts",
-      "rating": 4.0938,
-      "rank": 253,
-      "votes": 32
+      "rating": 4.0606,
+      "rank": 252,
+      "votes": 33
     }
   }
 }
