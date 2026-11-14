@@ -33,10 +33,35 @@ body:has(dialog[open]),html.dialog-open{overflow:hidden}dialog{color:var(--text)
 .playlist-divider{border:0;border-top:1px solid var(--line);margin:14px 0}
 .playlist-list-row{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:#101216;text-align:left;cursor:pointer}
 .playlist-list-row:hover,.playlist-list-row:focus-visible{border-color:#444b57;background:#14171d}
+.playlist-list-row.playlist-list-row-personal{grid-template-columns:minmax(0,1fr) auto;padding:4px 8px 4px 0;gap:6px;cursor:default}
+.playlist-list-open{min-width:0;display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:11px;padding:7px 6px 7px 12px;border:0;background:none;text-align:left;cursor:pointer;border-radius:11px}
 .playlist-list-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);font-size:18px;color:#dfe4ec}
 .playlist-list-copy{display:grid;min-width:0}
 .playlist-list-copy strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .playlist-list-copy small{color:var(--muted);line-height:1.35;margin-top:3px}
+.playlist-action-icon{width:16px;height:16px;display:block;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.playlist-icon-action{display:grid;place-items:center;border:0;background:transparent;color:var(--muted);padding:0;border-radius:8px;cursor:pointer;flex:0 0 auto}
+.playlist-delete-btn{width:38px;height:38px;margin-right:4px}
+.playlist-delete-btn:hover,.playlist-delete-btn:focus-visible{color:#ff858b;background:rgba(255,133,139,.12)}
+#playlistDialog header>div{flex:1;min-width:0;margin-right:12px}
+.playlist-title-row,.playlist-description-row{display:flex;align-items:center;gap:8px;min-width:0}
+.playlist-title-row{margin-top:4px}
+.playlist-title-row h2{margin:0;min-width:0;overflow-wrap:anywhere}
+.playlist-description-row{align-items:flex-start;margin:0 0 10px}
+.playlist-description-row p{margin:0;line-height:1.5;overflow-wrap:anywhere}
+.playlist-inline-edit-btn{width:28px;height:28px}
+.playlist-inline-edit-btn:hover,.playlist-inline-edit-btn:focus-visible{color:#fff;background:rgba(255,255,255,.08)}
+.playlist-inline-edit-btn .playlist-action-icon{width:14px;height:14px}
+.playlist-inline-name-form{display:flex;align-items:center;gap:6px;margin-top:4px}
+.playlist-inline-name-form input{min-height:38px;padding:7px 10px;font-size:16px;font-weight:700}
+.playlist-inline-save,.playlist-inline-cancel{width:36px;height:36px;border-radius:10px}
+.playlist-inline-save{color:#93f2ba;background:rgba(21,60,41,.55)}
+.playlist-inline-cancel{background:var(--surface-2)}
+.playlist-inline-cancel .close-icon{width:15px;height:15px}
+.playlist-inline-desc-form{display:grid;gap:8px;margin:0 0 12px}
+.playlist-inline-desc-form textarea{min-height:68px;padding:9px 11px;font-size:15px}
+.playlist-inline-desc-actions{display:flex;gap:8px}
+.playlist-inline-desc-actions .button{min-height:36px;padding:7px 13px;font-size:13px}
 
 .detail-hero{padding-bottom:19px}
 .detail-hero .detail-meta{font-size:14px;line-height:1.45;color:#9da4af}

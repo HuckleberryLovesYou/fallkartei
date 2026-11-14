@@ -96,8 +96,13 @@ export function hasPlaylistName(name, excludeId = null) {
   if (!key) return false;
   return appState.user.playlists.some((item) => item.id !== excludeId && normalizePlaylistNameKey(item.name) === key);
 }
+export function nextDefaultPlaylistName() {
+  let index = 1;
+  while (hasPlaylistName(`Neue Playlist #${index}`)) index += 1;
+  return `Neue Playlist #${index}`;
+}
 export function createPlaylist({name,description='',episodeNrs=[],generated=false}) {
-  const cleanName = String(name || '').trim().slice(0,60) || 'Neue Playlist';
+  const cleanName = String(name || '').trim().slice(0,60) || nextDefaultPlaylistName();
   if (hasPlaylistName(cleanName)) return null;
   const playlist = { id:uid('playlist'),name:cleanName,description:String(description).trim().slice(0,240),episodeNrs:[...new Set(episodeNrs.map(Number).filter(Number.isFinite))],createdAt:nowIso(),updatedAt:nowIso(),generated };
   appState.user.playlists.unshift(playlist); saveUser(true); return playlist;
