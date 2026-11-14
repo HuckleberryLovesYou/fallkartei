@@ -75,7 +75,7 @@ export function storyRelationsForEpisode(nr) {
     .filter((relation)=>relation.relatedEpisodes.length)
     .sort((a,b)=>b.strength-a.strength);
 }
-export function curatedPlaylists(category='essentials') { return CURATED_PLAYLISTS.filter((item) => item.category === category); }
+export function curatedPlaylists(category=null) { return category ? CURATED_PLAYLISTS.filter((item) => item.category === category) : CURATED_PLAYLISTS; }
 export function resolveCuratedPlaylist(definition) {
   let episodes = [];
   if (definition.type === 'numbers') episodes = definition.numbers.map(getEpisode).filter(Boolean);
