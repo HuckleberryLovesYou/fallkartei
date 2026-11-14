@@ -925,12 +925,6 @@ function playlistTrashIcon() {
 function playlistPenIcon() {
   return '<svg class="playlist-action-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 }
-function playlistCheckIcon() {
-  return '<svg class="playlist-action-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
-}
-function playlistCloseIcon() {
-  return '<svg class="close-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.75 6.75 17.25 17.25M17.25 6.75 6.75 17.25"/></svg>';
-}
 function playlistListRow(item,curated=false) {
   const id=curated?`curated:${item.id}`:item.id;
   const playlist=curated?resolveCuratedPlaylist(item):getPlaylist(item.id);
@@ -998,13 +992,13 @@ function renderPlaylistDetail(id,{focusInline=false}={}) {
 
   const titleMarkup=personal
     ?editingField==='name'
-      ?`<form class="playlist-inline-form playlist-inline-name-form" data-inline-field="name" data-playlist-id="${esc(personal)}"><input id="playlistInlineNameInput" type="text" maxlength="60" value="${esc(playlist.name)}" placeholder="Playlistname" aria-label="Playlistname" required><button type="submit" class="playlist-icon-action playlist-inline-save" aria-label="Namen speichern">${playlistCheckIcon()}</button><button type="button" class="playlist-icon-action playlist-inline-cancel" data-action="inline-edit-cancel" aria-label="Bearbeitung abbrechen">${playlistCloseIcon()}</button></form>`
+      ?`<form class="playlist-inline-form playlist-inline-name-form" data-inline-field="name" data-playlist-id="${esc(personal)}"><input id="playlistInlineNameInput" type="text" maxlength="60" value="${esc(playlist.name)}" placeholder="Playlistname" aria-label="Playlistname" required><div class="playlist-inline-actions"><button type="submit" class="button primary">Speichern</button><button type="button" class="button secondary" data-action="inline-edit-cancel">Abbrechen</button></div></form>`
       :`<div class="playlist-title-row"><h2>${esc(playlist.name)}</h2><button type="button" class="playlist-icon-action playlist-inline-edit-btn" data-action="inline-edit-name" data-playlist-id="${esc(personal)}" aria-label="Playlistnamen bearbeiten">${playlistPenIcon()}</button></div>`
     :`<h2>${esc(playlist.title)}</h2>`;
 
   const descriptionMarkup=personal
     ?editingField==='description'
-      ?`<form class="playlist-inline-form playlist-inline-desc-form" data-inline-field="description" data-playlist-id="${esc(personal)}"><textarea id="playlistInlineDescriptionInput" maxlength="240" rows="2" placeholder="Beschreibung hinzufügen …" aria-label="Playlistbeschreibung">${esc(playlist.description||'')}</textarea><div class="playlist-inline-desc-actions"><button type="submit" class="button primary">Speichern</button><button type="button" class="button secondary" data-action="inline-edit-cancel">Abbrechen</button></div></form>`
+      ?`<form class="playlist-inline-form playlist-inline-desc-form" data-inline-field="description" data-playlist-id="${esc(personal)}"><textarea id="playlistInlineDescriptionInput" maxlength="240" rows="2" placeholder="Beschreibung hinzufügen …" aria-label="Playlistbeschreibung">${esc(playlist.description||'')}</textarea><div class="playlist-inline-actions"><button type="submit" class="button primary">Speichern</button><button type="button" class="button secondary" data-action="inline-edit-cancel">Abbrechen</button></div></form>`
       :`<div class="playlist-description-row"><p class="${playlist.description?'':'muted'}">${esc(playlist.description||'Beschreibung hinzufügen …')}</p><button type="button" class="playlist-icon-action playlist-inline-edit-btn" data-action="inline-edit-description" data-playlist-id="${esc(personal)}" aria-label="Beschreibung bearbeiten">${playlistPenIcon()}</button></div>`
     :`<p>${esc(playlist.description||'')}</p>`;
 
