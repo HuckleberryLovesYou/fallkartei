@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-14T11:26:44.082Z",
+  "updatedAt": "2026-11-15T11:55:56.319Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -282,15 +282,15 @@
     },
     "47": {
       "title": "Der giftige Gockel",
-      "rating": 2.573,
+      "rating": 2.5735,
       "rank": 103,
-      "votes": 986
+      "votes": 987
     },
     "48": {
       "title": "Die gefährlichen Fässer",
-      "rating": 2.8002,
+      "rating": 2.8004,
       "rank": 145,
-      "votes": 931
+      "votes": 932
     },
     "49": {
       "title": "Die Comic-Diebe",
