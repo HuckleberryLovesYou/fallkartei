@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-15T11:55:56.319Z",
+  "updatedAt": "2026-11-16T12:43:08.545Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -294,21 +294,21 @@
     },
     "49": {
       "title": "Die Comic-Diebe",
-      "rating": 2.4616,
+      "rating": 2.4611,
       "rank": 93,
-      "votes": 964
+      "votes": 965
     },
     "50": {
       "title": "Der verschwundene Filmstar",
-      "rating": 3.11,
+      "rating": 3.1099,
       "rank": 189,
-      "votes": 891
+      "votes": 892
     },
     "51": {
       "title": "Der riskante Ritt",
-      "rating": 2.7817,
+      "rating": 2.7808,
       "rank": 141,
-      "votes": 916
+      "votes": 917
     },
     "52": {
       "title": "Die Musikpiraten",
