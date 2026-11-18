@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-17T13:22:01.306Z",
+  "updatedAt": "2026-11-18T13:01:08.061Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -612,15 +612,15 @@
     },
     "102": {
       "title": "Doppelte Täuschung",
-      "rating": 2.5065,
+      "rating": 2.507,
       "rank": 99,
-      "votes": 928
+      "votes": 929
     },
     "103": {
       "title": "Das Erbe des Meisterdiebs",
-      "rating": 1.7115,
+      "rating": 1.7135,
       "rank": 8,
-      "votes": 1123
+      "votes": 1124
     },
     "104": {
       "title": "Gift per E-Mail",
