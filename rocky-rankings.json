@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-18T13:01:08.061Z",
+  "updatedAt": "2026-11-19T13:01:21.331Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -330,15 +330,15 @@
     },
     "55": {
       "title": "Gekaufte Spieler",
-      "rating": 3.3907,
+      "rating": 3.3902,
       "rank": 230,
-      "votes": 860
+      "votes": 861
     },
     "56": {
       "title": "Angriff der Computer-Viren",
-      "rating": 3.1883,
+      "rating": 3.1892,
       "rank": 203,
-      "votes": 903
+      "votes": 904
     },
     "57": {
       "title": "Tatort Zirkus",
@@ -1422,9 +1422,9 @@
     },
     "237": {
       "title": "Der rote Büffel",
-      "rating": 1.8,
+      "rating": 1.8103,
       "rank": 14,
-      "votes": 115
+      "votes": 116
     },
     "238": {
       "title": "Falsche Schuld",
