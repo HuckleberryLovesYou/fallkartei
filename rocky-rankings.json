@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-19T13:01:21.331Z",
+  "updatedAt": "2026-11-20T12:51:55.846Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -342,15 +342,15 @@
     },
     "57": {
       "title": "Tatort Zirkus",
-      "rating": 3.4656,
+      "rating": 3.465,
       "rank": 237,
-      "votes": 857
+      "votes": 858
     },
     "58": {
       "title": "Der verrückte Maler",
       "rating": 3.0526,
       "rank": 183,
-      "votes": 855
+      "votes": 856
     },
     "59": {
       "title": "Giftiges Wasser",
@@ -552,27 +552,27 @@
     },
     "92": {
       "title": "Todesflug",
-      "rating": 4.089,
+      "rating": 4.0889,
       "rank": 254,
-      "votes": 1034
+      "votes": 1035
     },
     "93": {
       "title": "Das Geisterschiff",
-      "rating": 2.3315,
+      "rating": 2.3312,
       "rank": 72,
-      "votes": 926
+      "votes": 927
     },
     "94": {
       "title": "Das schwarze Monster",
-      "rating": 3.3682,
+      "rating": 3.3689,
       "rank": 228,
-      "votes": 880
+      "votes": 881
     },
     "95": {
       "title": "Botschaft von Geisterhand",
-      "rating": 2.6922,
+      "rating": 2.6915,
       "rank": 125,
-      "votes": 900
+      "votes": 901
     },
     "96": {
       "title": "Der rote Rächer",
@@ -624,21 +624,21 @@
     },
     "104": {
       "title": "Gift per E-Mail",
-      "rating": 3.1201,
+      "rating": 3.1211,
       "rank": 192,
-      "votes": 924
+      "votes": 925
     },
     "105": {
       "title": "Der Nebelberg",
-      "rating": 1.7219,
+      "rating": 1.723,
       "rank": 10,
-      "votes": 1111
+      "votes": 1112
     },
     "106": {
       "title": "Der Mann ohne Kopf",
-      "rating": 3.4891,
+      "rating": 3.4896,
       "rank": 240,
-      "votes": 1012
+      "votes": 1013
     },
     "107": {
       "title": "Der Schatz der Mönche",
