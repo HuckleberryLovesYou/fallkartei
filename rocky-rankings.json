@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "rocky-beach.com",
   "sourceView": "Die drei ??? Hörspielserie",
-  "updatedAt": "2026-11-20T12:51:55.846Z",
+  "updatedAt": "2026-11-21T12:37:03.618Z",
   "episodes": {
     "1": {
       "title": "Der Super-Papagei",
@@ -354,9 +354,9 @@
     },
     "59": {
       "title": "Giftiges Wasser",
-      "rating": 3.2474,
+      "rating": 3.2483,
       "rank": 211,
-      "votes": 873
+      "votes": 874
     },
     "60": {
       "title": "Dopingmixer",
@@ -1158,9 +1158,9 @@
     },
     "193": {
       "title": "Schrecken aus der Tiefe",
-      "rating": 2.799,
-      "rank": 145,
-      "votes": 204
+      "rating": 2.7951,
+      "rank": 144,
+      "votes": 205
     },
     "194": {
       "title": "Die Zeitreisende",
@@ -1212,9 +1212,9 @@
     },
     "202": {
       "title": "Das weiße Grab",
-      "rating": 2.2262,
+      "rating": 2.2252,
       "rank": 55,
-      "votes": 221
+      "votes": 222
     },
     "203": {
       "title": "Tauchgang ins Ungewisse",
